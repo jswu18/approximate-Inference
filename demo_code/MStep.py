@@ -20,22 +20,16 @@ def m_step(X, ES, ESS):
     """
     N, D = X.shape
     if ES.shape[0] != N:
-        raise TypeError("ES must have the same number of rows as X")
+        raise TypeError('ES must have the same number of rows as X')
     K = ES.shape[1]
     if ESS.shape == (N, K, K):
         ESS = np.sum(ESS, axis=0)
     if ESS.shape != (K, K):
-        raise TypeError("ESS must be square and have the same number of columns as ES")
+        raise TypeError('ESS must be square and have the same number of columns as ES')
 
     mu = np.dot(np.dot(np.linalg.inv(ESS), ES.T), X).T
-    sigma = np.sqrt(
-        (
-            np.trace(np.dot(X.T, X))
-            + np.trace(np.dot(np.dot(mu.T, mu), ESS))
-            - 2 * np.trace(np.dot(np.dot(ES.T, X), mu))
-        )
-        / (N * D)
-    )
+    sigma = np.sqrt((np.trace(np.dot(X.T, X)) + np.trace(np.dot(np.dot(mu.T, mu), ESS))
+                     - 2 * np.trace(np.dot(np.dot(ES.T, X), mu))) / (N * D))
     pie = np.mean(ES, axis=0, keepdims=True)
-
+    
     return mu, sigma, pie
