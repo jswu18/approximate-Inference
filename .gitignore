@@ -1,0 +1,28 @@
+# Virtualenvs
+.env/
+.venv/
+# Python
+__pycache__
+
+# IDE
+.idea
+
+# Non-poetry package requirements
+requirements.txt
+
+# Notebook checkpoints
+*ipynb_checkpoints
+/**/*ipynb_checkpoints
+.DS_Store
+notebooks/.DS_Store
+*.ipynb
+notebooks/*.ipynb
+notebooks
+
+# Other Latex outputs
+*.log
+*.out
+*.synctex.gz
+*.aux
+*.fls
+*.fdb_latexmk
