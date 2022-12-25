@@ -120,29 +120,33 @@ def _compute_expectation_log_p_x_s_given_theta(
         binary_latent_factor_model.mu.T @ binary_latent_factor_model.mu,
     )
 
-    expectation_log_p_x_given_s_theta = (
-        (-binary_latent_factor_model.d / 2) * np.log(2 * np.pi)
-        - np.log(binary_latent_factor_model.sigma)
-        - (0.5 * binary_latent_factor_model.precision)
-        * (
-            np.sum(np.multiply(x, x))
-            - 2 * np.sum(np.multiply(x, mu_lambda))
-            + np.sum(expectation_s_i_s_j_mu_i_mu_j)
-            - np.trace(
-                expectation_s_i_s_j_mu_i_mu_j
-            )  # remove incorrect E[s_i s_i] = lambda_i * lambda_i
-            + np.sum(  # add correct E[s_i s_i] = lambda_i
-                mean_field_approximation.lambda_matrix
-                @ np.multiply(
-                    binary_latent_factor_model.mu, binary_latent_factor_model.mu
-                ).T
-            )
+    expectation_log_p_x_given_s_theta = -(
+        mean_field_approximation.n * binary_latent_factor_model.d / 2
+    ) * np.log(2 * np.pi * binary_latent_factor_model.variance) - (
+        0.5 * binary_latent_factor_model.precision
+    ) * (
+        np.sum(np.multiply(x, x))
+        - 2 * np.sum(np.multiply(x, mu_lambda))
+        + np.sum(expectation_s_i_s_j_mu_i_mu_j)
+        - np.trace(
+            expectation_s_i_s_j_mu_i_mu_j
+        )  # remove incorrect E[s_i s_i] = lambda_i * lambda_i
+        + np.sum(  # add correct E[s_i s_i] = lambda_i
+            mean_field_approximation.lambda_matrix
+            @ np.multiply(
+                binary_latent_factor_model.mu, binary_latent_factor_model.mu
+            ).T
         )
     )
     expectation_log_p_s_given_theta = np.sum(
-        mean_field_approximation.lambda_matrix @ binary_latent_factor_model.log_pi.T
-        + (1 - mean_field_approximation.lambda_matrix)
-        @ binary_latent_factor_model.log_one_minus_pi.T
+        np.multiply(
+            mean_field_approximation.lambda_matrix,
+            binary_latent_factor_model.log_pi,
+        )
+        + np.multiply(
+            1 - mean_field_approximation.lambda_matrix,
+            binary_latent_factor_model.log_one_minus_pi,
+        )
     )
     return expectation_log_p_x_given_s_theta + expectation_log_p_s_given_theta
 
@@ -173,7 +177,7 @@ def compute_free_energy(
     :param x: data matrix (number_of_points, number_of_dimensions)
     :param binary_latent_factor_model: a binary_latent_factor_model
     :param mean_field_approximation: a mean_field_approximation
-    :return: free energy
+    :return: average free energy per data point
     """
     expectation_log_p_x_s_given_theta = _compute_expectation_log_p_x_s_given_theta(
         x, binary_latent_factor_model, mean_field_approximation
@@ -181,7 +185,7 @@ def compute_free_energy(
     mean_field_approximation_entropy = _compute_mean_field_approximation_entropy(
         mean_field_approximation
     )
-    return expectation_log_p_x_s_given_theta + mean_field_approximation_entropy
+    return (expectation_log_p_x_s_given_theta + mean_field_approximation_entropy)/mean_field_approximation.n
 
 
 def partial_expectation_step(

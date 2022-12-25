@@ -425,19 +425,19 @@ with $d$ being the number of dimensions.
 
 Taking the logarithm:
 
-\[ \log P(\textbf{x} | \textbf{s}, \theta)  = -\frac{d}{2} \log (2 \pi) - \log(\sigma)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K} s_i \mu_i   + \sum_{i=1}^{K} \sum_{i=1}^{K} s_i s_j \mu_i^T\mu_j \right) \]
+\[ \log P(\textbf{x} | \textbf{s}, \theta)  = -\frac{d}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K} s_i \mu_i   + \sum_{i=1}^{K} \sum_{i=1}^{K} s_i s_j \mu_i^T\mu_j \right) \]
 
 The expectation distributed to the relevant terms:
 
 \[
 \langle \log P(\textbf{x} | \textbf{s}, \theta)\rangle_{q(\textbf{s})} \\
-= -\frac{d}{2} \log (2 \pi) - \log(\sigma)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K} \langle s_i \rangle_{q_{i} (s_i)} \mu_i   + \sum_{i=1}^{K} \sum_{j=1}^{K} \langle s_i s_j \rangle_{q_{i} (s_i) q_{j} (s_j)} \mu_i^T\mu_j \right)\]
+= -\frac{d}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K} \langle s_i \rangle_{q_{i} (s_i)} \mu_i   + \sum_{i=1}^{K} \sum_{j=1}^{K} \langle s_i s_j \rangle_{q_{i} (s_i) q_{j} (s_j)} \mu_i^T\mu_j \right)\]
 
 Evaluating the expectations:
 
 \[
 \langle \log P(\textbf{x} | \textbf{s}, \theta)\rangle_{q(\textbf{s})} \\
-= -\frac{d}{2} \log (2 \pi) - \log(\sigma)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K}  \lambda_i  \mu_i   + \sum_{i=1}^{K} \sum_{j=1, j\neq i}^{K}  \lambda_i \lambda_j \mu_i^T\mu_j + \sum_{i=1}^{K}  \lambda_i \mu_i^T\mu_i \right)\]
+= -\frac{d}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K}  \lambda_i  \mu_i   + \sum_{i=1}^{K} \sum_{j=1, j\neq i}^{K}  \lambda_i \lambda_j \mu_i^T\mu_j + \sum_{i=1}^{K}  \lambda_i \mu_i^T\mu_i \right)\]
 
 where $\langle s_i s_i \rangle_{q_{i} (s_i)} = \langle s_i \rangle_{q_{i} (s_i)}$ because $s_i \in \{0, 1\}$.
 
@@ -474,7 +474,7 @@ Combining, we have our free energy expression:
 \[
 \begin{array}{l}
 \tab \mathcal{F}(q, \theta) = \\
-\tab \tab \frac{-d}{2} \log (2 \pi) - \log(\sigma)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K}  \lambda_i  \mu_i   + \sum_{i=1}^{K} \sum_{j=1, j\neq i}^{K}  \lambda_i \lambda_j \mu_i^T\mu_j + \sum_{i=1}^{K}  \lambda_i \mu_i^T\mu_i \right) \\
+\tab \tab \frac{-d}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K}  \lambda_i  \mu_i   + \sum_{i=1}^{K} \sum_{j=1, j\neq i}^{K}  \lambda_i \lambda_j \mu_i^T\mu_j + \sum_{i=1}^{K}  \lambda_i \mu_i^T\mu_i \right) \\
 \tab \tab + \sum_{i=1}^{K} \lambda_i \log \pi_i + (1-\lambda_i) \log (1-\pi_i)}\\
 \tab \tab - \sum_{i=1}^K \lambda_i \log \lambda_i + (1-\lambda_i) \log (1-\lambda_i)
 \end{array}
