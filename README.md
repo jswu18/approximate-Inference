@@ -1,4 +1,4 @@
-# comp0085-assignment1
+# comp0085-assignment
 
 Assignment for Approximate Inference and Learning in Probabilistic Models (COMP0085) at UCL 2022
 
