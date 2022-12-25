@@ -188,10 +188,36 @@ def f(
         residuals_precision=prior_theta.precision,
     )
 
-    # Train Gaussian Process Regression (Hyperparameter Tune)
     residuals = y_train - posterior_linear_regression_parameters.predict(x_train)
     gaussian_process = GaussianProcess(kernel, t_train.reshape(-1, 1), residuals.reshape(-1))
 
+    # Prediction
+    x_test = construct_design_matrix(t_test)
+    linear_prediction = posterior_linear_regression_parameters.predict(x_test).reshape(-1)
+    mean_prediction, covariance_prediction = gaussian_process.posterior_distribution(
+        t_test.reshape(-1, 1), **asdict(gaussian_process_parameters)
+    )
+
+    # Plot
+    plt.figure(figsize=(7, 7))
+    plt.scatter(t_train+min_year, y_train.reshape(-1), s=2, color='blue', label="historical data")
+    plt.plot(t_test+min_year, linear_prediction + mean_prediction, color="gray", label="prediction")
+    plt.fill_between(
+        t_test+min_year,
+        linear_prediction+mean_prediction-1*jnp.diagonal(covariance_prediction),
+        linear_prediction+mean_prediction+1*jnp.diagonal(covariance_prediction),
+        facecolor=(0.8, 0.8, 0.8),
+        label="error bound (one stdev)"
+    )
+    plt.xlabel("date (decimal year)")
+    plt.ylabel("parts per million")
+    plt.title("Global Mean CO_2 Concentration Prediction (Untrained Hyperparameters)")
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(save_path+"-extrapolation-untrained", bbox_inches='tight')
+    plt.close()
+
+    # Train Gaussian Process Regression (Hyperparameter Tune)
     optimizer = optax.adam(learning_rate)
     gaussian_process_parameters = gaussian_process.train(
         optimizer, number_of_iterations, **asdict(gaussian_process_parameters)
@@ -205,7 +231,7 @@ def f(
     )
 
     # Plot
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(7, 7))
     plt.scatter(t_train+min_year, y_train.reshape(-1), s=2, color='blue', label="historical data")
     plt.plot(t_test+min_year, linear_prediction + mean_prediction, color="gray", label="prediction")
     plt.fill_between(
@@ -217,6 +243,8 @@ def f(
     )
     plt.xlabel("date (decimal year)")
     plt.ylabel("parts per million")
-    plt.title("Global Mean CO_2 Concentration Prediction")
+    plt.title("Global Mean CO_2 Concentration Prediction (Trained Hyperparameters)")
     plt.legend()
-    plt.savefig(save_path+"-extrapolation", bbox_inches='tight')
+    plt.tight_layout()
+    plt.savefig(save_path+"-extrapolation-trained", bbox_inches='tight')
+    plt.close()
