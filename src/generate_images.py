@@ -1,5 +1,6 @@
 import numpy as np
-from src.constants import M1, M2, M3, M4, M5, M6, M7, M8, DEFAULT_SEED
+
+from src.constants import DEFAULT_SEED, M1, M2, M3, M4, M5, M6, M7, M8
 
 
 def generate_images(n: int = 400, seed: int = DEFAULT_SEED):

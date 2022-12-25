@@ -1,64 +1,25 @@
-import scipy
-import numpy as np
-from dataclasses import dataclass
-import pandas as pd
+from dataclasses import asdict, fields
+import optax
 import dataframe_image as dfi
+import jax
+import jax.numpy as jnp
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import scipy
 
+from src.models.bayesian_linear_regression import (
+    LinearRegressionParameters,
+    Theta,
+    compute_linear_regression_posterior,
+)
+from src.models.gaussian_process_regression import (
+    GaussianProcess,
+    GaussianProcessParameters,
+)
+from src.models.kernels import CombinedKernel, CombinedKernelParameters
 
-@dataclass
-class LinearRegressionParameters:
-    mean: np.ndarray
-    covariance: np.ndarray
-
-    @property
-    def precision(self):
-        return np.linalg.inv(self.covariance)
-
-    def predict(self, x: np.ndarray) -> np.ndarray:
-        return self.mean.T @ x
-
-
-@dataclass
-class Theta:
-    linear_regression_parameters: LinearRegressionParameters
-    sigma: float
-
-    @property
-    def variance(self):
-        return self.sigma**2
-
-    @property
-    def precision(self):
-        return 1 / self.variance
-
-
-def compute_posterior(
-    x: np.ndarray,
-    y: np.ndarray,
-    prior_linear_regression_parameters: LinearRegressionParameters,
-    residuals_precision: float,
-) -> LinearRegressionParameters:
-    """
-    Compute the parameters of the posterior distribution on the linear regression weights
-
-    :param x: design matrix (number of features, number of data points)
-    :param y: response matrix (1, number of data points)
-    :param prior_linear_regression_parameters: parameters for the prior distribution on the linear regression weights
-    :param residuals_precision: the precision of the residuals of the linear regression
-    :return: parameters for the posterior distribution on the linear regression weights
-    """
-    posterior_covariance = np.linalg.inv(
-        residuals_precision * x @ x.T + prior_linear_regression_parameters.precision
-    )
-    posterior_mean = posterior_covariance @ (
-        residuals_precision * x @ y.T
-        + prior_linear_regression_parameters.precision
-        @ prior_linear_regression_parameters.mean
-    )
-    return LinearRegressionParameters(
-        mean=posterior_mean, covariance=posterior_covariance
-    )
+jax.config.update("jax_enable_x64", True)
 
 
 def construct_design_matrix(t: np.ndarray):
@@ -77,7 +38,7 @@ def a(
         linear_regression_parameters=prior_linear_regression_parameters,
         sigma=sigma,
     )
-    posterior_linear_regression_parameters = compute_posterior(
+    posterior_linear_regression_parameters = compute_linear_regression_posterior(
         x,
         y,
         prior_linear_regression_parameters,
@@ -101,7 +62,13 @@ def a(
 
 
 def b(
-    t_year, t, y, linear_regression_parameters, error_mean, error_variance, save_path
+    t_year,
+    t,
+    y,
+    linear_regression_parameters: LinearRegressionParameters,
+    error_mean,
+    error_variance,
+    save_path,
 ):
     x = construct_design_matrix(t)
     residuals = y - linear_regression_parameters.predict(x)
@@ -126,3 +93,130 @@ def b(
     plt.legend()
     plt.savefig(save_path + "-residuals-density-estimation")
     plt.close()
+
+
+def c(
+    kernel: CombinedKernel,
+    kernel_parameters: CombinedKernelParameters,
+    log_theta_range: np.ndarray,
+    t: np.ndarray,
+    number_of_samples: int,
+    save_path: str,
+):
+    gram = kernel(t, **asdict(kernel_parameters))
+    plt.imshow(gram)
+    plt.xlabel("t")
+    plt.ylabel("t")
+    plt.title("Gram Matrix (Prior)")
+    plt.savefig(save_path + "-gram-matrix")
+    plt.close()
+
+    for _ in range(number_of_samples):
+        plt.plot(
+            np.random.multivariate_normal(
+                jnp.zeros(gram.shape[0]), gram, size=1
+            ).reshape(-1)
+        )
+    plt.xlabel("t")
+    plt.ylabel("f_GP(t)")
+    plt.title("Samples from Gaussian Process Prior")
+    plt.savefig(save_path + "-samples")
+    plt.close()
+
+    fig_samples, ax_samples = plt.subplots(
+        len(fields(kernel_parameters.__class__)), len(log_theta_range),
+        figsize=(len(log_theta_range) * 2, len(fields(kernel_parameters.__class__))*2),
+        frameon=False,
+    )
+    for i, field in enumerate(fields(kernel_parameters.__class__)):
+        default_value = getattr(kernel_parameters, field.name)
+        for j, log_value in enumerate(log_theta_range):
+            setattr(kernel_parameters, field.name, log_value)
+            gram = kernel(t, **asdict(kernel_parameters))
+            ax_samples[i][j].plot(
+                np.random.multivariate_normal(
+                    jnp.zeros(gram.shape[0]), gram, size=1
+                ).reshape(-1),
+            )
+            ax_samples[i][j].set_title(f"{field.name.strip('log_')}={np.round(np.exp(log_value), 2)}")
+        setattr(kernel_parameters, field.name, default_value)
+    plt.tight_layout()
+    plt.savefig(save_path + f"-parameter-samples", bbox_inches='tight')
+    plt.close(fig_samples)
+
+    fig_gram, ax_gram = plt.subplots(
+        len(fields(kernel_parameters.__class__)), len(log_theta_range),
+        figsize=(len(log_theta_range) * 2, len(fields(kernel_parameters.__class__))*2),
+        frameon=False,
+    )
+    for i, field in enumerate(fields(kernel_parameters.__class__)):
+        default_value = getattr(kernel_parameters, field.name)
+        for j, log_value in enumerate(log_theta_range):
+            setattr(kernel_parameters, field.name, log_value)
+            gram = kernel(t, **asdict(kernel_parameters))
+            ax_gram[i][j].imshow(gram)
+            ax_gram[i][j].set_title(f"{field.name.strip('log_')}={np.round(np.exp(log_value), 2)}")
+        setattr(kernel_parameters, field.name, default_value)
+    plt.tight_layout()
+    plt.savefig(save_path + f"-parameter-grams", bbox_inches='tight')
+    plt.close(fig_gram)
+
+
+def f(
+        t_train: np.ndarray,
+        y_train: np.ndarray,
+        t_test: np.ndarray,
+        min_year: float,
+        prior_linear_regression_parameters: LinearRegressionParameters,
+        linear_regression_sigma: float,
+        kernel: CombinedKernel,
+        gaussian_process_parameters: GaussianProcessParameters,
+        learning_rate: float,
+        number_of_iterations: int,
+        save_path: str,
+):
+    # Train Bayesian Linear Regression
+    x_train = construct_design_matrix(t_train)
+    prior_theta = Theta(
+        linear_regression_parameters=prior_linear_regression_parameters,
+        sigma=linear_regression_sigma,
+    )
+    posterior_linear_regression_parameters = compute_linear_regression_posterior(
+        x_train,
+        y_train,
+        prior_linear_regression_parameters,
+        residuals_precision=prior_theta.precision,
+    )
+
+    # Train Gaussian Process Regression (Hyperparameter Tune)
+    residuals = y_train - posterior_linear_regression_parameters.predict(x_train)
+    gaussian_process = GaussianProcess(kernel, t_train.reshape(-1, 1), residuals.reshape(-1))
+
+    optimizer = optax.adam(learning_rate)
+    gaussian_process_parameters = gaussian_process.train(
+        optimizer, number_of_iterations, **asdict(gaussian_process_parameters)
+    )
+
+    # Prediction
+    x_test = construct_design_matrix(t_test)
+    linear_prediction = posterior_linear_regression_parameters.predict(x_test).reshape(-1)
+    mean_prediction, covariance_prediction = gaussian_process.posterior_distribution(
+        t_test.reshape(-1, 1), **asdict(gaussian_process_parameters)
+    )
+
+    # Plot
+    plt.figure(figsize=(10, 10))
+    plt.scatter(t_train+min_year, y_train.reshape(-1), s=2, color='blue', label="historical data")
+    plt.plot(t_test+min_year, linear_prediction + mean_prediction, color="gray", label="prediction")
+    plt.fill_between(
+        t_test+min_year,
+        linear_prediction+mean_prediction-1*jnp.diagonal(covariance_prediction),
+        linear_prediction+mean_prediction+1*jnp.diagonal(covariance_prediction),
+        facecolor=(0.8, 0.8, 0.8),
+        label="error bound (one stdev)"
+    )
+    plt.xlabel("date (decimal year)")
+    plt.ylabel("parts per million")
+    plt.title("Global Mean CO_2 Concentration Prediction")
+    plt.legend()
+    plt.savefig(save_path+"-extrapolation", bbox_inches='tight')

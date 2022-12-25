@@ -315,14 +315,12 @@ The set $\{A, D, E, F, H\}$ is a non-unique smallest set of molecules such that 
 
 We want the posterior mean and covariance over $a$ and $b$.
 Defining a weight vector $\textbf{w}$:
-
 \[\textbf{w} = \begin{bmatrix}
                  a \\
                  b
          \end{bmatrix}\]
 
 Our distribution for $\textbf{w}$:
-
 \[P(\textbf{w}) = \mathcal{N} \left(
 \begin{bmatrix}
                  \mu_a \\
@@ -337,7 +335,6 @@ Our distribution for $\textbf{w}$:
 \]
 
 Moreover, for our data $\mathcal{D} = \{\textbf{X}, \textbf{Y}\}$:
-
 \[P(\mathcal{D} | \textbf{w}) = \mathcal{N} \left( \textbf{Y} - \textbf{w}^T \textbf{X}, \sigma^2 \textbf{I}
 \right)
 \]
@@ -348,43 +345,167 @@ where $\textbf{X} =  \begin{bmatrix}
          \end{bmatrix} \in  \mathbb{R}^{2 \times N}$ and $\textbf{Y} \in \mathbb{R}^{1 \times N}$.
 
 Knowing:
-
 \[P(\textbf{w} | \mathcal{D}) \propto P(\mathcal{D} | \textbf{w}) P(\textbf{w})\]
 
 we can substitute the above distributions:
-
 \[P(\textbf{w} | \mathcal{D}) \propto
   \exp \left(\frac{-1}{2 \sigma^2} \left( \textbf{Y} - \textbf{w}^T \textbf{X}\right) \left( \textbf{Y} - \textbf{w}^T \textbf{X}\right)^T \right)
 \exp \left(\frac{-1}{2} \left( \textbf{w} -\mu_{\textbf{w}}\right)^T \Sigma_{\textbf{w}}^{-1} \left( \textbf{w} -\mu_{\textbf{w}}\right)\right)
 \]
 
 expanding:
-
 \[\log P(\textbf{w} | \mathcal{D}) \propto
   \frac{-1}{2} \left( \frac{\textbf{Y} \textbf{Y}^T}{\sigma^2} - 2\textbf{w}^T \frac{\textbf{X}\textbf{Y}^T}{\sigma^2} + \textbf{w}^T \frac{\textbf{X} \textbf{X}^T}{\sigma^2} \textbf{w} +  \textbf{w}^T \Sigma_{\textbf{w}}^{-1}  \textbf{w} - 2\textbf{w}^T \Sigma_{\textbf{w}}^{-1}\mu_{\textbf{w}} + \mu_{\textbf{w}}^T\Sigma_{\textbf{w}}^{-1}\mu_{\textbf{w}} \right)
 \]
 
 collecting $\textbf{w}$ terms:
-
 \[\log P(\textbf{w} | \mathcal{D}) \propto
   \frac{-1}{2} \left( \textbf{w}^T \left(\frac{\textbf{X} \textbf{X}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \right)  \textbf{w} - 2\textbf{w}^T \left(\frac{\textbf{X}\textbf{Y}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \mu_{\textbf{w}}\right)  \right)
 \]
 
 Knowing that the posterior $P(\textbf{w} | \mathcal{D})$ will be Gaussian with mean $\bar{\mu}_w$ and covariance $\bar{\Sigma}_w$, we can see that expanding the exponent component would have the form:
-
 \[\left( \textbf{w} - \bar{\mu}_w \right)^T \bar{\Sigma}_w^{-1} \left( \textbf{w} - \bar{\mu}_w \right) = \textbf{w}^T \bar{\Sigma}_w^{-1} \textbf{w} -2 \textbf{w}^T \bar{\Sigma}_w^{-1} \bar{\mu}_w + \bar{\mu}_w^T \bar{\Sigma}_w^{-1} \bar{\mu}_w\]
 
 Thus we can identify the posterior covariance:
-
 \[\bar{\Sigma}_w = \left(\frac{\textbf{X} \textbf{X}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \right)^{-1}\]
 
-
 and the posterior mean:
-
 \[\bar{\mu}_w = \bar{\Sigma}_w \left(\frac{\textbf{X}\textbf{Y}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \mu_{\textbf{w}}\right) \]
 
 \newpage
-The Python code:
+Computing the posterior mean and covariance over $a$ and $b$ given by the $CO_2$ data:
+
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{.5\textwidth}
+  \centering
+\includegraphics[scale = 0.5]{outputs/q2/a-mean}
+\caption{The Posterior Mean}
+\label{fig:fig2-a-mean}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+  \centering
+\includegraphics[scale = 0.5]{outputs/q2/a-covariance}
+\caption{t=The Posterior Covariance}
+\label{fig:fig2-a-covariance}
+\end{minipage}
+\end{figure}
+
+\subsection*{(b)}
+
+Plotting the residuals:
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{outputs/q2/b-residuals-timeseries}
+\caption{$g_{obs}(t)$}
+\label{fig:b-residuals-timeseries}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{outputs/q2/b-residuals-density-estimation}
+\caption{Density Estimation of Residuals vs $e(t) \sim \mathcal{N}(0, 1)$}
+\label{fig:b-residuals-density-estimation}
+\end{figure}
+
+We can see that the residuals do not perfectly conform to our prior over $e(t) \sim \mathcal{N}(0, 1)$.
+The density estimation shows that a mean of zero is a reasonable prior belief however the data does not seem to exhibit unit variance.
+
+\newpage
+\subsection*{(c \& d)}
+
+We are considering the kernel:
+
+\[k(s, t) = \theta^2 \left( \exp\left( - \frac{2\sin^2(\pi(s-t)/\tau)}{\sigma^2}\right) + \phi^2 \exp\left( - \frac{(s-t)^2}{2\eta^2}\right)\right) + \zeta^2 \delta_{s=t}\]
+
+We can make qualitative observations this kernel by visualising the covariance (gram) matrix:
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{outputs/q2/c-gram-matrix}
+\caption{Gram Matrix}
+\label{fig:c-gram-matrix}
+\end{figure}
+
+We can observe a striped pattern which indicate higher covariance at regular intervals.
+This can be attributed to the sinusoidal term in the kernel and encourages sinusoidal functions.
+Additionally, we can see that covariance values also decay as they are further away from the diagonal.
+This can be attributed to the exponential term in the kernel, encouraging points closer in time to be more correlated and vice versa.
+From our $CO_2$ data, we would want a class of functions which exhibit both of these behaviours as the data looks sinusoidal (seasonal with respect to each year) and correlations locally.
+
+We can also visualise some samples from a Gaussian Process with the same covariance matrix and zero mean.
+This verifies our observations about the covariance matrix.
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{outputs/q2/c-samples}
+\caption{Samples from a zero mean GP with the provided covariance kernel}
+\label{fig:c-samples}
+\end{figure}
+
+\newpage
+More specifically, we can see how changing each hyper-parameter will affect the characteristics of the function.
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{.5\textwidth}
+  \centering
+\includegraphics[scale = 0.35]{outputs/q2/c-parameter-grams}
+\caption{Covariances for different parameters}
+\label{fig:fig2-c-parameter-grams}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+  \centering
+\includegraphics[scale = 0.35]{outputs/q2/c-parameter-samples}
+\caption{Samples for different parameters}
+\label{fig:fig2-c-parameter-samples}
+\end{minipage}
+\end{figure}
+
+\begin{itemize}
+\item [$\theta$:] As $\theta$ increases, we see more pronounced periodic behavior in the sample function.
+    The covariance matrix shows how increasing $\theta$ visually reveals the striped periodic component.
+        This is expected because it is the parameter that adjusts the weight of $\exp\left( - \frac{2\sin^2(\pi(s-t)/\tau)}{\sigma^2}\right)$.
+\item [$\sigma$:] As $\sigma$ increases, we see smoother periodic behaviour in the sample function.
+    The covariance matrix shows how increasing $\sigma$ will increase covariance values in the off-diagonals.
+    This is expected because it adjusts the lengthscale of the periodic portion of the kernel.
+\item [$\phi$:] As $\phi$ increases, we see less smooth behaviour in the sample function.
+    The covariance matrix shows how increasing $\sigma$ will increase covariance values in the off-diagonals.
+    This is expected because it adjusts the lengthscale of the periodic portion of the kernel.
+\item [$\eta$:]
+\item [$\tau$:]
+\item [$\zeta$:]
+\end{itemize}
+\newpage
+\subsection*{(e)}
+
+\subsection*{(f)}
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.5]{outputs/q2/f-extrapolation}
+\caption{Extrapolation of $CO_2$ concentration levels}
+\label{fig:f-extrapolation}
+\end{figure}
+
+\subsection*{(g)}
+
+
+\newpage
+The Python code for Bayesian Linear Regression:
+\lstinputlisting[language=Python]{src/models/bayesian_linear_regression.py}
+
+\newpage
+The Python code for kernels:
+\lstinputlisting[language=Python]{src/models/kernels.py}
+
+\newpage
+The Python code for Gaussian Process Regression:
+\lstinputlisting[language=Python]{src/models/gaussian_process_regression.py}
+
+\newpage
+The rest of the Python code for question 2:
 \lstinputlisting[language=Python]{src/solutions/q2.py}
 
 \newpage
