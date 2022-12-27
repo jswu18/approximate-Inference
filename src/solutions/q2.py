@@ -124,8 +124,12 @@ def c(
     plt.close()
 
     fig_samples, ax_samples = plt.subplots(
-        len(fields(kernel_parameters.__class__)), len(log_theta_range),
-        figsize=(len(log_theta_range) * 2, len(fields(kernel_parameters.__class__))*2),
+        len(fields(kernel_parameters.__class__)),
+        len(log_theta_range),
+        figsize=(
+            len(log_theta_range) * 2,
+            len(fields(kernel_parameters.__class__)) * 2,
+        ),
         frameon=False,
     )
     for i, field in enumerate(fields(kernel_parameters.__class__)):
@@ -138,15 +142,21 @@ def c(
                     jnp.zeros(gram.shape[0]), gram, size=1
                 ).reshape(-1),
             )
-            ax_samples[i][j].set_title(f"{field.name.strip('log_')}={np.round(np.exp(log_value), 2)}")
+            ax_samples[i][j].set_title(
+                f"{field.name.strip('log_')}={np.round(np.exp(log_value), 2)}"
+            )
         setattr(kernel_parameters, field.name, default_value)
     plt.tight_layout()
-    plt.savefig(save_path + f"-parameter-samples", bbox_inches='tight')
+    plt.savefig(save_path + f"-parameter-samples", bbox_inches="tight")
     plt.close(fig_samples)
 
     fig_gram, ax_gram = plt.subplots(
-        len(fields(kernel_parameters.__class__)), len(log_theta_range),
-        figsize=(len(log_theta_range) * 2, len(fields(kernel_parameters.__class__))*2),
+        len(fields(kernel_parameters.__class__)),
+        len(log_theta_range),
+        figsize=(
+            len(log_theta_range) * 2,
+            len(fields(kernel_parameters.__class__)) * 2,
+        ),
         frameon=False,
     )
     for i, field in enumerate(fields(kernel_parameters.__class__)):
@@ -155,25 +165,27 @@ def c(
             setattr(kernel_parameters, field.name, log_value)
             gram = kernel(t, **asdict(kernel_parameters))
             ax_gram[i][j].imshow(gram)
-            ax_gram[i][j].set_title(f"{field.name.strip('log_')}={np.round(np.exp(log_value), 2)}")
+            ax_gram[i][j].set_title(
+                f"{field.name.strip('log_')}={np.round(np.exp(log_value), 2)}"
+            )
         setattr(kernel_parameters, field.name, default_value)
     plt.tight_layout()
-    plt.savefig(save_path + f"-parameter-grams", bbox_inches='tight')
+    plt.savefig(save_path + f"-parameter-grams", bbox_inches="tight")
     plt.close(fig_gram)
 
 
 def f(
-        t_train: np.ndarray,
-        y_train: np.ndarray,
-        t_test: np.ndarray,
-        min_year: float,
-        prior_linear_regression_parameters: LinearRegressionParameters,
-        linear_regression_sigma: float,
-        kernel: CombinedKernel,
-        gaussian_process_parameters: GaussianProcessParameters,
-        learning_rate: float,
-        number_of_iterations: int,
-        save_path: str,
+    t_train: np.ndarray,
+    y_train: np.ndarray,
+    t_test: np.ndarray,
+    min_year: float,
+    prior_linear_regression_parameters: LinearRegressionParameters,
+    linear_regression_sigma: float,
+    kernel: CombinedKernel,
+    gaussian_process_parameters: GaussianProcessParameters,
+    learning_rate: float,
+    number_of_iterations: int,
+    save_path: str,
 ):
     # Train Bayesian Linear Regression
     x_train = construct_design_matrix(t_train)
@@ -189,32 +201,47 @@ def f(
     )
 
     residuals = y_train - posterior_linear_regression_parameters.predict(x_train)
-    gaussian_process = GaussianProcess(kernel, t_train.reshape(-1, 1), residuals.reshape(-1))
+    gaussian_process = GaussianProcess(
+        kernel, t_train.reshape(-1, 1), residuals.reshape(-1)
+    )
 
     # Prediction
     x_test = construct_design_matrix(t_test)
-    linear_prediction = posterior_linear_regression_parameters.predict(x_test).reshape(-1)
+    linear_prediction = posterior_linear_regression_parameters.predict(x_test).reshape(
+        -1
+    )
     mean_prediction, covariance_prediction = gaussian_process.posterior_distribution(
         t_test.reshape(-1, 1), **asdict(gaussian_process_parameters)
     )
 
     # Plot
     plt.figure(figsize=(7, 7))
-    plt.scatter(t_train+min_year, y_train.reshape(-1), s=2, color='blue', label="historical data")
-    plt.plot(t_test+min_year, linear_prediction + mean_prediction, color="gray", label="prediction")
+    plt.scatter(
+        t_train + min_year,
+        y_train.reshape(-1),
+        s=2,
+        color="blue",
+        label="historical data",
+    )
+    plt.plot(
+        t_test + min_year,
+        linear_prediction + mean_prediction,
+        color="gray",
+        label="prediction",
+    )
     plt.fill_between(
-        t_test+min_year,
-        linear_prediction+mean_prediction-1*jnp.diagonal(covariance_prediction),
-        linear_prediction+mean_prediction+1*jnp.diagonal(covariance_prediction),
+        t_test + min_year,
+        linear_prediction + mean_prediction - 1 * jnp.diagonal(covariance_prediction),
+        linear_prediction + mean_prediction + 1 * jnp.diagonal(covariance_prediction),
         facecolor=(0.8, 0.8, 0.8),
-        label="error bound (one stdev)"
+        label="error bound (one stdev)",
     )
     plt.xlabel("date (decimal year)")
     plt.ylabel("parts per million")
     plt.title("Global Mean CO_2 Concentration Prediction (Untrained Hyperparameters)")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(save_path+"-extrapolation-untrained", bbox_inches='tight')
+    plt.savefig(save_path + "-extrapolation-untrained", bbox_inches="tight")
     plt.close()
 
     # Train Gaussian Process Regression (Hyperparameter Tune)
@@ -225,26 +252,39 @@ def f(
 
     # Prediction
     x_test = construct_design_matrix(t_test)
-    linear_prediction = posterior_linear_regression_parameters.predict(x_test).reshape(-1)
+    linear_prediction = posterior_linear_regression_parameters.predict(x_test).reshape(
+        -1
+    )
     mean_prediction, covariance_prediction = gaussian_process.posterior_distribution(
         t_test.reshape(-1, 1), **asdict(gaussian_process_parameters)
     )
 
     # Plot
     plt.figure(figsize=(7, 7))
-    plt.scatter(t_train+min_year, y_train.reshape(-1), s=2, color='blue', label="historical data")
-    plt.plot(t_test+min_year, linear_prediction + mean_prediction, color="gray", label="prediction")
+    plt.scatter(
+        t_train + min_year,
+        y_train.reshape(-1),
+        s=2,
+        color="blue",
+        label="historical data",
+    )
+    plt.plot(
+        t_test + min_year,
+        linear_prediction + mean_prediction,
+        color="gray",
+        label="prediction",
+    )
     plt.fill_between(
-        t_test+min_year,
-        linear_prediction+mean_prediction-1*jnp.diagonal(covariance_prediction),
-        linear_prediction+mean_prediction+1*jnp.diagonal(covariance_prediction),
+        t_test + min_year,
+        linear_prediction + mean_prediction - 1 * jnp.diagonal(covariance_prediction),
+        linear_prediction + mean_prediction + 1 * jnp.diagonal(covariance_prediction),
         facecolor=(0.8, 0.8, 0.8),
-        label="error bound (one stdev)"
+        label="error bound (one stdev)",
     )
     plt.xlabel("date (decimal year)")
     plt.ylabel("parts per million")
     plt.title("Global Mean CO_2 Concentration Prediction (Trained Hyperparameters)")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(save_path+"-extrapolation-trained", bbox_inches='tight')
+    plt.savefig(save_path + "-extrapolation-trained", bbox_inches="tight")
     plt.close()

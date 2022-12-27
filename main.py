@@ -12,6 +12,7 @@ from src.models.kernels import CombinedKernel, CombinedKernelParameters
 from src.models.gaussian_process_regression import GaussianProcessParameters
 from src.solutions import q2, q3, q4, q5, q6
 from dataclasses import asdict
+
 jax.config.update("jax_enable_x64", True)
 
 if __name__ == "__main__":
@@ -86,7 +87,7 @@ if __name__ == "__main__":
         log_sigma=jnp.log(1),
     )
     years_to_predict = 15
-    t_new = t[-1]+np.linspace(0, years_to_predict, years_to_predict*12)
+    t_new = t[-1] + np.linspace(0, years_to_predict, years_to_predict * 12)
     t_test = np.concatenate((t, t_new))
     q2.f(
         t_train=t,
