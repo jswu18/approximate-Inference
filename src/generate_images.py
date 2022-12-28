@@ -3,11 +3,12 @@ import numpy as np
 from src.constants import DEFAULT_SEED, M1, M2, M3, M4, M5, M6, M7, M8
 
 
-def generate_images(n: int = 400, seed: int = DEFAULT_SEED):
+def generate_images(n: int = 400, seed: int = DEFAULT_SEED, sigma: float = 0.1):
     """
 
     :param n: number of data points
     :param seed: random seed
+    :param sigma: Gaussian noise
     :return:
     """
     d = 16  # dimensionality of the data
@@ -36,4 +37,4 @@ def generate_images(n: int = 400, seed: int = DEFAULT_SEED):
 
     # Generate Data - The Data is stored in Y
 
-    return np.dot(s, mut) + np.random.randn(n, d) * 0.1  # some Gaussian noise is added
+    return np.dot(s, mut) + np.random.randn(n, d) * sigma  # some Gaussian noise is added

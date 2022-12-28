@@ -4,6 +4,8 @@ import numpy as np
 
 from demo_code.MStep import m_step
 
+from typing import List, Tuple
+
 
 @dataclass
 class MeanFieldApproximation:
@@ -249,7 +251,7 @@ def variational_expectation_step(
     mean_field_approximation: MeanFieldApproximation,
     max_steps: int,
     convergence_criterion: float,
-) -> MeanFieldApproximation:
+) -> Tuple[MeanFieldApproximation, np.ndarray]:
     """Variational E step
 
     :param x: data matrix (number_of_points, number_of_dimensions)
@@ -259,9 +261,9 @@ def variational_expectation_step(
     :param convergence_criterion: early stopping if change in free energy <  convergence_criterion
     :return: mean field approximation
     """
-    previous_free_energy = compute_free_energy(
+    free_energy = [compute_free_energy(
         x, binary_latent_factor_model, mean_field_approximation
-    )
+    )]
     for i in range(max_steps):
         for latent_factor in range(binary_latent_factor_model.k):
             mean_field_approximation.lambda_matrix[
@@ -269,13 +271,12 @@ def variational_expectation_step(
             ] = partial_expectation_step(
                 x, binary_latent_factor_model, mean_field_approximation, latent_factor
             )
-        free_energy = compute_free_energy(
+        free_energy.append(compute_free_energy(
             x, binary_latent_factor_model, mean_field_approximation
-        )
-        if free_energy - previous_free_energy <= convergence_criterion:
+        ))
+        if free_energy[-1] - free_energy[-2] <= convergence_criterion:
             break
-        previous_free_energy = free_energy
-    return mean_field_approximation
+    return mean_field_approximation, free_energy
 
 
 def maximisation_step(
@@ -296,21 +297,34 @@ def maximisation_step(
     )
 
 
+def is_converge(free_energies, new_mean_field_approximation, mean_field_approximation):
+    return (abs(free_energies[-1] - free_energies[-2]) == 0) and np.linalg.norm(
+        mean_field_approximation.lambda_matrix
+        - new_mean_field_approximation.lambda_matrix
+    ) ==0
+
+
 def learn_binary_factors(
     x: np.ndarray,
     k: int,
-    em_maximum_iterations: int,
+    em_iterations: int,
     e_maximum_steps: int,
     e_convergence_criterion: float,
+    mean_field_approximation: MeanFieldApproximation = None,
+    binary_latent_factor_model: BinaryLatentFactorModel = None,
 ):
     n = x.shape[0]
-    mean_field_approximation = init_mean_field_approximation(k, n)
-    binary_latent_factor_model = init_binary_latent_factor_model(
-        x, mean_field_approximation
-    )
-
-    for _ in range(em_maximum_iterations):
-        mean_field_approximation = variational_expectation_step(
+    if mean_field_approximation is None:
+        mean_field_approximation = init_mean_field_approximation(k, n)
+    if binary_latent_factor_model is None:
+        binary_latent_factor_model = init_binary_latent_factor_model(
+            x, mean_field_approximation
+        )
+    free_energies: List[float] = [
+        compute_free_energy(x, binary_latent_factor_model, mean_field_approximation)
+    ]
+    for _ in range(em_iterations):
+        new_mean_field_approximation, _ = variational_expectation_step(
             x=x,
             binary_latent_factor_model=binary_latent_factor_model,
             mean_field_approximation=mean_field_approximation,
@@ -319,6 +333,14 @@ def learn_binary_factors(
         )
         binary_latent_factor_model = maximisation_step(
             x=x,
-            mean_field_approximation=mean_field_approximation,
+            mean_field_approximation=new_mean_field_approximation,
         )
-    return mean_field_approximation, binary_latent_factor_model
+        free_energies.append(
+            compute_free_energy(x, binary_latent_factor_model, mean_field_approximation)
+        )
+        if is_converge(
+            free_energies, new_mean_field_approximation, mean_field_approximation
+        ):
+            break
+        mean_field_approximation = new_mean_field_approximation
+    return mean_field_approximation, binary_latent_factor_model, free_energies

@@ -539,18 +539,18 @@ The rest of the Python code for question 2:
 \subsection*{(a)}
 
 The free energy is can be calculated as:
-\[\mathcal{F}(q, \theta) = \langle \log P(\textbf{x}, \textbf{s} | \theta)\rangle_{q(\textbf{s})} + H[Q(\textbf{s})]\]
+\[\mathcal{F}(q, \theta) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{q(\textbf{s})} + H[Q(\textbf{s})]\]
 
 
 %Thus,
-%\[\mathcal{F}(Q, \theta) = \langle \log P(\textbf{x}, \textbf{s} | \theta)\rangle_{\prod_{i=1}^{K} q_{i} (s_i)} + H\left[ \prod_{i=1}^{K} q_{i} (s_i)\right] \]
+%\[\mathcal{F}(Q, \theta) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{\prod_{i=1}^{K} q_{i} (s_i)} + H\left[ \prod_{i=1}^{K} q_{i} (s_i)\right] \]
 
 Knowing,
 \[\log P(\textbf{x}, \textbf{s} | \theta) = \log P(\textbf{x} | \textbf{s}, \theta) + \log P(\textbf{s} | \theta)\]
 
 we can write:
 
-\[\mathcal{F}(Q, \theta) = \langle \log P(\textbf{x} | \textbf{s}, \theta)\rangle_{q(\textbf{s})} + \langle \log P(\textbf{s} | \theta)\rangle_{q(\textbf{s})} + H\left[ q(\textbf{s})\right] \]
+\[\mathcal{F}(Q, \theta) = \left\langle \log P(\textbf{x} | \textbf{s}, \theta)\right\rangle_{q(\textbf{s})} + \left\langle \log P(\textbf{s} | \theta)\right\rangle_{q(\textbf{s})} + H\left[ q(\textbf{s})\right] \]
 
 Moreover, our mean field approximation:
 \[q(\textbf{s}) = \prod_{i=1}^{K} q_{i} (s_i) \]
@@ -576,16 +576,16 @@ Taking the logarithm:
 The expectation distributed to the relevant terms:
 
 \[
-\langle \log P(\textbf{x} | \textbf{s}, \theta)\rangle_{q(\textbf{s})} \\
-= -\frac{d}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K} \langle s_i \rangle_{q_{i} (s_i)} \mu_i   + \sum_{i=1}^{K} \sum_{j=1}^{K} \langle s_i s_j \rangle_{q_{i} (s_i) q_{j} (s_j)} \mu_i^T\mu_j \right)\]
+\left\langle \log P(\textbf{x} | \textbf{s}, \theta)\right\rangle_{q(\textbf{s})} \\
+= -\frac{d}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K} \left\langle s_i \right\rangle_{q_{i} (s_i)} \mu_i   + \sum_{i=1}^{K} \sum_{j=1}^{K} \left\langle s_i s_j \right\rangle_{q_{i} (s_i) q_{j} (s_j)} \mu_i^T\mu_j \right)\]
 
 Evaluating the expectations:
 
 \[
-\langle \log P(\textbf{x} | \textbf{s}, \theta)\rangle_{q(\textbf{s})} \\
+\left\langle \log P(\textbf{x} | \textbf{s}, \theta)\right\rangle_{q(\textbf{s})} \\
 = -\frac{d}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K}  \lambda_i  \mu_i   + \sum_{i=1}^{K} \sum_{j=1, j\neq i}^{K}  \lambda_i \lambda_j \mu_i^T\mu_j + \sum_{i=1}^{K}  \lambda_i \mu_i^T\mu_i \right)\]
 
-where $\langle s_i s_i \rangle_{q_{i} (s_i)} = \langle s_i \rangle_{q_{i} (s_i)}$ because $s_i \in \{0, 1\}$.
+where $\left\langle s_i s_i \right\rangle_{q_{i} (s_i)} = \left\langle s_i \right\rangle_{q_{i} (s_i)}$ because $s_i \in \{0, 1\}$.
 
 To compute the second term:
 \[ P(\textbf{s} | \theta) = \prod_{i=1}^{K}\pi_i^{s_i} (1-\pi_i)^{(1-s_i)}\]
@@ -596,11 +596,11 @@ Taking the logarithm:
 
 The expectation distributed to the relevant terms:
 
-\[ \langle \log P(\textbf{s} | \theta)\rangle_{q(\textbf{s})}= \sum_{i=1}^{K} \langle s_i \rangle_{q_{i} (s_i)} \log \pi_i + (1-\langle s_i\rangle_{q_{i} (s_i)}) \log (1-\pi_i)}\]
+\[ \left\langle \log P(\textbf{s} | \theta)\right\rangle_{q(\textbf{s})}= \sum_{i=1}^{K} \left\langle s_i \right\rangle_{q_{i} (s_i)} \log \pi_i + (1-\left\langle s_i\right\rangle_{q_{i} (s_i)}) \log (1-\pi_i)}\]
 
 Evaluating the expectations:
 
-\[ \langle \log P(\textbf{s} | \theta)\rangle_{q(\textbf{s})}= \sum_{i=1}^{K} \lambda_i \log \pi_i + (1-\lambda_i) \log (1-\pi_i)}\]
+\[ \left\langle \log P(\textbf{s} | \theta)\right\rangle_{q(\textbf{s})}= \sum_{i=1}^{K} \lambda_i \log \pi_i + (1-\lambda_i) \log (1-\pi_i)}\]
 
 To compute the third term, we use the mean field factorisation:
 
@@ -628,26 +628,26 @@ Combining, we have our free energy expression:
 
 To derive the partial update for $q_i(s_i)$ we take the variational derivative of the Lagrangian, enforcing the normalisation of $q_i$:
 
-\[\frac{\partial}{\partial q_i}\left( \mathcal{F}(q, \theta) + \lambda^{LG} \int q_i -1)\right) = \langle \log P(\textbf{x}, \textbf{s} | \theta)\rangle_{\prod_{j\neq i} q_j(s_j)} - \log q_i(s_i) - 1 + \lambda^{LG}\]
+\[\frac{\partial}{\partial q_i}\left( \mathcal{F}(q, \theta) + \lambda^{LG} \int q_i -1)\right) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} - \log q_i(s_i) - 1 + \lambda^{LG}\]
 
 where $\lambda^{LG}$ is the Lagrange multiplier.
 
 Setting this to zero we can solve for the $\lambda_i$ that maximises the free energy:
 
-\[\log q_i(s_i) = \langle \log P(\textbf{x}, \textbf{s} | \theta)\rangle_{\prod_{j\neq i} q_j(s_j)} - 1 + \lambda^{LG}\]
+\[\log q_i(s_i) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} - 1 + \lambda^{LG}\]
 
 
 Similar to our free energy derivation:
 
-\[\langle \log P(\textbf{x} |  \textbf{s}, \theta)\rangle_{\prod_{j\neq i} q_j(s_j)} \propto  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K} \langle s_k \rangle_{\prod_{j\neq i} q_j(s_j)} \mu_i   + \sum_{k=1}^{K} \sum_{j=1}^{K} \langle s_k s_j \rangle_{\prod_{j\neq i} q_j(s_j)} \right)\]
+\[\left\langle \log P(\textbf{x} |  \textbf{s}, \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} \propto  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K} \left\langle s_k \right\rangle_{\prod_{j\neq i} q_j(s_j)} \mu_i   + \sum_{k=1}^{K} \sum_{j=1}^{K} \left\langle s_k s_j \right\rangle_{\prod_{j\neq i} q_j(s_j)} \right)\]
 
 and
 
-\[ \langle \log P(\textbf{s} | \theta)\rangle_{\prod_{j\neq i} q_j(s_j)} = \sum_{k=1}^{K} \langle s_k \rangle_{\prod_{j\neq i} q_j(s_j)} \log \pi_k + (1-\langle s_k\rangle_{\prod_{j\neq i} q_j(s_j)}) \log (1-\pi_k)}\]
+\[ \left\langle \log P(\textbf{s} | \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} = \sum_{k=1}^{K} \left\langle s_k \right\rangle_{\prod_{j\neq i} q_j(s_j)} \log \pi_k + (1-\left\langle s_k\right\rangle_{\prod_{j\neq i} q_j(s_j)}) \log (1-\pi_k)}\]
 
 We can write:
 
-\[\log q_i(s_i) \propto  \log P(\textbf{x} |  \textbf{s}, \theta)\rangle_{\prod_{j\neq i} q_j(s_j)} + \langle \log P(\textbf{s} | \theta)\rangle_{\prod_{j\neq i} q_j(s_j)} \]
+\[\log q_i(s_i) \propto  \log P(\textbf{x} |  \textbf{s}, \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} + \left\langle \log P(\textbf{s} | \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} \]
 
 Substituting the relevant terms:
 
@@ -682,7 +682,7 @@ we have our partial update.
 
 The provided derivations for the M step of the mean parameter $\mu$:
 
-\[\mu = \left( \langle \textbf{s}\textbf{s}^T \rangle_{q(\textbf{s})} \right)^{-1}\langle \textbf{s}\rangle_{q(\textbf{s})} \textbf{x}\]
+\[\mu = \left( \left\langle \textbf{s}\textbf{s}^T \right\rangle_{q(\textbf{s})} \right)^{-1}\left\langle \textbf{s}\right\rangle_{q(\textbf{s})} \textbf{x}\]
 
 where $\mu \in \mathbb{R}^{K \times D}$, \textbf{s} \in \mathbb{R}^{K \times N}$, and $\textbf{x} \in \mathbb{R}^{N \times D}$.
 
@@ -745,6 +745,151 @@ The rest of the Python code for question 3:
 \lstinputlisting[language=Python]{src/solutions/q3.py}
 \newpage
 \section*{Question 4}
+
+We begin with the log joint:
+
+\[\log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) = \log P(\textbf{x}|  \textbf{s}, \textbf{A}, \Psi,  \eta)
++ \log P( \textbf{s}| \pi, \eta) + \log P( \pi| \eta) + \log P( \textbf{A}| \eta) + \log P( \Psi| \eta)
+\]
+
+where $\eta$ is a collection of all hyperparameters.
+
+We know:
+
+\[P(\textbf{x}|  \textbf{s}, \textbf{A}, \Psi,  \eta) = \frac{1}{(2\pi)^{\frac{D}{2}} |\Psi|^{\frac{1}{2}}} \exp\left(-\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As})\right)\]
+
+\[P( \textbf{s}| \pi, \eta) = \prod_{k=1}^{K} \pi_k^{s_i} (1-\pi_k)^{1-s_k}\]
+
+\[P( \pi| \eta) = \prod_{k=1}^{K} \frac{\pi_k^{\alpha - 1}(1-\pi_k)^{\beta-1}}{B(\alpha, \beta)}\]
+
+We choose the conjugate priors:
+
+\[P( \textbf{A}| \eta) = \mathcal{N}(\textbf{A}| \mu_{\textbf{A}}, \Sigma_{\textbf{A}}) =\frac{1}{(2\pi)^{\frac{DK}{2}} |\Sigma_{\textbf{A}}|^{\frac{1}{2}}} \exp\left(-\frac{1}{2}(\textbf{A} - \mu_{\textbf{A}})^T \Sigma_{\textbf{A}}^{-1}(\textbf{A} - \mu_{\textbf{A}})\right)\]
+
+\[P( \Psi| \eta) = \prod_{d=1}^D InvGamma(\Psi_{dd}| a_d, b_d) = \prod_{d=1}^D \frac{b_d^{a_d}}{\Gamma(a_d)}\Psi_{dd}^{-a_d-1}\exp(-\frac{b_d}{\Psi_{dd}})\]
+
+a Gaussian prior on $\textbf{A}$ and a product of inverse gamma distributions on $\Psi$ where we assume $\Psi$ is a diagonal matrix.
+
+Combining, we have our expression:
+
+\[
+\begin{array}{l}
+\log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) = -\frac{D}{2} \log (2 \pi) - \frac{1}{2} \sum_{d=1}^{D}\log\Psi_{dd}   -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \\
+\tab \tab \tab \tab \tab + \sum_{k=1}^{K} s_k \log \pi_k + (1-s_k) \log (1-\pi_k)}\\
+\tab \tab \tab \tab \tab + \sum_{i=1}^K (\alpha-1) \log \pi_k + (\beta - 1) \log (1-\pi_k) - \log B(\alpha, \beta)\\
+\tab \tab \tab \tab \tab -\frac{DK}{2} \log (2 \pi) - \frac{1}{2} \log(|\Sigma_{\textbf{A}}|)   -\frac{1}{2}(\textbf{A} - \mu_{\textbf{A}})^T \Sigma_{\textbf{A}}^{-1}(\textbf{A} - \mu_{\textbf{A}})\\
+\tab \tab \tab \tab \tab + \sum_{d=1}^D a_d \log b_d + (-a_d - 1) \log\Psi_{dd} - \frac{b_d}{\Psi_{dd}} - \log \Gamma(a_d)\\
+\end{array}
+\]
+
+%Simplifying:
+%
+%\[
+%\begin{array}{l}
+%\log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) = -\frac{D}{2} \log (2 \pi)  -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \\
+%\tab \tab \tab \tab \tab + \sum_{i=1}^K (s_k+\alpha-1) \log \pi_k + (\beta - s_k) \log (1-\pi_k) - \log B(\alpha, \beta)\\
+%\tab \tab \tab \tab \tab -\frac{DK}{2} \log (2 \pi) - \frac{1}{2} \log(|\Sigma_{\textbf{A}}|)   -\frac{1}{2}\textbf{A}^T \Sigma_{\textbf{A}}^{-1}\textbf{A}\\
+%\tab \tab \tab \tab \tab + \sum_{d=1}^D a_d \log b_d + (-a_d - \frac{3}{2}) \log\Psi_{dd} - \frac{b_d}{\Psi_{dd}} - \log \Gamma(a_d)\\
+%\end{array}
+%\]
+
+
+
+For the Variational Bayes expectation step, we minimise $\textbf{KL}[q_{\texbf{s}}(\textbf{s} | \text{everything else}) \| P(\textbf{s} | \text{everything else})]$ by setting:
+
+\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q(\theta)}\]
+
+where $\theta$ denotes the parameters $\pi$, $\textbf{A}$, $\Psi$, $\eta$.
+
+Substituting the relevant terms:
+
+\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) + \sum_{k=1}^{K} s_k \log \pi_k + (1-s_k) \log (1-\pi_k)}\right\rangle_{q(\theta)}\]
+
+Simplifying:
+
+\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2}\left(\textbf{s}^T\textbf{A}^T\Psi^{-1}\textbf{As} - 2\textbf{s}^T\left(\textbf{A}^T\Psi^{-1} \textbf{x}  + 2\log\frac{\pi}{1-\pi}\right)\right)\right\rangle_{q(\theta)}\]
+
+By inspection, we can see:
+
+\[q_{\texbf{s}}(\textbf{s}) \propto \mathcal{N}(s | \mu_\textbf{s}^*, \Sigma_\textbf{s}^*)\]
+
+where
+
+\[\Sigma_\textbf{s}^* = \left\langle \left(\textbf{A}^T\Psi^{-1}\textbf{A}\right)^{-1}\right\rangle_{q(\theta)}\]
+
+and
+
+\[\mu_\textbf{s}^* = \left\langle \left(\textbf{A}^T\Psi^{-1}\textbf{A}\right)^{-1}\left(\textbf{A}^T\Psi^{-1} \textbf{x}  + 2\log\frac{\pi}{1-\pi}\right)\right\rangle_{q(\theta)}\]
+
+the E step updates.
+
+For the Variational Bayes maximisation step, we set:
+
+\[q_{\theta}(\theta) \propto P(\theta) \exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q(\textbf{s})}\]
+
+assuming the factorisation:
+
+\[q_{\theta}(\theta) = q_{\pi}(\pi)q_{\Psi}(\Psi)q_{\textbf{A}}(\textbf{A})\]
+
+we can calculate each factor independently.
+
+For $q_{\pi}(\pi)$:
+
+\[q_{\pi}(\pi) \propto P(\pi)\exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \pi}(\theta)}\]
+
+Substituting the appropriate terms:
+
+\[q_{\pi}(\pi) \propto \left(\prod_{k=1}^{K} \frac{\pi_k^{\alpha - 1}(1-\pi_k)^{\beta-1}}{B(\alpha, \beta)} \right)\exp \left\langle \sum_{i=1}^K s_k \log \pi_k + (1 - s_k) \log (1-\pi_k) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \pi}(\theta)}\]
+
+We see:
+
+\[q_{\pi}(\pi) \propto \prod_{k=1}^{K} \frac{\pi_k^{\alpha  + \left\langle s_k\right\rangle_{q_{s_k}} - 1}(1-\pi_k)^{\beta-\left\langle s_k\right\rangle_{q_{s_k}}}}{B(\alpha, \beta)}\]
+
+\[q_{\pi}(\pi) = \prod_{k=1}^{K}  Beta(\alpha + \left\langle s_k\right\rangle_{q_{s_k}} , \beta+(1-\left\langle s_k\right\rangle_{q_{s_k}}}))\]
+
+
+%Substituting the appropriate terms:
+%
+%\[q_{\pi}(\pi) \propto \left(\prod_{k=1}^{K} \frac{\pi_k^{\alpha - 1}(1-\pi_k)^{\beta-1}}{B(\alpha, \beta)} \right)\exp \left\langle \sum_{i=1}^K (s_k+\alpha-1) \log \pi_k + (\beta - s_k) \log (1-\pi_k) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \pi}(\theta)}\]
+%
+%We see:
+%
+%\[q_{\pi}(\pi) \propto \prod_{k=1}^{K} \frac{\pi_k^{2\alpha - 2 + \left\langle s_k\right\rangle_{q_{s_k}}}(1-\pi_k)^{2\beta-\left\langle s_k\right\rangle_{q_{s_k}}}}{B(\alpha, \beta)}\]
+%
+%\[q_{\pi}(\pi) = \prod_{k=1}^{K}  Beta(2\alpha -2 + \left\langle s_k\right\rangle_{q_{s_k}} , 2\beta+1-\left\langle s_k\right\rangle_{q_{s_k}}})\]
+
+For $q_{\Psi}(\Psi)$:
+
+\[q_{\Psi}(\Psi) \propto P(\Psi)\exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \Psi}(\theta)}\]
+
+Substituting the appropriate terms:
+
+\[
+q_{\Psi}(\Psi) \propto \left( \prod_{d=1}^D \frac{b_d^{a_d}}{\Gamma(a_d)}\Psi_{dd}^{-a_d-1}\exp(-\frac{b_d}{\Psi_{dd}}) \right)\exp \left\langle  - \frac{1}{2} \sum_{d=1}^{D}\log\Psi_{dd}   -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \Psi(\theta)}}
+\]
+
+We see:
+
+\[
+q_{\Psi}(\Psi) \propto  \prod_{d=1}^D \frac{b_d^{a_d}}{\Gamma(a_d)}\Psi_{dd}^{-(a_d+\frac{1}{2})-1}\exp\left(-\frac{b_d+\frac{1}{2} \left\langle (x_d-\textbf{A}_d\textbf{s})^2 \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}_d}(\textbf{A}_d)}}{\Psi_{dd}}\right) }
+\]
+
+where $\textbf{A}_d \in \mathbb{R}^{1 \times K}$ is the $d^{th}$ row of $\textbf{A}$.
+
+Thus,
+
+\[
+q_{\Psi}(\Psi) = \prod_{d=1}^D  InvGamma\left(\Psi_{dd} \left| a_d+\frac{1}{2}, b_d+\frac{1}{2} \left\langle (x_d-\textbf{A}_d\textbf{s})^2 \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}_d}(\textbf{A}_d)}\right)
+\]
+
+For $q_{\textbf{A}}(\textbf{A})$:
+
+\[q_{\textbf{A}}(\textbf{A})  \propto P(\textbf{A})\exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}}(\theta)}\]
+
+
+\[q_{\textbf{A}}(\textbf{A}) \propto \exp\left(-\frac{1}{2}(\textbf{A} - \mu_{\textbf{A}})^T \Sigma_{\textbf{A}}^{-1}(\textbf{A} - \mu_{\textbf{A}})\right) \exp \left\langle -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}}(\theta)}\]
+
+\[q_{\textbf{A}}(\textbf{A}) \propto \exp\left(-\frac{1}{2}(\textbf{A}^T \Sigma_{\textbf{A}}^{-1}\textbf{A} -2 \textbf{A}^T \Sigma_{\textbf{A}}^{-1}  \mu_{\textbf{A}})\right) \exp \left\langle -\frac{1}{2}(\textbf{s}^T\textbf{A}^T \Psi^{-1} \textbf{A}\textbf{s} - 2 \textbf{s}^T\textbf{A}^T \Psi^{-1} \textbf{x}) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}}(\theta)}\]
 
 \newpage
 \section*{Question 5}
@@ -1018,6 +1163,12 @@ The summation of the natural parameters of the singleton factor for node $i$ wit
 This leads to a loopy BP algorithm because the nodes are fully connected (i.e. every node is the neighbour of all other nodes). Thus, we cannot simply move from one end of the graph to the other like BP for tree structured graphs.
 
 \subsection*{(d)}
+
+We can use automatic relevance determination (ARD) as a hyperparameter method to select relevant features
+
+Place prior on $\sigma^2$ and optimise with respect to the distributions would cause some to diverge and only relevant latent dimensions will remain.
+This gives us a value for $K$, the number of latent factors that haven't diverged.
+
 
 \newpage
 \section*{Appendix 1: constants.py}
