@@ -109,22 +109,26 @@ if __name__ == "__main__":
         os.makedirs(Q3_OUTPUT_FOLDER)
     number_of_images = 1000
     x = generate_images(n=number_of_images)
+    k = 8
+    em_iterations = 1000
+    e_maximum_steps = 200
+    e_convergence_criterion = 0
+
     binary_latent_factor_model = q3.e_and_f(
         x=x,
-        k=8,
-        em_iterations=1000,
-        e_maximum_steps=200,
-        e_convergence_criterion=0,
+        k=k,
+        em_iterations=em_iterations,
+        e_maximum_steps=e_maximum_steps,
+        e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q3_OUTPUT_FOLDER, "f"),
     )
-
     q3.g(
         x=x[:1, :],
         binary_latent_factor_model=binary_latent_factor_model,
         sigmas=[1, 2, 3],
-        k=8,
-        em_iterations=1000,
-        e_maximum_steps=200,
-        e_convergence_criterion=0,
+        k=k,
+        em_iterations=em_iterations,
+        e_maximum_steps=e_maximum_steps,
+        e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q3_OUTPUT_FOLDER, "g"),
     )

@@ -1,5 +1,12 @@
 import numpy as np
-from src.models.mean_field_learning import learn_binary_factors, BinaryLatentFactorModel, compute_free_energy, init_mean_field_approximation, variational_expectation_step, is_converge
+from src.models.mean_field_learning import (
+    learn_binary_factors,
+    BinaryLatentFactorModel,
+    compute_free_energy,
+    init_mean_field_approximation,
+    variational_expectation_step,
+    is_converge,
+)
 from src.generate_images import generate_images
 import matplotlib.pyplot as plt
 from typing import List
@@ -53,7 +60,10 @@ def g(
             compute_free_energy(x, binary_latent_factor_model, mean_field_approximation)
         ]
         for _ in range(em_iterations):
-            new_mean_field_approximation, new_free_energy = variational_expectation_step(
+            (
+                new_mean_field_approximation,
+                new_free_energy,
+            ) = variational_expectation_step(
                 x=x,
                 binary_latent_factor_model=binary_latent_factor_model,
                 mean_field_approximation=mean_field_approximation,
@@ -69,7 +79,11 @@ def g(
         free_energies.append(free_energy)
 
     for i, free_energy in enumerate(free_energies):
-        plt.plot(np.arange(len(free_energy)-1), np.log(np.diff(np.array(free_energy))), label=f"sigma={sigmas[i]}")
+        plt.plot(
+            np.arange(len(free_energy) - 1),
+            np.log(np.diff(np.array(free_energy))),
+            label=f"sigma={sigmas[i]}",
+        )
     plt.title(f"log(F(t)-F(t-1)")
     plt.xlabel("t (Variational E steps)")
     plt.ylabel("log(F(t)-F(t-1)")

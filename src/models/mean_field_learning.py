@@ -261,9 +261,9 @@ def variational_expectation_step(
     :param convergence_criterion: early stopping if change in free energy <  convergence_criterion
     :return: mean field approximation
     """
-    free_energy = [compute_free_energy(
-        x, binary_latent_factor_model, mean_field_approximation
-    )]
+    free_energy = [
+        compute_free_energy(x, binary_latent_factor_model, mean_field_approximation)
+    ]
     for i in range(max_steps):
         for latent_factor in range(binary_latent_factor_model.k):
             mean_field_approximation.lambda_matrix[
@@ -271,9 +271,9 @@ def variational_expectation_step(
             ] = partial_expectation_step(
                 x, binary_latent_factor_model, mean_field_approximation, latent_factor
             )
-        free_energy.append(compute_free_energy(
-            x, binary_latent_factor_model, mean_field_approximation
-        ))
+        free_energy.append(
+            compute_free_energy(x, binary_latent_factor_model, mean_field_approximation)
+        )
         if free_energy[-1] - free_energy[-2] <= convergence_criterion:
             break
     return mean_field_approximation, free_energy
@@ -301,7 +301,7 @@ def is_converge(free_energies, new_mean_field_approximation, mean_field_approxim
     return (abs(free_energies[-1] - free_energies[-2]) == 0) and np.linalg.norm(
         mean_field_approximation.lambda_matrix
         - new_mean_field_approximation.lambda_matrix
-    ) ==0
+    ) == 0
 
 
 def learn_binary_factors(

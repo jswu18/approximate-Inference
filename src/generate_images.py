@@ -37,4 +37,6 @@ def generate_images(n: int = 400, seed: int = DEFAULT_SEED, sigma: float = 0.1):
 
     # Generate Data - The Data is stored in Y
 
-    return np.dot(s, mut) + np.random.randn(n, d) * sigma  # some Gaussian noise is added
+    return (
+        np.dot(s, mut) + np.random.randn(n, d) * sigma
+    )  # some Gaussian noise is added
