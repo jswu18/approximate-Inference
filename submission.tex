@@ -916,7 +916,7 @@ where $C$ are all other terms without $s_i$.
 
 Knowing that $s_i^2= s_i$:
 
-\[\log p(\textbf{s}, \textbf{x})  =    \sum_{i=1}^{K} \left(\left(\frac{\textbf{x}^T \mu_i}{\sigma^2} +\log\frac{\pi_i}{1-\pi_i} - \frac{\mu_i^T \mu_j}{2\sigma^2} \right) s_i\right) + \sum_{i=1}^{K}\sum_{j=1}^{i-1}\left( \frac{ - \mu_i^T \mu_j}{\sigma^2} s_i s_j \right) + C\]
+\[\log p(\textbf{s}, \textbf{x})  =    \sum_{i=1}^{K} \left(\left(\frac{\textbf{x}^T \mu_i}{\sigma^2} +\log\frac{\pi_i}{1-\pi_i} - \frac{\mu_i^T \mu_i}{2\sigma^2} \right) s_i\right) + \sum_{i=1}^{K}\sum_{j=1}^{i-1}\left( \frac{ - \mu_i^T \mu_j}{\sigma^2} s_i s_j \right) + C\]
 
 
 Thus:
@@ -927,13 +927,13 @@ Thus:
 
 where the factors are defined:
 
-\[\log f_i(s_i) = \left(\frac{\textbf{x}^T \mu_i}{\sigma^2} +\log\frac{\pi_i}{1-\pi_i} - \frac{\mu_i^T \mu_j}{2\sigma^2} \right) s_i\]
+\[\log f_i(s_i) = \left(\frac{\textbf{x}^T \mu_i}{\sigma^2} +\log\frac{\pi_i}{1-\pi_i} - \frac{\mu_i^T \mu_i}{2\sigma^2} \right) s_i\]
 
 and
 
 \[\log g_{ij}(s_i, s_j) = \frac{- \mu_i^T \mu_j}{\sigma^2} s_i s_j\]
 
-as required. Note that $C$ can simply be absorbed into any one of these factors.
+as required.
 
 The Boltzmann Machine can be defined:
 
@@ -947,7 +947,7 @@ From our factorisation, we can see that $p(\textbf{s}, \textbf{x})$ is a Boltzma
 
 and
 
-\[b_i = -\left(\frac{\textbf{x}^T \mu_i}{\sigma^2} +\log\frac{\pi_i}{1-\pi_i} - \frac{\mu_i^T \mu_j}{2\sigma^2}\right)\]
+\[b_i = -\left(\frac{\textbf{x}^T \mu_i}{\sigma^2} +\log\frac{\pi_i}{1-\pi_i} - \frac{\mu_i^T \mu_i}{2\sigma^2}\right)\]
 
 and
 
@@ -967,38 +967,73 @@ Thus,
 
 For $g_{ij}(s_i, s_j)$, we will choose a product of Bernoulli's approximation:
 
-\[\tilde{g}_{ij}(s_i, s_j) = \left( \theta_i^{s_i} + (1-\theta_i)^{1-s_i}\right)\left( \theta_j^{s_j} + (1-\theta_j)^{1-s_j}\right)\]
+\[\tilde{g}_{ij}(s_i, s_j) = \tilde{g}_{ij, \neg s_j}(s_i)\tilde{g}_{ij, \neg s_i}(s_j)\]
+
+where
+
+\[\tilde{g}_{ij, \neg s_j}(s_i) = (\theta_{ji})^{s_i} + (1-\theta_{ji})^{1-s_i}\]
+
+and
+
+\[\tilde{g}_{ij, \neg s_i}(s_j) = (\theta_{ij})^{s_j} + (1-\theta_{ij})^{1-s_j}\]
 
 Thus,
 
-\[\log \tilde{g}_{ij}(s_i, s_j) \propto \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j\]
+\[\log \tilde{g}_{ij}(s_i, s_j) \propto \log \left(\frac{\theta_{ji}}{1-\theta_{ji}} \right) s_i + \log \left(\frac{\theta_{ij}}{1-\theta_{ij}} \right) s_j\]
 
-To derive the a message passing scheme, we first define:
+To derive the a message passing scheme, we first define the incoming message to node $i$ from the singleton factor:
 
-\[q(\textbf{s}) = \prod_{i'=1}^{K} \left( \tilde{f}_{i'}(s_{i'})
-\prod_{j\in ne(i)}^{K} \mathcal{M}_{j \rightarrow i}
-\right)
-\]
+\[\mathcal{M}_{i}(s_i) = \tilde{f}_i(s_i)\]
 
-where $ne(i)$ are indices of neighbouring nodes of node $i$ and $\mathcal{M}_{j \rightarrow i}$ is the message from node $j$ to $i$.
+and the message incoming message to node $i$ from node $j$:
 
-Thus, the cavity distributions:
+%\[\mathcal{M}_{j \rightarrow i} = \sum_{\substack{s_m \in \{0, 1\} \\ m \in \{1, ..., j-1, j+1,... K\}}} \tilde{f}_j(s_j) \prod_{k\in ne(j), k\neq i}^{K}} g_{kj}(s_k, s_j)\]
 
-\[q_{\neg \tilde{f}_i(s_i)}(\textbf{s}) =
-\prod_{j\in ne(i)}^{K} \mathcal{M}_{j \rightarrow i}
+%\[\mathcal{M}_{j \rightarrow i}(s_i) = \sum_{s_1 \in \{0, 1\} } \cdots \sum_{s_{i-1} \in \{0, 1\} } \sum_{s_{i+1} \in \{0, 1\} } \cdots \sum_{s_1 \in \{0, 1\} } \tilde{f}_j(s_j) \tilde{g}_{ji}(s_j, s_i) \prod_{k\in ne(j), k\neq i}^{K}} \tilde{g}_{kj}(s_k, s_j)\]
+
+
+\[\mathcal{M}_{j \rightarrow i}(s_i) = \sum_{s_1 \in \{0, 1\} } \cdots \sum_{s_{i-1} \in \{0, 1\} } \sum_{s_{i+1} \in \{0, 1\} } \cdots \sum_{s_1 \in \{0, 1\} } \tilde{f}_j(s_j) \tilde{g}_{ji}(s_j, s_i) \prod_{k\in ne(j), k\neq i}^{K}} \mathcal{M}_{k \rightarrow j}(s_j)\]
+
+where $ne(j)$ are indices of neighbouring nodes of node $j$.
+
+Because $\tilde{g}_{ji}(s_j, s_i)$ is a product:
+
+\[\mathcal{M}_{j \rightarrow i}(s_i) = \tilde{g}_{ji, \neg s_j}(s_i) \sum_{s_1 \in \{0, 1\} } \cdots \sum_{s_{i-1} \in \{0, 1\} } \sum_{s_{i+1} \in \{0, 1\} } \cdots \sum_{s_1 \in \{0, 1\} } \tilde{f}_j(s_j) \tilde{g}_{ji, \neg s_i}(s_j) \prod_{k\in ne(j), k\neq i}^{K}} \mathcal{M}_{k \rightarrow j}(s_j)\]
+
+Simplifying:
+
+\[\mathcal{M}_{j \rightarrow i}(s_i) = \tilde{g}_{ji, \neg s_j}(s_i)\]
+
+and,
+
+\[\mathcal{M}_{j \rightarrow i}(s_i) \propto \exp\left(\log\left(\frac{\theta_{ji}}{1-\theta_{ji}} \right) s_i\right)\]
+
+
+%\[\mathcal{M}_{j \rightarrow i}(s_i) = \tilde{g}_{ji, \neg s_j}(s_i)\]
+
+%\[\mathcal{M}_{j \rightarrow i} = \tilde{f}_j(s_j) \prod_{k\in ne(j), k\neq i}^{K}}\tilde{g}_{kj, \neg s_k}(s_j)  \sum_{\substack{s_m \in \{0, 1\} \\ m \in \{1, ..., j-1, j+1,... K\}}} \prod_{k\in ne(j), k\neq i}^{K}} \tilde{g}_{kj, \neg s_j}(s_k)\]
+
+%\[\mathcal{M}_{j \rightarrow i}(s_j) = \tilde{f}_j(s_j) \prod_{k\in ne(j), k\neq i}^{K}}\tilde{g}_{kj, \neg s_k}(s_j) \prod_{k\in ne(j), k\neq i}^{K}} \left(\sum_{s_k \in \{0, 1\} } \tilde{g}_{kj, \neg s_j}(s_k) \right)\]
+%
+%\[\mathcal{M}_{j \rightarrow i}(s_j) = \tilde{f}_j(s_j) \prod_{k\in ne(j), k\neq i}^{K}}\tilde{g}_{kj, \neg s_k}(s_j)\]
+
+Thus, the cavity distributions are:
+
+\[q_{\neg \tilde{f}_i(s_i)}(s_i) =
+\prod_{j\in ne(i)}^{K} \mathcal{M}_{j \rightarrow i}(s_i)
 \]
 
 and
 
-\[q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) = \left( \tilde{f}_{i}(s_{i}) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i}
-\right)\left( \tilde{f}_{j}(s_{j}) \prod_{k\in ne(j), k\neq j}^{K} \mathcal{M}_{k \rightarrow j}
+\[q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) = \left( \mathcal{M}_{i}(s_i) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i}(s_i)
+\right)\left( \mathcal{M}_{j}(s_j) \prod_{k\in ne(j), k\neq i}^{K} \mathcal{M}_{k \rightarrow j}(s_j)
 \right)
 \]
 
 For $\tilde{f}_{i}(s_{i})$, we do not need to make an approximation step.
 This is because we are minimising:
 
-\[\tilde{f}_{i}(s_{i}) = \arg \min_{\tilde{f}_{i}(s_{i})} \textbf{KL} \left[ f_{i}(s_{i}) q_{\neg \tilde{f}_i(s_i)}(\textbf{s}) \| \tilde{f}_{i}(s_{i}) q_{\neg \tilde{f}_i(s_i)}(\textbf{s}) \right]\]
+\[\tilde{f}_{i}(s_{i}) = \arg \min_{\tilde{f}_{i}(s_{i})} \textbf{KL} \left[ f_{i}(s_{i}) q_{\neg \tilde{f}_i(s_i)}(s_i) \| \tilde{f}_{i}(s_{i}) q_{\neg \tilde{f}_i(s_i)}(s_i) \right]\]
 
 We know that the factor $\log f_i(s_i)$ is a Bernoulli of the form $b_i s_i$. Because our approximation for this site is also Bernoulli, we can simply solve for $\lambda_i$ in $\log \tilde{f}_{i}(s_{i})$:
 
@@ -1011,28 +1046,33 @@ We know that the factor $\log f_i(s_i)$ is a Bernoulli of the form $b_i s_i$. Be
 
 On the other hand, for $\tilde{g}_{ij}(s_i, s_j)$, we will approximate with:
 
-\[\tilde{g}_{ij}(s_i, s_j) = \arg \min_{\tilde{f}_{i}(s_{i})} \textbf{KL} \left[ g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \| \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \right]\]
+\[\tilde{g}_{ij}(s_i, s_j) = \arg \min_{\tilde{g}_{ij}(s_i, s_j)} \textbf{KL} \left[ g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \left\| \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \right]\]
 
-Defining the natural parameters $\eta_{ij}$ and $\eta_{ji}$ for the messages:
+We can define natural parameters $\eta_{i, \neg s_j}$ and $\eta_{j, \neg s_i}$ for $q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)$ such that:
 
-\[\mathcal{M}_{i \rightarrow j} = \exp(\eta_{ij} s_i) = \tilde{f}_{i}(s_{i}) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i} \]
+\[\mathcal{M}_{i}(s_i) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i}(s_i) \propto \exp(\eta_{i, \neg s_j} s_i)\]
 
-\[\mathcal{M}_{j \rightarrow i}  = \exp(\eta_{ji} s_j) = \tilde{f}_{j}(s_{j}) \prod_{k\in ne(j), k\neq i}^{K} \mathcal{M}_{k \rightarrow j}\]
+\[ \mathcal{M}_{j}(s_j) \prod_{k\in ne(j), k\neq j}^{K} \mathcal{M}_{k \rightarrow j}(s_j) \propto \exp(\eta_{j, \neg s_i} s_j)\]
 
-Note that because $\tilde{g}_{ij}(s_i, s_j)$ is the product of two Bernoulli distributions, updates to this site approximation involves updating to the natural parameters:
+where:
 
-\[ \phi_{ij}(\theta) = \begin{bmatrix} \theta_i \\ \theta_j\right] \end{bmatrix}\]
+\[\eta_{i, \neg s_j} =  \log \left(\frac{\lambda_i}{1-\lambda_i}\right) + \sum_{k\in ne(j), k\neq j}^{K} \log\left(\frac{\theta_{kj}}{1-\theta_{kj}} \right)\]
 
-the mean of $s_i$ and $s_j$ respectively.
+and
+
+\[\eta_{j, \neg s_i} =  \log \left(\frac{\lambda_j}{1-\lambda_j}\right) + \sum_{k\in ne(i), k\neq i}^{K} \log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)\]
+
+
+Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, updates to this site approximation involves updating to the natural parameters $\theta_i$ and $\theta_j$, the means of $s_i$ and $s_j$ respectively.
 
 We can write:
 %\[\log \tilde{g}_{ij}q_{\neg \tilde{g}_{ij}} \propto \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j + \sum_{i=1}^{K}  \log \left(\frac{\lambda_i}{1-\lambda_i} \right) +  \sum_{i'=1}^{K}\sum_{\substack{j'=1 \\ i', j' \neq i, j}}^{i'-1}  \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j\]
 
-\[\log \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \propto \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j + \eta_{ij} s_i + \eta_{ji} s_j\]
+\[\log \tilde{g}_{ij}(s_i, s_j)q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto \log \left(\frac{\theta_{ji}}{1-\theta_{ji}} \right) s_i + \log \left(\frac{\theta_{ij}}{1-\theta_{ij}} \right) s_j + \eta_{i, \neg s_j} s_i + \eta_{j, \neg s_i} s_j\]
 
 Simplifying:
 
-\[\log \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \propto \log \left(\frac{\theta_i}{1-\theta_i} + \eta_{ij} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} + \eta_{ji} \right) s_j \]
+\[\log \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto \log \left(\frac{\theta_{ji}}{1-\theta_{ji}} + \eta_{i, \neg s_j} \right) s_i + \log \left(\frac{\theta_{ij}}{1-\theta_{ij}} + \eta_{j, \neg s_i} \right) s_j \]
 
 %\[
 %\begin{array}{l}
@@ -1055,16 +1095,16 @@ Simplifying:
 
 Thus, the first moments:
 
-\[\mathbb{E}_{s_i}[\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s})] = \frac{1}{1+\exp{\left(-\left(\theta_i} + \eta_{ij}\right)}\right)}\]
+\[\mathbb{E}_{s_i}\left[\sum_{s_j \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{1}{1+\exp{\left(-\left(\theta_{ji} + \eta_{i, \neg s_j} \right)}\right)}\]
 
 and
 
-\[\mathbb{E}_{s_j}[\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s})] = \frac{1}{1+\exp{\left(-\left(\theta_j + \eta_{ji}\right)}\right)}\]
+\[\mathbb{E}_{s_j}\left[\sum_{s_i \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{1}{1+\exp{\left(-\left(\theta_{ij} + \eta_{j, \neg s_i} \right)}\right)}\]
 
 Moreover:
 
-\[\log g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \propto W_{ij} s_i s_j
- + \eta_{ij} s_i + \eta_{ji} s_j\]
+\[\log g_{ij}(s_i, s_j) qq_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto W_{ij} s_i s_j
+ + \eta_{i, \neg s_j} s_i + \eta_{j, \neg s_i} s_j\]
 
 %\[
 %\begin{array}{l}
@@ -1098,45 +1138,46 @@ Moreover:
 %
 %\[B_{s_j} = (K-2)\log \left(\frac{\theta_j}{1-\theta_j} \right) + \log \left(\frac{\lambda_j}{1-\lambda_j} \right)\]
 
-To derive the first moment for $ g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s})$ with respect to $s_i$, we first marginalise out $s_j$:
+To derive the first moment for $ g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)$ with respect to $s_i$, we first marginalise out $s_j$:
 
-\[ \sum_{s_j \in \{0, 1\}} g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \propto \exp\left( W_{ij} s_i + \eta_{ij} s_i + \eta_{ji}\right) +  \exp\left(\eta_{ij} s_i \right)
+\[ \sum_{s_j \in \{0, 1\}} g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \propto \exp\left( W_{ij} s_i + \eta_{i, \neg s_j} s_i + \eta_{j, \neg s_i}\right) +  \exp\left(\eta_{i, \neg s_j} s_i \right)
 \]
 
 Thus, the first moment:
 
-\[\mathbb{E}_{s_i}[g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s})] = \frac{\exp\left( W_{ij} + \eta_{ij} + \eta_{ji}\right) +  \exp\left(\eta_{ij} \right)}{[\exp\left( W_{ij} + \eta_{ij} + \eta_{ji}\right) +  \exp\left(\eta_{ij} \right)]+[\exp\left( \eta_{ji}\right) +  1]}\]
+\[\mathbb{E}_{s_i}\left[\sum_{s_j \in \{0, 1\}}g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{\exp\left( W_{ij} + \eta_{i, \neg s_j}  + \eta_{j, \neg s_i}\right) +  \exp\left(\eta_{i, \neg s_j}\right)}{\left[\exp\left( W_{ij} + \eta_{i, \neg s_j}  + \eta_{j, \neg s_i}\right) +  \exp\left(\eta_{i, \neg s_j}\right)\right]+\left[\exp\left( \eta_{j, \neg s_i}\right) +  1\right]}\]
 
 Simplifying:
 
-\[\mathbb{E}_{s_i}[g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s})] = \frac{\left( \exp\left( W_{ij} + \eta_{ji}\right) +  1 \right)\exp\left(\eta_{ij} \right)}{[\left( \exp\left( W_{ij} + \eta_{ji}\right) +  1 \right)\exp\left(\eta_{ij} \right)]+[\exp\left( \eta_{ji}\right) +  1]}\]
+\[\mathbb{E}_{s_i}\left[\sum_{s_j \in \{0, 1\}}g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  }{\left[\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  \right]+\left[\exp\left( \eta_{j, \neg s_i}\right) +  1\right]}\]
 
-similarly:
+Similarly:
 
-\[\mathbb{E}_{s_j}[g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s})] = \frac{\left( \exp\left( W_{ij} + \eta_{ij}\right) +  1 \right)\exp\left(\eta_{ji} \right)}{[\left( \exp\left( W_{ij} + \eta_{ij}\right) +  1 \right)\exp\left(\eta_{ji} \right)]+[\exp\left( \eta_{ij}\right) +  1]}\]
+\[\mathbb{E}_{s_j}\left[\sum_{s_i \in \{0, 1\}}g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{\exp\left(\eta_{j, \neg s_i}\right)\left(\exp\left( W_{ij}  + \eta_{i, \neg s_j}\right) + 1\right)  }{\left[\exp\left(\eta_{j, \neg s_i}\right)\left(\exp\left( W_{ij}  + \eta_{i, \neg s_j}\right) + 1\right) \right]+\left[\exp\left( \eta_{i, \neg s_j}\right) +  1\right]}\]
+
 
 By setting:
 
-\[\mathbb{E}_{s_i}[\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s})] = \mathbb{E}_{s_i}[g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s})]\]
+\[\mathbb{E}_{s_i}\left[\sum_{s_j \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \mathbb{E}_{s_i}\left[\sum_{s_j \in \{0, 1\}}g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right]\]
 
 
 and
 
-\[\mathbb{E}_{s_j}[\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s})] = \mathbb{E}_{s_j}[g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s})]\]
+\[\mathbb{E}_{s_j}\left[\sum_{s_i \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \mathbb{E}_{s_j}\left[\sum_{s_i \in \{0, 1\}}g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right]\]
 
 we can solve for the parameters of $\tilde{g}_{ij}(s_i, s_j)$ with moment matching:
 
-\[\frac{1}{1+\exp{\left(-\left(\theta_i} + \eta_{ij}\right)}\right)}} = \frac{\left( \exp\left( W_{ij} + \eta_{ji}\right) +  1 \right)\exp\left(\eta_{ij} \right)}{[\left( \exp\left( W_{ij} + \eta_{ji}\right) +  1 \right)\exp\left(\eta_{ij} \right)]+[\exp\left( \eta_{ji}\right) +  1]}\]
+\[\frac{1}{1+\exp{\left(-\left(\theta_{ji} + \eta_{i, \neg s_j} \right)}\right)}} = \frac{\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  }{\left[\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  \right]+\left[\exp\left( \eta_{j, \neg s_i}\right) +  1\right]}\]
 
-\[\exp\left( \eta_{ji}\right) +  1 =\exp{\left(-\left(\theta_i + \eta_{ij}\right)}\right)}\left( \exp\left( W_{ij} + \eta_{ji}\right) +  1 \right)\exp\left(\eta_{ij} \right)\]
+\[\exp\left( \eta_{j, \neg s_i}\right) +  1=\exp{\left(-\left(\theta_{ji} + \eta_{i, \neg s_j} \right)}\right)}\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)\]
 
-\[\frac{\exp\left( \eta_{ji}\right) +  1}{ \exp\left( W_{ij} + \eta_{ji}\right) +  1 } =\exp{\left(-\theta_i\right)}\]
+\[\frac{\exp\left( \eta_{j, \neg s_i}\right) +  1}{ \exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1} =\exp{\left(-\theta_{ji}\right)}\]
 
-\[\theta_i = \log \left( \frac{ 1+\exp\left( W_{ij} + \eta_{ji}\right) }{1+\exp\left( \eta_{ji}\right)} \right)\]
+\[\theta_{ji} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right)}{1+\exp\left( \eta_{j, \neg s_i}\right)} \right)\]
 
 Similarly:
 
-\[\theta_j = \log \left( \frac{ 1+ \exp\left( W_{ij} + \eta_{ij}\right)  }{1+\exp\left( \eta_{ij}\right)} \right)\]
+\[\theta_{ij} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right)}{1+\exp\left( \eta_{i, \neg s_j}\right)} \right)\]
 
 \newpage
 
