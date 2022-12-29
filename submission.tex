@@ -981,6 +981,11 @@ Thus,
 
 \[\log \tilde{g}_{ij}(s_i, s_j) \propto \log \left(\frac{\theta_{ji}}{1-\theta_{ji}} \right) s_i + \log \left(\frac{\theta_{ij}}{1-\theta_{ij}} \right) s_j\]
 
+we can define $\xi_{ji} = \log \left(\frac{\theta_{ji}}{1-\theta_{ji}} \right)$ and $\xi_{ij} = \log \left(\frac{\theta_{ij}}{1-\theta_{ij}} \right)$:
+
+\[\log \tilde{g}_{ij}(s_i, s_j) \propto \xi_{ji} s_i + \xi_{ij} s_j\]
+
+
 To derive the a message passing scheme, we first define the incoming message to node $i$ from the singleton factor:
 
 \[\mathcal{M}_{i}(s_i) = \tilde{f}_i(s_i)\]
@@ -1006,7 +1011,7 @@ Simplifying:
 
 and,
 
-\[\mathcal{M}_{j \rightarrow i}(s_i) \propto \exp\left(\log\left(\frac{\theta_{ji}}{1-\theta_{ji}} \right) s_i\right)\]
+\[\mathcal{M}_{j \rightarrow i}(s_i) \propto \exp\left(\xi_{ji} s_i\right)\]
 
 
 %\[\mathcal{M}_{j \rightarrow i}(s_i) = \tilde{g}_{ji, \neg s_j}(s_i)\]
@@ -1058,25 +1063,25 @@ where:
 
 \[\eta_{i, \neg s_j} =  \log \left(\frac{\lambda_i}{1-\lambda_i}\right) + \sum_{k\in ne(j), k\neq j}^{K} \log\left(\frac{\theta_{kj}}{1-\theta_{kj}} \right)\]
 
-Knowing $\log \left(\frac{\lambda_i}{1-\lambda_i} \right)s_i = b_i s_i$:
+Knowing $\log \left(\frac{\lambda_i}{1-\lambda_i} \right)s_i = b_i s_i$ and $\xi_{kj} = \log\left(\frac{\theta_{kj}}{1-\theta_{kj}} \right)$:
 
-\[\eta_{i, \neg s_j} =  b_i + \sum_{k\in ne(j), k\neq j}^{K} \log\left(\frac{\theta_{kj}}{1-\theta_{kj}} \right)\]
+\[\eta_{i, \neg s_j} =  b_i + \sum_{k\in ne(j), k\neq j}^{K} \xi_{kj}\]
 
 and
 
-\[\eta_{j, \neg s_i} =  b_j + \sum_{k\in ne(i), k\neq i}^{K} \log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)\]
+\[\eta_{j, \neg s_i} =  b_j + \sum_{k\in ne(i), k\neq i}^{K} \xi_{ki}\]
 
 
-Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, updates to this site approximation involves updating to the natural parameters $\theta_i$ and $\theta_j$, the means of $s_i$ and $s_j$ respectively.
+Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, updates to this site approximation involves updating the  parameters $\xi_{ij}$ and $\xi_{ji}$, for $s_i$ and $s_j$ respectively.
 
 We can write:
 %\[\log \tilde{g}_{ij}q_{\neg \tilde{g}_{ij}} \propto \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j + \sum_{i=1}^{K}  \log \left(\frac{\lambda_i}{1-\lambda_i} \right) +  \sum_{i'=1}^{K}\sum_{\substack{j'=1 \\ i', j' \neq i, j}}^{i'-1}  \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j\]
 
-\[\log \tilde{g}_{ij}(s_i, s_j)q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto \log \left(\frac{\theta_{ji}}{1-\theta_{ji}} \right) s_i + \log \left(\frac{\theta_{ij}}{1-\theta_{ij}} \right) s_j + \eta_{i, \neg s_j} s_i + \eta_{j, \neg s_i} s_j\]
+\[\log \tilde{g}_{ij}(s_i, s_j)q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto \xi_{ji} s_i + \xi_{ij} s_j + \eta_{i, \neg s_j} s_i + \eta_{j, \neg s_i} s_j\]
 
 Simplifying:
 
-\[\log \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto \log \left(\frac{\theta_{ji}}{1-\theta_{ji}} + \eta_{i, \neg s_j} \right) s_i + \log \left(\frac{\theta_{ij}}{1-\theta_{ij}} + \eta_{j, \neg s_i} \right) s_j \]
+\[\log \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto \left(\xi_{ji}+ \eta_{i, \neg s_j} \right) s_i + \left(\xi_{ij} + \eta_{j, \neg s_i} \right) s_j \]
 
 %\[
 %\begin{array}{l}
@@ -1099,11 +1104,11 @@ Simplifying:
 
 Thus, the first moments:
 
-\[\mathbb{E}_{s_i}\left[\sum_{s_j \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{1}{1+\exp{\left(-\left(\theta_{ji} + \eta_{i, \neg s_j} \right)}\right)}\]
+\[\mathbb{E}_{s_i}\left[\sum_{s_j \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{1}{1+\exp{\left(-\left(\xi_{ji} + \eta_{i, \neg s_j} \right)}\right)}\]
 
 and
 
-\[\mathbb{E}_{s_j}\left[\sum_{s_i \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{1}{1+\exp{\left(-\left(\theta_{ij} + \eta_{j, \neg s_i} \right)}\right)}\]
+\[\mathbb{E}_{s_j}\left[\sum_{s_i \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{1}{1+\exp{\left(-\left(\xi_{ij} + \eta_{j, \neg s_i} \right)}\right)}\]
 
 Moreover:
 
@@ -1171,17 +1176,21 @@ and
 
 we can solve for the parameters of $\tilde{g}_{ij}(s_i, s_j)$ with moment matching:
 
-\[\frac{1}{1+\exp{\left(-\left(\theta_{ji} + \eta_{i, \neg s_j} \right)}\right)}} = \frac{\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  }{\left[\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  \right]+\left[\exp\left( \eta_{j, \neg s_i}\right) +  1\right]}\]
+\[\frac{1}{1+\exp{\left(-\left(\xi_{ji} + \eta_{i, \neg s_j} \right)}\right)}} = \frac{\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  }{\left[\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  \right]+\left[\exp\left( \eta_{j, \neg s_i}\right) +  1\right]}\]
 
-\[\exp\left( \eta_{j, \neg s_i}\right) +  1=\exp{\left(-\left(\theta_{ji} + \eta_{i, \neg s_j} \right)}\right)}\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)\]
+Simplifying:
 
-\[\frac{\exp\left( \eta_{j, \neg s_i}\right) +  1}{ \exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1} =\exp{\left(-\theta_{ji}\right)}\]
+\[\exp\left( \eta_{j, \neg s_i}\right) +  1=\exp{\left(-\left(\xi_{ji} + \eta_{i, \neg s_j} \right)}\right)}\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)\]
 
-\[\theta_{ji} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right)}{1+\exp\left( \eta_{j, \neg s_i}\right)} \right)\]
+\[\frac{\exp\left( \eta_{j, \neg s_i}\right) +  1}{ \exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1} =\exp{\left(-\xi_{ji}\right)}\]
+
+Our parameter update:
+
+\[\xi_{ji} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right)}{1+\exp\left( \eta_{j, \neg s_i}\right)} \right)\]
 
 Similarly:
 
-\[\theta_{ij} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right)}{1+\exp\left( \eta_{i, \neg s_j}\right)} \right)\]
+\[\xi_{ij} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right)}{1+\exp\left( \eta_{i, \neg s_j}\right)} \right)\]
 
 \newpage
 
