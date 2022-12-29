@@ -1058,9 +1058,13 @@ where:
 
 \[\eta_{i, \neg s_j} =  \log \left(\frac{\lambda_i}{1-\lambda_i}\right) + \sum_{k\in ne(j), k\neq j}^{K} \log\left(\frac{\theta_{kj}}{1-\theta_{kj}} \right)\]
 
+Knowing $\log \left(\frac{\lambda_i}{1-\lambda_i} \right)s_i = b_i s_i$:
+
+\[\eta_{i, \neg s_j} =  b_i + \sum_{k\in ne(j), k\neq j}^{K} \log\left(\frac{\theta_{kj}}{1-\theta_{kj}} \right)\]
+
 and
 
-\[\eta_{j, \neg s_i} =  \log \left(\frac{\lambda_j}{1-\lambda_j}\right) + \sum_{k\in ne(i), k\neq i}^{K} \log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)\]
+\[\eta_{j, \neg s_i} =  b_j + \sum_{k\in ne(i), k\neq i}^{K} \log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)\]
 
 
 Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, updates to this site approximation involves updating to the natural parameters $\theta_i$ and $\theta_j$, the means of $s_i$ and $s_j$ respectively.
