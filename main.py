@@ -110,8 +110,8 @@ if __name__ == "__main__":
     number_of_images = 1000
     x = generate_images(n=number_of_images)
     k = 8
-    em_iterations = 1000
-    e_maximum_steps = 200
+    em_iterations = 200
+    e_maximum_steps = 100
     e_convergence_criterion = 0
 
     binary_latent_factor_model = q3.e_and_f(
@@ -137,5 +137,4 @@ if __name__ == "__main__":
     Q6_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q6")
     if not os.path.exists(Q6_OUTPUT_FOLDER):
         os.makedirs(Q6_OUTPUT_FOLDER)
-    em_iterations = 50
     q6.run(x, k, em_iterations, save_path=os.path.join(Q6_OUTPUT_FOLDER, "all"))
