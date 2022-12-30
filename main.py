@@ -1,17 +1,17 @@
 import os
+from dataclasses import asdict
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 import pandas as pd
 
-from src.constants import CO2_FILE_PATH, OUTPUTS_FOLDER, DEFAULT_SEED
+from src.constants import CO2_FILE_PATH, DEFAULT_SEED, OUTPUTS_FOLDER
 from src.generate_images import generate_images
 from src.models.bayesian_linear_regression import LinearRegressionParameters
-from src.models.kernels import CombinedKernel, CombinedKernelParameters
 from src.models.gaussian_process_regression import GaussianProcessParameters
+from src.models.kernels import CombinedKernel, CombinedKernelParameters
 from src.solutions import q2, q3, q4, q6
-from dataclasses import asdict
 
 jax.config.update("jax_enable_x64", True)
 

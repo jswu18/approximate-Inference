@@ -1,5 +1,6 @@
-from src.generate_images import generate_images
 import matplotlib.pyplot as plt
+
+from src.generate_images import generate_images
 from src.models.binary_latent_factor_model import learn_binary_factors
 from src.models.boltzmann_machine import init_boltzmann_machine
 from src.models.message_passing import init_message_passing

@@ -1,10 +1,11 @@
 from dataclasses import asdict, fields
-import optax
+
 import dataframe_image as dfi
 import jax
 import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
+import optax
 import pandas as pd
 import scipy
 

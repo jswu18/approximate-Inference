@@ -1,15 +1,17 @@
+from typing import List
+
+import matplotlib.pyplot as plt
 import numpy as np
+
+from src.models.binary_latent_factor_model import (
+    init_binary_latent_factor_model,
+    is_converge,
+    learn_binary_factors,
+)
 from src.models.mean_field_learning import (
     BinaryLatentFactorModel,
     init_mean_field_approximation,
 )
-from src.models.binary_latent_factor_model import (
-    learn_binary_factors,
-    init_binary_latent_factor_model,
-    is_converge,
-)
-import matplotlib.pyplot as plt
-from typing import List
 
 
 def e_and_f(

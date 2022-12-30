@@ -1,8 +1,8 @@
 import numpy as np
 
 from src.models.binary_latent_factor_model import (
-    BinaryLatentFactorModel,
     BinaryLatentFactorApproximation,
+    BinaryLatentFactorModel,
 )
 
 

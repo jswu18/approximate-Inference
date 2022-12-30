@@ -1,8 +1,9 @@
+from typing import List
+
 import numpy as np
+
 from src.models.binary_latent_factor_model import BinaryLatentFactorApproximation
 from src.models.boltzmann_machine import BoltzmannMachine
-
-from typing import List
 
 
 class MessagePassing(BinaryLatentFactorApproximation):

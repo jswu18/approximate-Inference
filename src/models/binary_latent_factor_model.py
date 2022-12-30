@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
+from typing import List
+
 import numpy as np
 
 from demo_code.MStep import m_step
-from typing import List
-from abc import ABC, abstractmethod
 
 
 class BinaryLatentFactorModel:
