@@ -1,13 +1,13 @@
 import numpy as np
 from src.models.mean_field_learning import (
-    learn_binary_factors,
     BinaryLatentFactorModel,
-    compute_free_energy,
     init_mean_field_approximation,
-    variational_expectation_step,
+)
+from src.models.binary_latent_factor_model import (
+    learn_binary_factors,
+    init_binary_latent_factor_model,
     is_converge,
 )
-from src.generate_images import generate_images
 import matplotlib.pyplot as plt
 from typing import List
 
@@ -20,19 +20,29 @@ def e_and_f(
     e_convergence_criterion: float,
     save_path: str,
 ):
+    n = x.shape[0]
+    mean_field_approximation = init_mean_field_approximation(
+        k, n, max_steps=e_maximum_steps, convergence_criterion=e_convergence_criterion
+    )
+    binary_latent_factor_model = init_binary_latent_factor_model(
+        x, mean_field_approximation
+    )
     _, binary_latent_factor_model, free_energy = learn_binary_factors(
-        x, k, em_iterations, e_maximum_steps, e_convergence_criterion
+        x,
+        em_iterations,
+        binary_latent_factor_model,
+        binary_latent_factor_approximation=mean_field_approximation,
     )
     fig, ax = plt.subplots(1, k, figsize=(k * 2, 2))
     for i in range(k):
         ax[i].imshow(binary_latent_factor_model.mu[:, i].reshape(4, 4))
         ax[i].set_title(f"Latent Feature mu_{i}")
-    fig.suptitle("Learned Features")
+    fig.suptitle("Learned Features (Mean Field Learning)")
     plt.tight_layout()
     plt.savefig(save_path + "-latent-factors", bbox_inches="tight")
     plt.close()
 
-    plt.title("Free Energy")
+    plt.title("Free Energy (Mean Field Learning)")
     plt.xlabel("t (EM steps)")
     plt.ylabel("Free Energy")
     plt.plot(free_energy)
@@ -55,27 +65,28 @@ def g(
     free_energies = []
     for sigma in sigmas:
         binary_latent_factor_model.sigma = sigma
-        mean_field_approximation = init_mean_field_approximation(k, n)
+        mean_field_approximation = init_mean_field_approximation(
+            k,
+            n,
+            max_steps=e_maximum_steps,
+            convergence_criterion=e_convergence_criterion,
+        )
         free_energy: List[float] = [
-            compute_free_energy(x, binary_latent_factor_model, mean_field_approximation)
+            mean_field_approximation.compute_free_energy(x, binary_latent_factor_model)
         ]
         for _ in range(em_iterations):
-            (
-                new_mean_field_approximation,
-                new_free_energy,
-            ) = variational_expectation_step(
-                x=x,
+            previous_lambda_matrix = np.copy(mean_field_approximation.lambda_matrix)
+            new_free_energy = mean_field_approximation.variational_expectation_step(
                 binary_latent_factor_model=binary_latent_factor_model,
-                mean_field_approximation=mean_field_approximation,
-                max_steps=e_maximum_steps,
-                convergence_criterion=e_convergence_criterion,
+                x=x,
             )
             free_energy.extend(new_free_energy)
             if is_converge(
-                free_energy, new_mean_field_approximation, mean_field_approximation
+                free_energy,
+                mean_field_approximation.lambda_matrix,
+                previous_lambda_matrix,
             ):
                 break
-            mean_field_approximation = new_mean_field_approximation
         free_energies.append(free_energy)
 
     for i, free_energy in enumerate(free_energies):

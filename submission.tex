@@ -734,7 +734,9 @@ We can plot the free energy to make sure it increases each iteration:
 \subsection*{(g)}
 
 
-
+\newpage
+The Python code for the binary latent factor model:
+\lstinputlisting[language=Python]{src/models/binary_latent_factor_model.py}
 
 \newpage
 The Python code for mean field learning:
@@ -1061,15 +1063,15 @@ We can define natural parameters $\eta_{i, \neg s_j}$ and $\eta_{j, \neg s_i}$ f
 
 where:
 
-\[\eta_{i, \neg s_j} =  \log \left(\frac{\lambda_i}{1-\lambda_i}\right) + \sum_{k\in ne(j), k\neq j}^{K} \log\left(\frac{\theta_{kj}}{1-\theta_{kj}} \right)\]
+\[\eta_{i, \neg s_j} =  \log \left(\frac{\lambda_i}{1-\lambda_i}\right) + \sum_{k\in ne(i), k\neq j}^{K} \log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)\]
 
-Knowing $\log \left(\frac{\lambda_i}{1-\lambda_i} \right)s_i = b_i s_i$ and $\xi_{kj} = \log\left(\frac{\theta_{kj}}{1-\theta_{kj}} \right)$:
+Knowing $b_i=\log \left(\frac{\lambda_i}{1-\lambda_i}\right)$ and $\xi_{ki}=\log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)$:
 
-\[\eta_{i, \neg s_j} =  b_i + \sum_{k\in ne(j), k\neq j}^{K} \xi_{kj}\]
+\[\eta_{i, \neg s_j} =  b_i + \sum_{k\in ne(i), k\neq j}^{K} \xi_{ki}\]
 
 and
 
-\[\eta_{j, \neg s_i} =  b_j + \sum_{k\in ne(i), k\neq i}^{K} \xi_{ki}\]
+\[\eta_{j, \neg s_i} =  b_j + \sum_{k\in ne(j), k\neq i}^{K} \xi_{kj}\]
 
 
 Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, updates to this site approximation involves updating the  parameters $\xi_{ij}$ and $\xi_{ji}$, for $s_i$ and $s_j$ respectively.
@@ -1190,7 +1192,7 @@ Our parameter update:
 
 Similarly:
 
-\[\xi_{ij} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right)}{1+\exp\left( \eta_{i, \neg s_j}\right)} \right)\]
+\[\xi_{ij} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{i, \neg s_j}\right)}{1+\exp\left( \eta_{i, \neg s_j}\right)} \right)\]
 
 \newpage
 
@@ -1223,6 +1225,28 @@ We can use automatic relevance determination (ARD) as a hyperparameter method to
 Place prior on $\sigma^2$ and optimise with respect to the distributions would cause some to diverge and only relevant latent dimensions will remain.
 This gives us a value for $K$, the number of latent factors that haven't diverged.
 
+
+\newpage
+\section{Question 6}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{outputs/q6/all-latent-factors}
+\caption{Latent factors learned with EP/Loopy-BP}
+\label{fig:6-latent-factors}
+\end{figure}
+
+\newpage
+The Python code for the Boltzmann machine:
+\lstinputlisting[language=Python]{src/models/boltzmann_machine.py}
+
+\newpage
+The Python code for message passing:
+\lstinputlisting[language=Python]{src/models/message_passing.py}
+
+\newpage
+The rest of the Python code for question 6:
+\lstinputlisting[language=Python]{src/solutions/q6.py}
 
 \newpage
 \section*{Appendix 1: constants.py}

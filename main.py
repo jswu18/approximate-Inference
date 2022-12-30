@@ -10,7 +10,7 @@ from src.generate_images import generate_images
 from src.models.bayesian_linear_regression import LinearRegressionParameters
 from src.models.kernels import CombinedKernel, CombinedKernelParameters
 from src.models.gaussian_process_regression import GaussianProcessParameters
-from src.solutions import q2, q3, q4, q5, q6
+from src.solutions import q2, q3, q4, q6
 from dataclasses import asdict
 
 jax.config.update("jax_enable_x64", True)
@@ -132,3 +132,10 @@ if __name__ == "__main__":
         e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q3_OUTPUT_FOLDER, "g"),
     )
+
+    # Question 6
+    Q6_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q6")
+    if not os.path.exists(Q6_OUTPUT_FOLDER):
+        os.makedirs(Q6_OUTPUT_FOLDER)
+    em_iterations = 50
+    q6.run(x, k, em_iterations, save_path=os.path.join(Q6_OUTPUT_FOLDER, "all"))
