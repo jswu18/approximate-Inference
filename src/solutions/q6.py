@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
-from src.generate_images import generate_images
 from src.models.binary_latent_factor_model import learn_binary_factors
 from src.models.boltzmann_machine import init_boltzmann_machine
 from src.models.message_passing import init_message_passing
 
 
-def run(x, k, em_iterations, save_path):
+def run(x: np.ndarray, k: int, em_iterations: int, save_path: str) -> None:
     n = x.shape[0]
     message_passing = init_message_passing(k, n)
     boltzmann_machine = init_boltzmann_machine(x, message_passing)

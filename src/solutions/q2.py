@@ -63,14 +63,14 @@ def a(
 
 
 def b(
-    t_year,
-    t,
-    y,
+    t_year: np.ndarray,
+    t: np.ndarray,
+    y: np.ndarray,
     linear_regression_parameters: LinearRegressionParameters,
-    error_mean,
-    error_variance,
+    error_mean: float,
+    error_variance: float,
     save_path,
-):
+) -> None:
     x = construct_design_matrix(t)
     residuals = y - linear_regression_parameters.predict(x)
     plt.plot(t_year.reshape(-1), residuals.reshape(-1))
@@ -103,7 +103,7 @@ def c(
     t: np.ndarray,
     number_of_samples: int,
     save_path: str,
-):
+) -> None:
     gram = kernel(t, **asdict(kernel_parameters))
     plt.imshow(gram)
     plt.xlabel("t")
@@ -187,7 +187,7 @@ def f(
     learning_rate: float,
     number_of_iterations: int,
     save_path: str,
-):
+) -> None:
     # Train Bayesian Linear Regression
     x_train = construct_design_matrix(t_train)
     prior_theta = Theta(

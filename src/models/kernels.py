@@ -180,10 +180,6 @@ class CombinedKernelParameters(KernelParameters):
     def zeta(self) -> float:
         return jnp.exp(self.log_zeta)
 
-    @property
-    def sigma(self) -> float:
-        return jnp.exp(self.log_sigma)
-
     @theta.setter
     def theta(self, value: float) -> None:
         self.log_theta = jnp.log(value)

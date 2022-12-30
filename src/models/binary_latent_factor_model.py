@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 
@@ -26,42 +26,40 @@ class BinaryLatentFactorModel:
         self.pi = pi
 
     def mu_exclude(self, exclude_latent_index: int) -> np.ndarray:
-        #  (number_of_dimensions, number_of_latent_variables-1)
-        return np.concatenate(
+        return np.concatenate(  # (number_of_dimensions, number_of_latent_variables-1)
             (self.mu[:, :exclude_latent_index], self.mu[:, exclude_latent_index + 1 :]),
             axis=1,
         )
 
     @property
-    def log_pi(self):
+    def log_pi(self) -> np.ndarray:
         return np.log(self.pi)
 
     @property
-    def log_one_minus_pi(self):
+    def log_one_minus_pi(self) -> np.ndarray:
         return np.log(1 - self.pi)
 
     @property
-    def variance(self):
+    def variance(self) -> float:
         return self.sigma**2
 
     @property
-    def precision(self):
+    def precision(self) -> float:
         return 1 / self.variance
 
     @property
-    def d(self):
+    def d(self) -> int:
         return self.mu.shape[0]
 
     @property
-    def k(self):
+    def k(self) -> int:
         return self.mu.shape[1]
 
     @staticmethod
     def calculate_maximisation_parameters(
         x: np.ndarray,
         binary_latent_factor_approximation: BinaryLatentFactorApproximation,
-    ):
-
+    ) -> Tuple[np.ndarray, float, np.ndarray]:
         expectation_s = binary_latent_factor_approximation.lambda_matrix
         expectation_ss = (
             binary_latent_factor_approximation.lambda_matrix.T
@@ -76,7 +74,7 @@ class BinaryLatentFactorModel:
         self,
         x: np.ndarray,
         binary_latent_factor_approximation: BinaryLatentFactorApproximation,
-    ):
+    ) -> None:
         mu, sigma, pi = self.calculate_maximisation_parameters(
             x, binary_latent_factor_approximation
         )
@@ -98,7 +96,7 @@ def init_binary_latent_factor_model(
 class BinaryLatentFactorApproximation(ABC):
     @property
     @abstractmethod
-    def lambda_matrix(self):
+    def lambda_matrix(self) -> np.ndarray:
         pass
 
     @abstractmethod
@@ -110,19 +108,19 @@ class BinaryLatentFactorApproximation(ABC):
         pass
 
     @property
-    def log_lambda_matrix(self):
+    def log_lambda_matrix(self) -> np.ndarray:
         return np.log(self.lambda_matrix)
 
     @property
-    def log_one_minus_lambda_matrix(self):
+    def log_one_minus_lambda_matrix(self) -> np.ndarray:
         return np.log(1 - self.lambda_matrix)
 
     @property
-    def n(self):
+    def n(self) -> int:
         return self.lambda_matrix.shape[0]
 
     @property
-    def k(self):
+    def k(self) -> int:
         return self.lambda_matrix.shape[1]
 
     def compute_free_energy(
@@ -211,7 +209,11 @@ class BinaryLatentFactorApproximation(ABC):
         )
 
 
-def is_converge(free_energies, current_lambda_matrix, previous_lambda_matrix):
+def is_converge(
+    free_energies: List[float],
+    current_lambda_matrix: np.ndarray,
+    previous_lambda_matrix: np.ndarray,
+) -> bool:
     return (abs(free_energies[-1] - free_energies[-2]) == 0) and np.linalg.norm(
         current_lambda_matrix - previous_lambda_matrix
     ) == 0
@@ -222,7 +224,7 @@ def learn_binary_factors(
     em_iterations: int,
     binary_latent_factor_model: BinaryLatentFactorModel,
     binary_latent_factor_approximation: BinaryLatentFactorApproximation,
-):
+) -> Tuple[BinaryLatentFactorApproximation, BinaryLatentFactorModel, List[float]]:
     free_energies: List[float] = [
         binary_latent_factor_approximation.compute_free_energy(
             x, binary_latent_factor_model

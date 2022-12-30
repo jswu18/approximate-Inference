@@ -22,15 +22,14 @@ class BoltzmannMachine(BinaryLatentFactorModel):
         super().__init__(mu, sigma, pi)
 
     @property
-    def w_matrix(self):
+    def w_matrix(self) -> np.ndarray:
         # (number_of_latent_variables, number_of_latent_variables)
         return -self.precision * (self.mu.T @ self.mu)
 
-    def w_matrix_index(self, i, j):
-        # (number_of_latent_variables, number_of_latent_variables)
+    def w_matrix_index(self, i, j) -> float:
         return -self.precision * (self.mu[:, i] @ self.mu[:, j])
 
-    def b(self, x):
+    def b(self, x) -> np.ndarray:
         """
 
         :param x: design matrix (number_of_points, number_of_dimensions)
@@ -54,7 +53,7 @@ class BoltzmannMachine(BinaryLatentFactorModel):
         )
 
     @property
-    def log_pi_ratio(self):
+    def log_pi_ratio(self) -> np.ndarray:
         return self.log_pi - self.log_one_minus_pi
 
 

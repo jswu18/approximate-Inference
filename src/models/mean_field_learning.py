@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 
 from src.models.binary_latent_factor_model import (
@@ -19,7 +21,7 @@ class MeanFieldApproximation(BinaryLatentFactorApproximation):
         self.convergence_criterion = convergence_criterion
 
     @property
-    def lambda_matrix(self):
+    def lambda_matrix(self) -> np.ndarray:
         return self._lambda_matrix
 
     @lambda_matrix.setter
@@ -87,7 +89,7 @@ class MeanFieldApproximation(BinaryLatentFactorApproximation):
 
     def variational_expectation_step(
         self, x: np.ndarray, binary_latent_factor_model: BinaryLatentFactorModel
-    ):
+    ) -> List[float]:
         """Variational E step
 
         :param binary_latent_factor_model: a binary_latent_factor_model

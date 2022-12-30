@@ -9,7 +9,7 @@ class LinearRegressionParameters:
     covariance: np.ndarray
 
     @property
-    def precision(self):
+    def precision(self) -> np.ndarray:
         return np.linalg.inv(self.covariance)
 
     def predict(self, x: np.ndarray) -> np.ndarray:
@@ -22,11 +22,11 @@ class Theta:
     sigma: float
 
     @property
-    def variance(self):
+    def variance(self) -> float:
         return self.sigma**2
 
     @property
-    def precision(self):
+    def precision(self) -> float:
         return 1 / self.variance
 
 

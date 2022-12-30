@@ -21,7 +21,7 @@ def e_and_f(
     e_maximum_steps: int,
     e_convergence_criterion: float,
     save_path: str,
-):
+) -> BinaryLatentFactorModel:
     n = x.shape[0]
     mean_field_approximation = init_mean_field_approximation(
         k, n, max_steps=e_maximum_steps, convergence_criterion=e_convergence_criterion
@@ -70,7 +70,7 @@ def g(
     e_maximum_steps: int,
     e_convergence_criterion: float,
     save_path: str,
-):
+) -> None:
     n = x.shape[0]
     free_energies = []
     for sigma in sigmas:
