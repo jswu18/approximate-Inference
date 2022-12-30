@@ -99,7 +99,11 @@ class MeanFieldApproximation(BinaryLatentFactorApproximation):
                 self.lambda_matrix[:, latent_factor] = self._partial_expectation_step(
                     x, binary_latent_factor_model, latent_factor
                 )
-            free_energy.append(self.compute_free_energy(x, binary_latent_factor_model))
+                free_energy.append(
+                    self.compute_free_energy(x, binary_latent_factor_model)
+                )
+                if free_energy[-1] - free_energy[-2] <= self.convergence_criterion:
+                    break
             if free_energy[-1] - free_energy[-2] <= self.convergence_criterion:
                 break
         return free_energy

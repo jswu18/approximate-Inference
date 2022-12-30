@@ -765,14 +765,43 @@ Thus, the computational complexity of the M step is $\mathcal{O}(K^3+K^2N + KND 
 \label{fig:3d-images}
 \end{figure}
 
+\newpage
 \subsection*{(e)}
 
 We can plot the free energy to make sure it increases each iteration:
 
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{outputs/q3/f-free-energy}
+\caption{Free Energy}
+\label{fig:3f-free-energy}
+\end{figure}
+
 \subsection*{(f)}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{outputs/q3/f-init-latent-factors}
+\caption{Initial Latent Factors}
+\label{fig:3f-init-latent-factors}
+\end{figure}
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{outputs/q3/f-latent-factors}
+\caption{Learned Latent Factors}
+\label{fig:3f-latent-factors}
+\end{figure}
 
 \subsection*{(g)}
 
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{outputs/q3/g-free-energy-diff-sigma}
+\caption{Free energy convergence vs $\sigma$}
+\label{fig:3g-free-energy-diff-sigma}
+\end{figure}
 
 \newpage
 The Python code for the binary latent factor model:
@@ -1081,13 +1110,6 @@ and,
 \[\mathcal{M}_{j \rightarrow i}(s_i) \propto \exp\left(\xi_{ji} s_i\right)\]
 
 
-%\[\mathcal{M}_{j \rightarrow i}(s_i) = \tilde{g}_{ji, \neg s_j}(s_i)\]
-
-%\[\mathcal{M}_{j \rightarrow i} = \tilde{f}_j(s_j) \prod_{k\in ne(j), k\neq i}^{K}}\tilde{g}_{kj, \neg s_k}(s_j)  \sum_{\substack{s_m \in \{0, 1\} \\ m \in \{1, ..., j-1, j+1,... K\}}} \prod_{k\in ne(j), k\neq i}^{K}} \tilde{g}_{kj, \neg s_j}(s_k)\]
-
-%\[\mathcal{M}_{j \rightarrow i}(s_j) = \tilde{f}_j(s_j) \prod_{k\in ne(j), k\neq i}^{K}}\tilde{g}_{kj, \neg s_k}(s_j) \prod_{k\in ne(j), k\neq i}^{K}} \left(\sum_{s_k \in \{0, 1\} } \tilde{g}_{kj, \neg s_j}(s_k) \right)\]
-%
-%\[\mathcal{M}_{j \rightarrow i}(s_j) = \tilde{f}_j(s_j) \prod_{k\in ne(j), k\neq i}^{K}}\tilde{g}_{kj, \neg s_k}(s_j)\]
 
 Thus, the cavity distributions are:
 
@@ -1126,19 +1148,6 @@ We can define natural parameters $\eta_{i, \neg s_j}$ and $\eta_{j, \neg s_i}$ f
 
 \[ \mathcal{M}_{j}(s_j) \prod_{k\in ne(j), k\neq j}^{K} \mathcal{M}_{k \rightarrow j}(s_j) \propto \exp(\eta_{j, \neg s_i} s_j)\]
 
-where:
-
-\[\eta_{i, \neg s_j} =  \log \left(\frac{\lambda_i}{1-\lambda_i}\right) + \sum_{k\in ne(i), k\neq j}^{K} \log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)\]
-
-Knowing $b_i=\log \left(\frac{\lambda_i}{1-\lambda_i}\right)$ and $\xi_{ki}=\log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)$:
-
-\[\eta_{i, \neg s_j} =  b_i + \sum_{k\in ne(i), k\neq j}^{K} \xi_{ki}\]
-
-and
-
-\[\eta_{j, \neg s_i} =  b_j + \sum_{k\in ne(j), k\neq i}^{K} \xi_{kj}\]
-
-
 Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, updates to this site approximation involves updating the  parameters $\xi_{ij}$ and $\xi_{ji}$, for $s_i$ and $s_j$ respectively.
 
 We can write:
@@ -1149,24 +1158,6 @@ We can write:
 Simplifying:
 
 \[\log \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto \left(\xi_{ji}+ \eta_{i, \neg s_j} \right) s_i + \left(\xi_{ij} + \eta_{j, \neg s_i} \right) s_j \]
-
-%\[
-%\begin{array}{l}
-% \log \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \propto \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j\\
-%\tab \tab \tab \tab \tab + \sum_{i'=1}^{K}  \log \left(\frac{\lambda_{i'}}{1-\lambda_{i'}} \right) s_{i'} \\
-%\tab \tab \tab \tab \tab +  \sum_{i'=1}^{K}\sum_{\substack{j'=1 \\ i', j' \neq i, j}}^{i'-1}  \log \left(\frac{\theta_{i'}}{1-\theta_{i'}} \right) s_{i'} + \log \left(\frac{\theta_{j'}}{1-\theta_{j'}} \right) s_{j'}
-%\end{array}
-%\]
-
-%Only including terms with $s_i$ and $s_j$:
-%
-%\[
-%\begin{array}{l}
-% \log \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \propto \left((K-1) \log \left(\frac{\theta_i}{1-\theta_i} \right) + \log \left(\frac{\lambda_i}{1-\lambda_i} \right)\right) s_i\\
-%\tab \tab \tab \tab \tab +\left(
-%(K-1) \log \left(\frac{\theta_j}{1-\theta_j} \right) + \log \left(\frac{\lambda_j}{1-\lambda_j} \right)\right) s_j
-%\end{array}
-%\]
 
 
 Thus, the first moments:
@@ -1181,38 +1172,6 @@ Moreover:
 
 \[\log g_{ij}(s_i, s_j) qq_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto W_{ij} s_i s_j
  + \eta_{i, \neg s_j} s_i + \eta_{j, \neg s_i} s_j\]
-
-%\[
-%\begin{array}{l}
-% \log g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \propto \frac{- \mu_i^T \mu_j}{\sigma^2} s_i s_j\\
-%\tab \tab \tab \tab \tab + \sum_{i'=1}^{K}  \log \left(\frac{\lambda_{i'}}{1-\lambda_{i'}} \right) s_{i'} \\
-%\tab \tab \tab \tab \tab +  \sum_{i'=1}^{K}\sum_{\substack{j'=1 \\ i', j' \neq i, j}}^{i'-1}  \log \left(\frac{\theta_{i'}}{1-\theta_{i'}} \right) s_{i'} + \log \left(\frac{\theta_{j'}}{1-\theta_{j'}} \right) s_{j'}
-%\end{array}
-%\]
-
-%Only including terms with $s_i$ and $s_j$:
-%
-%\[
-%\begin{array}{l}
-% \log g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \propto \frac{- \mu_i^T \mu_j}{\sigma^2} s_i s_j\\
-%\tab \tab \tab \tab \tab + \left((K-2)\log \left(\frac{\theta_i}{1-\theta_i} \right) + \log \left(\frac{\lambda_i}{1-\lambda_i} \right)\right) s_i \\
-%\tab \tab \tab \tab \tab +  \left((K-2)\log \left(\frac{\theta_j}{1-\theta_j} \right) + \log \left(\frac{\lambda_j}{1-\lambda_j} \right)\right) s_j
-%\end{array}
-%\]
-%
-%We can write this as:
-%
-%\[
-%\log g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(\textbf{s}) \propto W_{ij} s_i s_j+ A_{s_i} s_i + B_{s_j} s_j
-%\]
-%
-%where:
-%
-%\[A_{s_i} = (K-2)\log \left(\frac{\theta_i}{1-\theta_i} \right) + \log \left(\frac{\lambda_i}{1-\lambda_i} \right)\]
-%
-%and
-%
-%\[B_{s_j} = (K-2)\log \left(\frac{\theta_j}{1-\theta_j} \right) + \log \left(\frac{\lambda_j}{1-\lambda_j} \right)\]
 
 To derive the first moment for $ g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)$ with respect to $s_i$, we first marginalise out $s_j$:
 
@@ -1262,21 +1221,18 @@ Similarly:
 
 \subsection*{(c)}
 
-Our message passing approximations:
+Using factored approximate messages, we see that:
 
-\[\exp(\eta_{ij} s_i) = \tilde{f}_{i}(s_{i}) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i} \]
+\[\eta_{i, \neg s_j} =  \log \left(\frac{\lambda_i}{1-\lambda_i}\right) + \sum_{k\in ne(i), k\neq j}^{K} \log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)\]
 
-\[\exp(\eta_{ji} s_j) = \tilde{f}_{j}(s_{j}) \prod_{k\in ne(j), k\neq i}^{K} \mathcal{M}_{k \rightarrow j}\]
+Knowing $b_i=\log \left(\frac{\lambda_i}{1-\lambda_i}\right)$ and $\xi_{ki}=\log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)$:
 
-where each message $\mathcal{M}_{j \rightarrow i}$ has a factored approximation:
+\[\eta_{i, \neg s_j} =  b_i + \sum_{k\in ne(i), k\neq j}^{K} \xi_{ki}\]
 
-\[\mathcal{M}_{k \rightarrow i} = \exp(\eta_{ki} s_k) \]
+and
 
-because each site $\tilde{g}_{jk}(s_j s_k)$ is approximated as a product of two messages $\mathcal{M}_{j \rightarrow k}\mathcal{M}_{k \rightarrow j}$, each a Bernoulli.
+\[\eta_{j, \neg s_i} =  b_j + \sum_{k\in ne(j), k\neq i}^{K} \xi_{kj}\]
 
-Thus, the natural parameters of the messages are updated with:
-
-\[\eta_{ij} = b_i + \sum_{k\in ne(i), k\neq j}^{K} \eta_{ki} \]
 
 The summation of the natural parameters of the singleton factor for node $i$ with the natural parameters of messages from all the neighbouring nodes.
 
@@ -1295,8 +1251,15 @@ This gives us a value for $K$, the number of latent factors that haven't diverge
 
 \begin{figure}[h]
 \centering
+\includegraphics[scale=0.4]{outputs/q6/all-init-latent-factors}
+\caption{Initial Latent factors learned with EP/Loopy-BP}
+\label{fig:6-init-latent-factors}
+\end{figure}
+
+\begin{figure}[h]
+\centering
 \includegraphics[scale=0.4]{outputs/q6/all-latent-factors}
-\caption{Latent factors learned with EP/Loopy-BP}
+\caption{Learned Latent factors learned with EP/Loopy-BP}
 \label{fig:6-latent-factors}
 \end{figure}
 

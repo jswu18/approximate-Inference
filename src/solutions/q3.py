@@ -27,6 +27,14 @@ def e_and_f(
     binary_latent_factor_model = init_binary_latent_factor_model(
         x, mean_field_approximation
     )
+    fig, ax = plt.subplots(1, k, figsize=(k * 2, 2))
+    for i in range(k):
+        ax[i].imshow(binary_latent_factor_model.mu[:, i].reshape(4, 4))
+        ax[i].set_title(f"Latent Feature mu_{i}")
+    fig.suptitle("Initial Features (Mean Field Learning)")
+    plt.tight_layout()
+    plt.savefig(save_path + "-init-latent-factors", bbox_inches="tight")
+    plt.close()
     _, binary_latent_factor_model, free_energy = learn_binary_factors(
         x,
         em_iterations,
@@ -75,12 +83,19 @@ def g(
             mean_field_approximation.compute_free_energy(x, binary_latent_factor_model)
         ]
         for _ in range(em_iterations):
+            free_energy.pop(-1)
             previous_lambda_matrix = np.copy(mean_field_approximation.lambda_matrix)
             new_free_energy = mean_field_approximation.variational_expectation_step(
                 binary_latent_factor_model=binary_latent_factor_model,
                 x=x,
             )
             free_energy.extend(new_free_energy)
+            if (
+                free_energy[-1] - free_energy[-2]
+                <= mean_field_approximation.convergence_criterion
+            ):
+                free_energy.pop(-1)
+                break
             if is_converge(
                 free_energy,
                 mean_field_approximation.lambda_matrix,
@@ -90,9 +105,9 @@ def g(
         free_energies.append(free_energy)
 
     for i, free_energy in enumerate(free_energies):
+        diffs = np.log(np.diff(free_energy))
         plt.plot(
-            np.arange(len(free_energy) - 1),
-            np.log(np.diff(np.array(free_energy))),
+            diffs,
             label=f"sigma={sigmas[i]}",
         )
     plt.title(f"log(F(t)-F(t-1)")
