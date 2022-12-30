@@ -764,13 +764,23 @@ We know:
 
 \[P( \pi| \eta) = \prod_{k=1}^{K} \frac{\pi_k^{\alpha - 1}(1-\pi_k)^{\beta-1}}{B(\alpha, \beta)}\]
 
-We choose the conjugate priors:
+For $\textbf{A}$ we choose a factorised conjugate prior:
 
-\[P( \textbf{A}| \eta) = \mathcal{N}(\textbf{A}| \mu_{\textbf{A}}, \Sigma_{\textbf{A}}) =\frac{1}{(2\pi)^{\frac{DK}{2}} |\Sigma_{\textbf{A}}|^{\frac{1}{2}}} \exp\left(-\frac{1}{2}(\textbf{A} - \mu_{\textbf{A}})^T \Sigma_{\textbf{A}}^{-1}(\textbf{A} - \mu_{\textbf{A}})\right)\]
+\[P( \textbf{A}| \eta) = \prod_{k=1}^{K}P( \textbf{A}_{: k}| \eta)\]
 
-\[P( \Psi| \eta) = \prod_{d=1}^D InvGamma(\Psi_{dd}| a_d, b_d) = \prod_{d=1}^D \frac{b_d^{a_d}}{\Gamma(a_d)}\Psi_{dd}^{-a_d-1}\exp(-\frac{b_d}{\Psi_{dd}})\]
+where $\textbf{A}_{: k} \in \mathbb{R}^{D \times 1}$ is the $k^{th}$ column of $\textbf{A}$. For each column we choose:
 
-a Gaussian prior on $\textbf{A}$ and a product of inverse gamma distributions on $\Psi$ where we assume $\Psi$ is a diagonal matrix.
+\[P( \textbf{A}_{: k}| \eta) = \mathcal{N}(\textbf{A}_{: k}| \mu_{\textbf{A}_{: k}}, \Sigma_{\textbf{A}_{: k}}) =\frac{1}{(2\pi)^{\frac{D}{2}} |\Sigma_{\textbf{A}_{: k}}|^{\frac{1}{2}}} \exp\left(-\frac{1}{2}(\textbf{A}_{: k} - \mu_{\textbf{A}_{: k}})^T \Sigma_{\textbf{A}_{: k}}^{-1}(\textbf{A}_d - \mu_{\textbf{A}_d})\right)\]
+
+a Gaussian prior with diagonal covariance $\Sigma_{\textbf{A}_{: k}} = \alpha_k^{2}\textbf{I}$ and mean zero, so we can simplify:
+
+\[P( \textbf{A}_{: k}| \alpha_k) = (2\pi\alpha_k^{2})^{\frac{-D}{2}} \exp\left(-\frac{\textbf{A}_{: k}^T \textbf{A}_{: k}}{2\alpha_k^{2}} \right)\]
+
+For $\Psi}$ we choose a conjugate prior:
+
+\[P( \Psi| \eta) = \prod_{d=1}^D InvGamma(\Psi_{dd}| a, b) = \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}\Psi_{dd}^{-a-1}\exp(-\frac{b}{\Psi_{dd}})\]
+
+a product of inverse gamma distributions on $\Psi$ where we assume $\Psi$ is a diagonal matrix.
 
 Combining, we have our expression:
 
@@ -779,8 +789,8 @@ Combining, we have our expression:
 \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) = -\frac{D}{2} \log (2 \pi) - \frac{1}{2} \sum_{d=1}^{D}\log\Psi_{dd}   -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \\
 \tab \tab \tab \tab \tab + \sum_{k=1}^{K} s_k \log \pi_k + (1-s_k) \log (1-\pi_k)}\\
 \tab \tab \tab \tab \tab + \sum_{i=1}^K (\alpha-1) \log \pi_k + (\beta - 1) \log (1-\pi_k) - \log B(\alpha, \beta)\\
-\tab \tab \tab \tab \tab -\frac{DK}{2} \log (2 \pi) - \frac{1}{2} \log(|\Sigma_{\textbf{A}}|)   -\frac{1}{2}(\textbf{A} - \mu_{\textbf{A}})^T \Sigma_{\textbf{A}}^{-1}(\textbf{A} - \mu_{\textbf{A}})\\
-\tab \tab \tab \tab \tab + \sum_{d=1}^D a_d \log b_d + (-a_d - 1) \log\Psi_{dd} - \frac{b_d}{\Psi_{dd}} - \log \Gamma(a_d)\\
+\tab \tab \tab \tab \tab + \sum_{i=1}^K -\frac{D}{2} \log (2 \pi\alpha_k^2)  -\frac{\textbf{A}_{: k}^T \textbf{A}_{: k}}{2\alpha_k^{2}}\\
+\tab \tab \tab \tab \tab + \sum_{d=1}^D a \log b + (-a - 1) \log\Psi_{dd} - \frac{b}{\Psi_{dd}} - \log \Gamma(a)\\
 \end{array}
 \]
 
@@ -867,31 +877,46 @@ For $q_{\Psi}(\Psi)$:
 Substituting the appropriate terms:
 
 \[
-q_{\Psi}(\Psi) \propto \left( \prod_{d=1}^D \frac{b_d^{a_d}}{\Gamma(a_d)}\Psi_{dd}^{-a_d-1}\exp(-\frac{b_d}{\Psi_{dd}}) \right)\exp \left\langle  - \frac{1}{2} \sum_{d=1}^{D}\log\Psi_{dd}   -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \Psi(\theta)}}
+q_{\Psi}(\Psi) \propto \left( \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}\Psi_{dd}^{-a-1}\exp(-\frac{b}{\Psi_{dd}}) \right)\exp \left\langle  - \frac{1}{2} \sum_{d=1}^{D}\log\Psi_{dd}   -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \Psi(\theta)}}
 \]
 
 We see:
 
 \[
-q_{\Psi}(\Psi) \propto  \prod_{d=1}^D \frac{b_d^{a_d}}{\Gamma(a_d)}\Psi_{dd}^{-(a_d+\frac{1}{2})-1}\exp\left(-\frac{b_d+\frac{1}{2} \left\langle (x_d-\textbf{A}_d\textbf{s})^2 \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}_d}(\textbf{A}_d)}}{\Psi_{dd}}\right) }
+q_{\Psi}(\Psi) \propto  \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}\Psi_{dd}^{-(a+\frac{1}{2})-1}\exp\left(-\frac{b+\frac{1}{2} \left\langle (x_d-\textbf{A}_{d :}\textbf{s})^2 \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}_{d :}}(\textbf{A}_{d :})}}{\Psi_{dd}}\right) }
 \]
 
-where $\textbf{A}_d \in \mathbb{R}^{1 \times K}$ is the $d^{th}$ row of $\textbf{A}$.
+where $\textbf{A}_{d :} \in \mathbb{R}^{1 \times K}$ is the $d^{th}$ row of $\textbf{A}$.
 
 Thus,
 
 \[
-q_{\Psi}(\Psi) = \prod_{d=1}^D  InvGamma\left(\Psi_{dd} \left| a_d+\frac{1}{2}, b_d+\frac{1}{2} \left\langle (x_d-\textbf{A}_d\textbf{s})^2 \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}_d}(\textbf{A}_d)}\right)
+q_{\Psi}(\Psi) = \prod_{d=1}^D  InvGamma\left(\Psi_{dd} \left| a+\frac{1}{2}, b+\frac{1}{2} \left\langle (x_d-\textbf{A}_{d :}\textbf{s})^2 \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}_{d :}}(\textbf{A}_{d :})}\right)
 \]
 
-For $q_{\textbf{A}}(\textbf{A})$:
+For $q_{\textbf{A}_{: k}}(\textbf{A}_{: k})$:
 
-\[q_{\textbf{A}}(\textbf{A})  \propto P(\textbf{A})\exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}}(\theta)}\]
+\[q_{\textbf{A}_{: k}}(\textbf{A}_{: k})  \propto P(\textbf{A}_{: k})\exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}_{: k}}(\theta)}\]
 
+Substituting the appropriate terms:
 
-\[q_{\textbf{A}}(\textbf{A}) \propto \exp\left(-\frac{1}{2}(\textbf{A} - \mu_{\textbf{A}})^T \Sigma_{\textbf{A}}^{-1}(\textbf{A} - \mu_{\textbf{A}})\right) \exp \left\langle -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}}(\theta)}\]
+\[q_{\textbf{A}_{: k}}(\textbf{A}_{: k}) \propto \exp\left(-\frac{\textbf{A}_{: k}^T \textbf{A}_{: k}}{2\alpha_k^{2}} \right) \exp \left\langle -\frac{1}{2}(\textbf{x}-\textbf{A}_{: k} s_k)^T \Psi^{-1} (\textbf{x}-\textbf{A}_{: k} s_k) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}_{: k}}(\theta)}\]
 
-\[q_{\textbf{A}}(\textbf{A}) \propto \exp\left(-\frac{1}{2}(\textbf{A}^T \Sigma_{\textbf{A}}^{-1}\textbf{A} -2 \textbf{A}^T \Sigma_{\textbf{A}}^{-1}  \mu_{\textbf{A}})\right) \exp \left\langle -\frac{1}{2}(\textbf{s}^T\textbf{A}^T \Psi^{-1} \textbf{A}\textbf{s} - 2 \textbf{s}^T\textbf{A}^T \Psi^{-1} \textbf{x}) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}}(\theta)}\]
+\[q_{\textbf{A}_{: k}}(\textbf{A}_{: k}) \propto \exp\left(-\frac{\textbf{A}_{: k}^T \textbf{A}_{: k}}{2\alpha_k^{2}} \right) \exp \left\langle -\frac{1}{2} \textbf{A}_{: k}^T\frac{1 }{ s_k^2 \Psi_{dd}}\textbf{A}_{: k}  - 2 \frac{s_k}{\Psi_{dd}} \textbf{x}^T\textbf{A}_{: k} \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}_{: k}}(\theta)}\]
+
+We see that
+
+\[q_{\textbf{A}_{: k}}(\textbf{A}_{: k}) = \mathcal{N}\left(\mu_{\textbf{A}_{: k}}, \Sigma_{\textbf{A}_{: k}}\right)}\]
+
+where:
+
+\[ \Sigma_{\textbf{A}_{: k}} = \left(\frac{1}{\alpha_k^2} + \frac{1}{s_k^2\Psi_{dd}}\right)^{-1} \textbf{I}\]
+
+and
+
+\[\mu_{\textbf{A}_{: k}} = \Sigma_{\textbf{A}_{: k}}^{-1} \frac{s_k}{\Psi_{dd}}\textbf{x}\]
+
+By optimising with respect to the the distributions $\Psi$ and $\alpha$ in turn causes some $\alpha_i^2$ to diverge, the number of remaining $\alpha_i^2$ provide our determination for the value of $K$. This is automatic relevance determination through factor analysis.
 
 \newpage
 \section*{Question 5}
