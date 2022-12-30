@@ -17,7 +17,10 @@ class MessagePassing(BinaryLatentFactorApproximation):
 
     @property
     def lambda_matrix(self):
-        return 1 / (1 + np.exp(-self.xi.sum(axis=1)))
+        lambda_matrix = 1 / (1 + np.exp(-self.xi.sum(axis=1)))
+        lambda_matrix[lambda_matrix == 0] = 1e-10
+        lambda_matrix[lambda_matrix == 1] = 1 - 1e-10
+        return lambda_matrix
 
     @property
     def xi(self):

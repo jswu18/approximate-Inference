@@ -244,11 +244,38 @@ def f(
     plt.savefig(save_path + "-extrapolation-untrained", bbox_inches="tight")
     plt.close()
 
+    df_parameters = pd.DataFrame(
+        [
+            [
+                x.strip("log_") + " (kernel)",
+                np.exp(gaussian_process_parameters.kernel[x]),
+            ]
+            for x in gaussian_process_parameters.kernel.keys()
+        ]
+        + [["sigma", float(gaussian_process_parameters.sigma)]],
+        columns=["parameter", "value"],
+    )
+    df_parameters = df_parameters.set_index("parameter")
+    dfi.export(df_parameters, save_path + "-untrained-parameters.png")
+
     # Train Gaussian Process Regression (Hyperparameter Tune)
     optimizer = optax.adam(learning_rate)
     gaussian_process_parameters = gaussian_process.train(
         optimizer, number_of_iterations, **asdict(gaussian_process_parameters)
     )
+    df_parameters = pd.DataFrame(
+        [
+            [
+                x.strip("log_") + " (kernel)",
+                np.exp(gaussian_process_parameters.kernel[x]),
+            ]
+            for x in gaussian_process_parameters.kernel.keys()
+        ]
+        + [["sigma", float(gaussian_process_parameters.sigma)]],
+        columns=["parameter", "value"],
+    )
+    df_parameters = df_parameters.set_index("parameter")
+    dfi.export(df_parameters, save_path + "-trained-parameters.png")
 
     # Prediction
     x_test = construct_design_matrix(t_test)

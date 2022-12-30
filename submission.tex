@@ -452,70 +452,110 @@ More specifically, we can see how changing each hyper-parameter will affect the 
 \begin{figure}[h]
 \centering
 \begin{minipage}{.5\textwidth}
+\includegraphics[scale = 0.35]{outputs/q2/c-parameter-samples}
+\caption{Samples for different parameters}
+\label{fig:fig2-c-parameter-samples}
+  \centering
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
   \centering
 \includegraphics[scale = 0.35]{outputs/q2/c-parameter-grams}
 \caption{Covariances for different parameters}
 \label{fig:fig2-c-parameter-grams}
-\end{minipage}%
-\begin{minipage}{.5\textwidth}
-  \centering
-\includegraphics[scale = 0.35]{outputs/q2/c-parameter-samples}
-\caption{Samples for different parameters}
-\label{fig:fig2-c-parameter-samples}
 \end{minipage}
 \end{figure}
 
 \begin{itemize}
 \item [$\theta$:] As $\theta$ increases, we see more pronounced periodic behavior in the sample function.
     The covariance matrix shows how increasing $\theta$ visually reveals the striped periodic component.
-        This is expected because it is the parameter that adjusts the weight of $\exp\left( - \frac{2\sin^2(\pi(s-t)/\tau)}{\sigma^2}\right)$.
-\item [$\sigma$:] As $\sigma$ increases, we see smoother periodic behaviour in the sample function.
+        This is expected because it is the parameter that adjusts the weight of the periodic component.
+\item [$\sigma$:] As $\sigma$ increases, we see reduced periodic behaviour in the sample function.
     The covariance matrix shows how increasing $\sigma$ will increase covariance values in the off-diagonals.
-    This is expected because it adjusts the lengthscale of the periodic portion of the kernel.
-\item [$\phi$:] As $\phi$ increases, we see less smooth behaviour in the sample function.
-    The covariance matrix shows how increasing $\sigma$ will increase covariance values in the off-diagonals.
-    This is expected because it adjusts the lengthscale of the periodic portion of the kernel.
-\item [$\eta$:]
-\item [$\tau$:]
-\item [$\zeta$:]
+    This is expected because it adjusts the lengthscale of the periodic portion of the kernel, which ends up dominating the function.
+\item [$\phi$:] As $\phi$ increases, we see the ratio of the amplitude of the periodicity component of the sample function reduces compared to the baseline.
+    The covariance matrix shows how increasing $\phi$ will start to increase the non-periodic component.
+    This is expected because it adjusts the weight of the non-periodic portion of the kernel, thus the periodic component remains the same (i.e.same amplitude) but the large baseline shifts from increasing $\phi$ ends up dominating the function visually.
+\item [$\eta$:] As $\eta$ increases we see smoother sample functions.
+This is expected because the $\eta$ increases the lengthscale of the non-periodic component, allowing for smoother functions.
+This causes the off-diagonals of the gram matrix to increase, however the periodic component is still maintained because $\eta$ doesn't affect the relative weight of the two components.
+\item [$\tau$:] As $\tau$ increases, the period of the periodic function increases.
+We can see this reflected in the stripes in the gram matrix getting further apart.
+This makes sense because we are adjusting the period in the sinusoid function of the periodic term with $\tau$.
+\item [$\zeta$:] As $\zeta$ increases, the function becomes less smooth.
+    This is because the $\zeta$ parameter adjusts the weight of the $\delta_{s=t}$ parameter.
+    This places stronger emphasis on the independence of each timestep, which can be seen with the reduction of relative magnitude of off-diagonals in the gram matrix.
+    However, this is simply masking the periodic and squared-exponential terms as we can see with the increased magnitude of the functions as $\zeta$ increases.
 \end{itemize}
 \newpage
 \subsection*{(e)}
+Suitable values for hyper-parameters can be chosen through a combination of visual inspection and prior knowledge.
+For example, it is a reasonable assumption that the $CO_2$ concentration levels have a strong yearly seasonality behaviour due to the cyclic changes in temperature, humidity, etc.
+Thus we can choose $\tau=1$ to ensure functions with a period of one year to reflect this knowledge.
+It can be difficult to quantitatively choose values for the other parameters as they can relate to the uncertainty exhibited in the data (i.e.the smoothness of the function).
+One approach is to maximise:
 
+\[\log P(\textbf{Y} | \textbf{X}) = -\frac{1}{2} \textbf{Y}^T (\textbf{K} + \sigma^2\textbf{I})^{-1} \textbf{Y} - \frac{1}{2} \log |\textbf{K}+ \sigma^2\textbf{I}| - \frac{n}{2}\log(2\pi)\]
+
+the log-likelihood  of the posterior distribution with respect to the given data where $\textbf{K}$ is the gram matrix for the kernel (equation 2.30 from http://gaussianprocess.org/gpml/chapters/RW2.pdf).
+We can define a loss function as the negative log-likelihood and employ gradient-based algorithms to find optimal parameters.
+
+Comparing the hyperparameters corresponding to before and after training side by side:
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{.5\textwidth}
+  \centering
+\includegraphics[scale=0.5]{outputs/q2/f-untrained-parameters}
+\caption{Untrained hyperparameters}
+\label{fig:f-untrained-parameters}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+  \centering
+\includegraphics[scale=0.5]{outputs/q2/f-trained-parameters}
+\caption{Trained Hyperparmaeters}
+\label{fig:f-trained-parameters}
+\end{minipage}
+\end{figure}
+
+We can analyse some of the changes in these parameters after training to gain some insights.
+We can see that $\tau$ remains the same as we would expect given the yearly seasonality we have prior knowledge of.
+On the other hand, the value for $\zeta$ is significantly reduced signifying that $\delta_{s=t}$ is not a very good kernel for representing the data as datapoints at different timesteps do exhibit correlations.
+
+\newpage
 \subsection*{(f)}
+Extrapolating the $CO_2$ concentration levels:
 
 \begin{figure}[h]
 \centering
 \begin{minipage}{.5\textwidth}
   \centering
 \includegraphics[scale=0.5]{outputs/q2/f-extrapolation-untrained}
-\caption{Without hyperparameter tuning}
+\caption{Untrained extrapolation}
 \label{fig:f-extrapolation-untrained}
 \end{minipage}%
 \begin{minipage}{.5\textwidth}
   \centering
 \includegraphics[scale=0.5]{outputs/q2/f-extrapolation-trained}
-\caption{With hyperparameter tuning}
+\caption{Trained extrapolation}
 \label{fig:f-extrapolation-trained}
 \end{minipage}
 \end{figure}
-%
-%\begin{figure}[h]
-%\centering
-%\includegraphics[scale=0.5]{outputs/q2/f-extrapolation-untrained}
-%\caption{Extrapolation of $CO_2$ concentration levels}
-%\label{fig:f-extrapolation-untrained}
-%\end{figure}
-%
-%\begin{figure}[h]
-%\centering
-%\includegraphics[scale=0.5]{outputs/q2/f-extrapolation-trained}
-%\caption{Extrapolation of $CO_2$ concentration levels}
-%\label{fig:f-extrapolation-trained}
-%\end{figure}
+
+We can see that the extrapolation shows a continued increase in $CO_2$ in the future.
+This follows our expectations given that the levels has been steadily increasing in the past.
+Moreover, the concentration continues to exhibit yearly seasonality (for the trained extrapolation) as we would expect.
+We can see that the conclusions can be quite sensitive to kernel hyperparameters when comparing the values from before and after training.
+Prior to training, the extrapolated prediction is not representative of the given data, with pretty much no seasonal behaviour and very large uncertainty.
+After training, we can see that the prediction is much more reasonable, and qualitatively the uncertainty bounds seem to exhibit the historical variability in the data.
+
 
 \subsection*{(g)}
 
+This procedure is not fully Bayesian because despite using a posterior estimate of our linear regression terms, we only use a point estimate when making prediction.
+For a fully Bayesian approach, we should also incorporate the uncertainty of the linear regression parameters into our extrapolation/uncertainty bounds.
+For our procedure, we only include the uncertainty of $g(t)$ however it can be observed in the plots that the trend is not perfectly linear so this should be reflected in the uncertainty of our extrapolation.
+Another approach could be to add a linear kernel to our combined kernel function and model $f(t)$ directly with our kernel, removing the linear regression component in our procedure.
+Thus our kernel extrapolation would incorporate the uncertainty of all components of our signal.
 
 \newpage
 The Python code for Bayesian Linear Regression:
