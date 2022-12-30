@@ -47,34 +47,35 @@ class MessagePassing(BinaryLatentFactorApproximation):
     ) -> List[float]:
         free_energy = [self.compute_free_energy(x, binary_latent_factor_model)]
         for i in range(self.k):
-            for j in range(self.k):
-                xi_new = self.calculate_message_update(
+            xi_new_ii = self.calculate_singleton_message_update(
+                boltzmann_machine=binary_latent_factor_model,
+                x=x,
+                i=i,
+            )
+            self.eta_matrix[:, i, i] = self.calculate_eta(xi_new_ii)
+            free_energy.append(self.compute_free_energy(x, binary_latent_factor_model))
+
+            for j in range(i):
+                xi_new_ij = self.calculate_binary_message_update(
                     boltzmann_machine=binary_latent_factor_model,
                     x=x,
-                    start_node=i,
-                    end_node=j,
+                    i=i,
+                    j=j,
                 )
-                self.eta_matrix[:, i, j] = self.calculate_eta(xi_new)
-            free_energy.append(self.compute_free_energy(x, binary_latent_factor_model))
+                self.eta_matrix[:, i, j] = self.calculate_eta(xi_new_ij)
+                xi_new_ji = self.calculate_binary_message_update(
+                    boltzmann_machine=binary_latent_factor_model,
+                    x=x,
+                    i=j,
+                    j=i,
+                )
+                self.eta_matrix[:, j, i] = self.calculate_eta(xi_new_ji)
+                free_energy.append(
+                    self.compute_free_energy(x, binary_latent_factor_model)
+                )
         return free_energy
 
-    def calculate_message_update(
-        self,
-        boltzmann_machine: BoltzmannMachine,
-        x,
-        start_node: int,
-        end_node: int,
-    ):
-        if start_node != end_node:
-            return self._calculate_binary_message_update(
-                x, boltzmann_machine, start_node, end_node
-            )
-        else:
-            return self._calculate_singleton_message_update(
-                x, boltzmann_machine, start_node
-            )
-
-    def _calculate_binary_message_update(
+    def calculate_binary_message_update(
         self,
         x,
         boltzmann_machine: BoltzmannMachine,
@@ -89,7 +90,7 @@ class MessagePassing(BinaryLatentFactorApproximation):
         w_i_j = boltzmann_machine.w_matrix_index(i, j)
         return np.log(1 + np.exp(w_i_j + eta_i_not_j)) - np.log(1 + np.exp(eta_i_not_j))
 
-    def _calculate_singleton_message_update(
+    def calculate_singleton_message_update(
         self,
         x,
         boltzmann_machine: BoltzmannMachine,
