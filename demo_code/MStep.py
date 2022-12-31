@@ -1,35 +1,35 @@
 import numpy as np
 
 
-def m_step(X, ES, ESS):
+def m_step(x, es, ess):
     """
-    mu, sigma, pie = MStep(X,ES,ESS)
+    mu, sigma, pie = MStep(x,es,ess)
 
     Inputs:
     -----------------
-           X: shape (N, D) data matrix
-          ES: shape (N, K) E_q[s]
-         ESS: shape (K, K) sum over data points of E_q[ss'] (N, K, K)
-                           if E_q[ss'] is provided, the sum over N is done for you.
+           x: shape (n, d) data matrix
+          es: shape (n, k) E_q[s]
+         ess: shape (k, k) sum over data points of E_q[ss'] (n, k, k)
+                           if E_q[ss'] is provided, the sum over n is done for you.
 
     Outputs:
     --------
-          mu: shape (D, K) matrix of means in p(y|{s_i},mu,sigma)
+          mu: shape (d, k) matrix of means in p(y|{s_i},mu,sigma)
        sigma: shape (,)    standard deviation in same
-         pie: shape (1, K) vector of parameters specifying generative distribution for s
+         pie: shape (1, k) vector of parameters specifying generative distribution for s
     """
-    N, D = X.shape
-    if ES.shape[0] != N:
-        raise TypeError('ES must have the same number of rows as X')
-    K = ES.shape[1]
-    if ESS.shape == (N, K, K):
-        ESS = np.sum(ESS, axis=0)
-    if ESS.shape != (K, K):
-        raise TypeError('ESS must be square and have the same number of columns as ES')
+    n, d = x.shape
+    if es.shape[0] != n:
+        raise TypeError('es must have the same number of rows as x')
+    k = es.shape[1]
+    if ess.shape == (n, k, k):
+        ess = np.sum(ess, axis=0)
+    if ess.shape != (k, k):
+        raise TypeError('ess must be square and have the same number of columns as es')
 
-    mu = np.dot(np.dot(np.linalg.inv(ESS), ES.T), X).T
-    sigma = np.sqrt((np.trace(np.dot(X.T, X)) + np.trace(np.dot(np.dot(mu.T, mu), ESS))
-                     - 2 * np.trace(np.dot(np.dot(ES.T, X), mu))) / (N * D))
-    pie = np.mean(ES, axis=0, keepdims=True)
+    mu = np.dot(np.dot(np.linalg.inv(ess), es.T), x).T
+    sigma = np.sqrt((np.trace(np.dot(x.T, x)) + np.trace(np.dot(np.dot(mu.T, mu), ess))
+                     - 2 * np.trace(np.dot(np.dot(es.T, x), mu))) / (n * d))
+    pie = np.mean(es, axis=0, keepdims=True)
     
     return mu, sigma, pie

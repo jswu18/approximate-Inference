@@ -232,8 +232,12 @@ def f(
     )
     plt.fill_between(
         t_test + min_year,
-        linear_prediction + mean_prediction - 1 * jnp.diagonal(covariance_prediction),
-        linear_prediction + mean_prediction + 1 * jnp.diagonal(covariance_prediction),
+        linear_prediction
+        + mean_prediction
+        - 1 * jnp.sqrt(jnp.diagonal(covariance_prediction)),
+        linear_prediction
+        + mean_prediction
+        + 1 * jnp.sqrt(jnp.diagonal(covariance_prediction)),
         facecolor=(0.8, 0.8, 0.8),
         label="error bound (one stdev)",
     )
@@ -256,7 +260,7 @@ def f(
         + [["sigma", float(gaussian_process_parameters.sigma)]],
         columns=["parameter", "value"],
     )
-    df_parameters = df_parameters.set_index("parameter")
+    df_parameters = df_parameters.set_index("parameter").sort_values(by=["parameter"])
     dfi.export(df_parameters, save_path + "-untrained-parameters.png")
 
     # Train Gaussian Process Regression (Hyperparameter Tune)
@@ -275,7 +279,7 @@ def f(
         + [["sigma", float(gaussian_process_parameters.sigma)]],
         columns=["parameter", "value"],
     )
-    df_parameters = df_parameters.set_index("parameter")
+    df_parameters = df_parameters.set_index("parameter").sort_values(by=["parameter"])
     dfi.export(df_parameters, save_path + "-trained-parameters.png")
 
     # Prediction
@@ -304,8 +308,12 @@ def f(
     )
     plt.fill_between(
         t_test + min_year,
-        linear_prediction + mean_prediction - 1 * jnp.diagonal(covariance_prediction),
-        linear_prediction + mean_prediction + 1 * jnp.diagonal(covariance_prediction),
+        linear_prediction
+        + mean_prediction
+        - 1 * jnp.sqrt(jnp.diagonal(covariance_prediction)),
+        linear_prediction
+        + mean_prediction
+        + 1 * jnp.sqrt(jnp.diagonal(covariance_prediction)),
         facecolor=(0.8, 0.8, 0.8),
         label="error bound (one stdev)",
     )

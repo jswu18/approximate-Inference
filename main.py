@@ -11,6 +11,7 @@ from src.generate_images import generate_images
 from src.models.bayesian_linear_regression import LinearRegressionParameters
 from src.models.gaussian_process_regression import GaussianProcessParameters
 from src.models.kernels import CombinedKernel, CombinedKernelParameters
+from src.models.variational_bayes import Beta, Gaussian, InverseGamma
 from src.solutions import q2, q3, q4, q6
 
 jax.config.update("jax_enable_x64", True)
@@ -85,12 +86,12 @@ if __name__ == "__main__":
     )
 
     init_kernel_parameters = CombinedKernelParameters(
-        log_theta=jnp.log(1e-1),
-        log_sigma=jnp.log(1),
-        log_phi=jnp.log(5),
-        log_eta=jnp.log(1e-1),
+        log_theta=jnp.log(5),
+        log_sigma=jnp.log(5),
+        log_phi=jnp.log(10),
+        log_eta=jnp.log(5),
         log_tau=jnp.log(1),
-        log_zeta=jnp.log(1e-1),
+        log_zeta=jnp.log(2),
     )
     gaussian_process_parameters = GaussianProcessParameters(
         kernel=asdict(init_kernel_parameters),
@@ -109,42 +110,79 @@ if __name__ == "__main__":
         kernel=kernel,
         gaussian_process_parameters=gaussian_process_parameters,
         learning_rate=1e-2,
-        number_of_iterations=500,
+        number_of_iterations=100,
         save_path=os.path.join(Q2_OUTPUT_FOLDER, "f"),
     )
-
-    # Question 3
-    Q3_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q3")
-    if not os.path.exists(Q3_OUTPUT_FOLDER):
-        os.makedirs(Q3_OUTPUT_FOLDER)
-    number_of_images = 1000
-    x = generate_images(n=number_of_images)
-    k = 8
-    em_iterations = 200
-    e_maximum_steps = 100
-    e_convergence_criterion = 0
-
-    binary_latent_factor_model = q3.e_and_f(
-        x=x,
-        k=k,
-        em_iterations=em_iterations,
-        e_maximum_steps=e_maximum_steps,
-        e_convergence_criterion=e_convergence_criterion,
-        save_path=os.path.join(Q3_OUTPUT_FOLDER, "f"),
-    )
-    q3.g(
-        x=x[:1, :],
-        binary_latent_factor_model=binary_latent_factor_model,
-        sigmas=[1e-1, 1, 10],
-        k=k,
-        em_iterations=em_iterations,
-        e_maximum_steps=e_maximum_steps,
-        e_convergence_criterion=e_convergence_criterion,
-        save_path=os.path.join(Q3_OUTPUT_FOLDER, "g"),
-    )
-
-    # Question 6
-    Q6_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q6")
-    if not os.path.exists(Q6_OUTPUT_FOLDER):
-        os.makedirs(Q6_OUTPUT_FOLDER)
-    q6.run(x, k, em_iterations, save_path=os.path.join(Q6_OUTPUT_FOLDER, "all"))
+    #
+    # # Question 3
+    # Q3_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q3")
+    # if not os.path.exists(Q3_OUTPUT_FOLDER):
+    #     os.makedirs(Q3_OUTPUT_FOLDER)
+    # number_of_images = 2000
+    # x = generate_images(n=number_of_images)
+    # k = 8
+    # em_iterations = 200
+    # e_maximum_steps = 100
+    # e_convergence_criterion = 0
+    #
+    # binary_latent_factor_model = q3.e_and_f(
+    #     x=x,
+    #     k=k,
+    #     em_iterations=em_iterations,
+    #     e_maximum_steps=e_maximum_steps,
+    #     e_convergence_criterion=e_convergence_criterion,
+    #     save_path=os.path.join(Q3_OUTPUT_FOLDER, "f"),
+    # )
+    # _ = q3.e_and_f(
+    #     x=x,
+    #     k=int(k*1.5),
+    #     em_iterations=em_iterations,
+    #     e_maximum_steps=e_maximum_steps,
+    #     e_convergence_criterion=e_convergence_criterion,
+    #     save_path=os.path.join(Q3_OUTPUT_FOLDER, "f-larger-k"),
+    # )
+    # q3.g(
+    #     x=x[:1, :],
+    #     binary_latent_factor_model=binary_latent_factor_model,
+    #     sigmas=[1, 2, 3],
+    #     k=k,
+    #     em_iterations=em_iterations,
+    #     e_maximum_steps=e_maximum_steps,
+    #     e_convergence_criterion=e_convergence_criterion,
+    #     save_path=os.path.join(Q3_OUTPUT_FOLDER, "g"),
+    # )
+    #
+    # # Question 4
+    # Q4_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q4")
+    # if not os.path.exists(Q4_OUTPUT_FOLDER):
+    #     os.makedirs(Q4_OUTPUT_FOLDER)
+    # d = x.shape[1]
+    # pi = Beta(
+    #     alpha=np.random.gamma(1, size=(1, k)),
+    #     beta=np.random.gamma(1, size=(1, k)),
+    # )
+    # variance = InverseGamma(
+    #     a=2,
+    #     b=1,
+    # )
+    # mu = Gaussian(
+    #     mu=np.zeros((d, k)),
+    #     variance=np.random.uniform(size=(k,))+1,
+    # )
+    # q4.b(
+    #     x=x,
+    #     k=k,
+    #     em_iterations=em_iterations,
+    #     e_maximum_steps=e_maximum_steps,
+    #     e_convergence_criterion=e_convergence_criterion,
+    #     # mu=mu,
+    #     # variance=variance,
+    #     # pi=pi,
+    #     save_path=os.path.join(Q4_OUTPUT_FOLDER, "b"),
+    # )
+    #
+    # # Question 6
+    # Q6_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q6")
+    # if not os.path.exists(Q6_OUTPUT_FOLDER):
+    #     os.makedirs(Q6_OUTPUT_FOLDER)
+    # q6.run(x, k, em_iterations, save_path=os.path.join(Q6_OUTPUT_FOLDER, "all"))

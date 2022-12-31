@@ -765,7 +765,38 @@ Thus, the computational complexity of the M step is $\mathcal{O}(K^3+K^2N + KND 
 \label{fig:3d-images}
 \end{figure}
 
-\newpage
+Examining the generated images, we can see eight features:
+\begin{enumerate}[\hspace{2cm}(1)]
+\item a cross
+\item a border
+\item a two by two square in the middle
+\item a two by two square in the bottom left corner
+\item a diagonal from top left to bottom right
+\item a vertical line in the second column
+\item a vertical line in the fourth column
+\item a a horizontal line in the first row
+\end{enumerate}
+
+Factor analysis assumes a model:
+
+\[\textbf{x} = \textbf{W}\textbf{s} + \epsilon\]
+
+where $\epsilon \sim \mathcal{N}(\mu_{\epsilon}, \Sigma_{\epsilon})$ and $\textbf{s} \sim \mathcal{N}(\mu_{\textbf{s}}, \Sigma_{\textbf{s}})$. Factor analysis would be inappropriate for this data because the our latent variables are binary (i.e. whether or not a feature is present) and not Gaussians. Moreover, the presence of each feature is independent of the presence of another which is not enforced in this model with a covariance matrix that might not be diagonal.
+
+A mixture of Gaussians assumes as model:
+
+\[\textbf{x} = \sum_{k=1}^K\pi_k \mu_k + \epsilon\]
+
+where $\epsilon \sim \mathcal{N}(0, \Sigma_{\epsilon})$. This also wouldn't be appropriate because each mixture component (feature) is assumed to have some covariance, whereas our mixtures are defined as binary vectors (a cross, a border, etc) and added together before adding some noise.
+
+The independent component analysis assumes a model:
+
+\[\textbf{x} = \textbf{W}\textbf{s} + \epsilon\]
+
+where $\epsilon \sim \mathcal{N}(0, \sigma^2\textbf{I})$ and $p(\textbf{s}) = \prod_{k=1}^K p(s_k)$. This is appropriate for our data because we are linearly combining different features and then adding noise.
+
+Thus, it would be expected that ICA does a good job modelling this data while factor analysis and mixture of Gaussians would not.
+
 \subsection*{(e)}
 
 We can plot the free energy to make sure it increases each iteration:
@@ -776,8 +807,11 @@ We can plot the free energy to make sure it increases each iteration:
 \caption{Free Energy}
 \label{fig:3f-free-energy}
 \end{figure}
+\newpage
 
 \subsection*{(f)}
+
+The initialised features:
 
 \begin{figure}[h]
 \centering
@@ -786,6 +820,7 @@ We can plot the free energy to make sure it increases each iteration:
 \label{fig:3f-init-latent-factors}
 \end{figure}
 
+The features learned by the algorithm:
 
 \begin{figure}[h]
 \centering
@@ -794,14 +829,46 @@ We can plot the free energy to make sure it increases each iteration:
 \label{fig:3f-latent-factors}
 \end{figure}
 
-\subsection*{(g)}
+We can see that it has learned some of previously identified features, such as the vertical line in the second column, the two by two square in the bottom left corner, the border, and the a two by two square in the middle. THe other features seem to be some linear combination of two or more features, such as $\mu_4$ which looks like a combination of the cross and two by two square in the middle.
+
+A possible way to improve our algorithm is reinitialising our algorithm a few times to find better potential convergence results (i.e. choose model with best free energy).
+Another way to improve the algorithm could be to increase the $K$, although it may learn some duplicate features, there is also a higher chance of capturing all the features. We can visualise this:
 
 \begin{figure}[h]
 \centering
+\includegraphics[scale=0.25]{outputs/q3/f-larger-k-latent-factors}
+\caption{Increasing Number of Latent Factors}
+\label{fig:3f-larger-k-latent-factors}
+\end{figure}
+
+Here we can identify a few more features such as the vertical line in the fourth column the cross, and some of the diagonal feature in $\mu_7$.
+
+When implementing the algorithm, the mean field parameters were initialised randomly, each independently from a uniform distribution. However $\pi$, $\sigma$, and $\mu$ by running the maximisation step using the randomly initialised mean field parameters. $K$ was set to eight, after visually identifying eight features in part d.
+
+
+\newpage
+\subsection*{(g)}
+
+
+Plotting the convergence of the variational approximation for different $\sigma$'s:
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{.5\textwidth}
+  \centering
+\includegraphics[scale=0.4]{outputs/q3/g-free-energy-sigma}
+\caption{Free energy vs $\sigma$}
+\label{fig:3g-free-energy-diff-sigma}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+  \centering
 \includegraphics[scale=0.4]{outputs/q3/g-free-energy-diff-sigma}
 \caption{Free energy convergence vs $\sigma$}
 \label{fig:3g-free-energy-diff-sigma}
+\end{minipage}
 \end{figure}
+
+We can see that when $\sigma$ is smaller, we are able to converge at a higher free energy. However, convergence is only reached after more steps, as seen in the plot of $\log(F(t)-F(t-1))$
 
 \newpage
 The Python code for the binary latent factor model:
@@ -809,7 +876,7 @@ The Python code for the binary latent factor model:
 
 \newpage
 The Python code for mean field learning:
-\lstinputlisting[language=Python]{src/models/mean_field_learning.py}
+\lstinputlisting[language=Python]{src/models/mean_field_approximation.py}
 
 \newpage
 The rest of the Python code for question 3:
@@ -823,7 +890,7 @@ We begin with the log joint:
 + \log P( \textbf{s}| \pi, \eta) + \log P( \pi| \eta) + \log P( \textbf{A}| \eta) + \log P( \Psi| \eta)
 \]
 
-where $\eta$ is a collection of all hyperparameters.
+where $\textbf{A} \in \mathbb{R}^{D \times K}$ is a concatenation of $\mu_k$ for $k \in \{1, ..., K\}$  and \eta$ is a collection of all hyperparameters.
 
 We know:
 
@@ -833,33 +900,34 @@ We know:
 
 \[P( \pi| \eta) = \prod_{k=1}^{K} \frac{\pi_k^{\alpha - 1}(1-\pi_k)^{\beta-1}}{B(\alpha, \beta)}\]
 
-For $\textbf{A}$ we choose a factorised conjugate prior:
+For $\textbf{A}$ we choose a factorised conjugate prior for each column, $\mu_k$:
 
-\[P( \textbf{A}| \eta) = \prod_{k=1}^{K}P( \textbf{A}_{: k}| \eta)\]
+\[P( \textbf{A}| \eta) = \prod_{k=1}^{K}P( \mu_{k}| \eta)\]
 
-where $\textbf{A}_{: k} \in \mathbb{R}^{D \times 1}$ is the $k^{th}$ column of $\textbf{A}$. For each column we choose:
+For each column we choose:
 
-\[P( \textbf{A}_{: k}| \eta) = \mathcal{N}(\textbf{A}_{: k}| \mu_{\textbf{A}_{: k}}, \Sigma_{\textbf{A}_{: k}}) =\frac{1}{(2\pi)^{\frac{D}{2}} |\Sigma_{\textbf{A}_{: k}}|^{\frac{1}{2}}} \exp\left(-\frac{1}{2}(\textbf{A}_{: k} - \mu_{\textbf{A}_{: k}})^T \Sigma_{\textbf{A}_{: k}}^{-1}(\textbf{A}_d - \mu_{\textbf{A}_d})\right)\]
+\[P( \mu_{k}| \eta) = \mathcal{N}(\mu_{k}| \mu_{\mu_{k}}, \Sigma_{\mu_{k}}) =\frac{1}{(2\pi)^{\frac{D}{2}} |\Sigma_{\mu_{k}}|^{\frac{1}{2}}} \exp\left(-\frac{1}{2}(\mu_{k}} - \mu_{\mu_{k}})^T \Sigma_{\mu_{k}}^{-1}(\mu_{k} - \mu_{\mu_{k}})\right)\]
 
-a Gaussian prior with diagonal covariance $\Sigma_{\textbf{A}_{: k}} = \alpha_k^{2}\textbf{I}$ and mean zero, so we can simplify:
+a Gaussian prior with diagonal covariance $\Sigma_{\mu_{k}} = \alpha_k^{2}\textbf{I}$ and mean zero, so we can simplify:
 
-\[P( \textbf{A}_{: k}| \alpha_k) = (2\pi\alpha_k^{2})^{\frac{-D}{2}} \exp\left(-\frac{\textbf{A}_{: k}^T \textbf{A}_{: k}}{2\alpha_k^{2}} \right)\]
+\[P( \mu_{k}| \alpha_k) = (2\pi\alpha_k^{2})^{\frac{-D}{2}} \exp\left(-\frac{\mu_{k}^T \mu_{k}}{2\alpha_k^{2}} \right)\]
 
 For $\Psi}$ we choose a conjugate prior:
 
-\[P( \Psi| \eta) = \prod_{d=1}^D InvGamma(\Psi_{dd}| a, b) = \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}\Psi_{dd}^{-a-1}\exp(-\frac{b}{\Psi_{dd}})\]
+\[P( \Psi| \eta) = \prod_{d=1}^D InvGamma(\sigma^2| a, b) = \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}(\sigma^2)^{-a-1}\exp(-\frac{b}{\sigma^2})\]
 
-a product of inverse gamma distributions on $\Psi$ where we assume $\Psi$ is a diagonal matrix.
+a product of inverse gamma distributions, assuming $\Psi$ is a diagonal matrix with elements \sigma^2.
 
 Combining, we have our expression:
 
 \[
 \begin{array}{l}
-\log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) = -\frac{D}{2} \log (2 \pi) - \frac{1}{2} \sum_{d=1}^{D}\log\Psi_{dd}   -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \\
-\tab \tab \tab \tab \tab + \sum_{k=1}^{K} s_k \log \pi_k + (1-s_k) \log (1-\pi_k)}\\
-\tab \tab \tab \tab \tab + \sum_{i=1}^K (\alpha-1) \log \pi_k + (\beta - 1) \log (1-\pi_k) - \log B(\alpha, \beta)\\
-\tab \tab \tab \tab \tab + \sum_{i=1}^K -\frac{D}{2} \log (2 \pi\alpha_k^2)  -\frac{\textbf{A}_{: k}^T \textbf{A}_{: k}}{2\alpha_k^{2}}\\
-\tab \tab \tab \tab \tab + \sum_{d=1}^D a \log b + (-a - 1) \log\Psi_{dd} - \frac{b}{\Psi_{dd}} - \log \Gamma(a)\\
+\log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) = \\
+\tab \tab -\frac{-D}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K}  s_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  s_k s_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  s_k \mu_k^T\mu_k \right) \\
+\tab \tab + \sum_{k=1}^{K} s_k \log \pi_k + (1-s_k) \log (1-\pi_k)}\\
+\tab \tab + \sum_{i=1}^K (\alpha-1) \log \pi_k + (\beta - 1) \log (1-\pi_k) - \log B(\alpha, \beta)\\
+\tab \tab + \sum_{i=1}^K -\frac{D}{2} \log (2 \pi\alpha_k^2)  -\frac{\mu_{k}^T \mu_{k}}{2\alpha_k^{2}}\\
+\tab \tab + \sum_{d=1}^D a \log b + (-a - 1) \log(\sigma^2) - \frac{b}{\sigma^2} - \log \Gamma(a)\\
 \end{array}
 \]
 
@@ -870,7 +938,7 @@ Combining, we have our expression:
 %\log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) = -\frac{D}{2} \log (2 \pi)  -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \\
 %\tab \tab \tab \tab \tab + \sum_{i=1}^K (s_k+\alpha-1) \log \pi_k + (\beta - s_k) \log (1-\pi_k) - \log B(\alpha, \beta)\\
 %\tab \tab \tab \tab \tab -\frac{DK}{2} \log (2 \pi) - \frac{1}{2} \log(|\Sigma_{\textbf{A}}|)   -\frac{1}{2}\textbf{A}^T \Sigma_{\textbf{A}}^{-1}\textbf{A}\\
-%\tab \tab \tab \tab \tab + \sum_{d=1}^D a_d \log b_d + (-a_d - \frac{3}{2}) \log\Psi_{dd} - \frac{b_d}{\Psi_{dd}} - \log \Gamma(a_d)\\
+%\tab \tab \tab \tab \tab + \sum_{d=1}^D a_d \log b_d + (-a_d - \frac{3}{2}) \log\sigma^2 - \frac{b_d}{\sigma^2} - \log \Gamma(a_d)\\
 %\end{array}
 %\]
 
@@ -884,25 +952,21 @@ where $\theta$ denotes the parameters $\pi$, $\textbf{A}$, $\Psi$, $\eta$.
 
 Substituting the relevant terms:
 
-\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) + \sum_{k=1}^{K} s_k \log \pi_k + (1-s_k) \log (1-\pi_k)}\right\rangle_{q(\theta)}\]
+\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2 \sigma^2} \left( - 2 \textbf{x}^T\sum_{k=1}^{K}  s_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  s_k s_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  s_k \mu_k^T\mu_k \right) + \sum_{k=1}^{K} s_k \log \frac{\pi_k}{1-\pi_k}\right\rangle_{q(\theta)}\]
 
-Simplifying:
+%Simplifying:
+%
+%\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2}\left(\textbf{s}^T\textbf{A}^T\Psi^{-1}\textbf{As} - 2\textbf{s}^T\left(\textbf{A}^T\Psi^{-1} \textbf{x}  + 2\log\frac{\pi}{1-\pi}\right)\right)\right\rangle_{q(\theta)}\]
 
-\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2}\left(\textbf{s}^T\textbf{A}^T\Psi^{-1}\textbf{As} - 2\textbf{s}^T\left(\textbf{A}^T\Psi^{-1} \textbf{x}  + 2\log\frac{\pi}{1-\pi}\right)\right)\right\rangle_{q(\theta)}\]
+Given our factored approximation $q(\textbf{s}) = \prod_{i=1}^K q_i(s_i)$, we can see that we can derive a similar partial update for $q_i(s_i)$ as in Question 3, by taking the variation derivative of the Lagrangian to enforce the normalisation of $q_i$:
 
-By inspection, we can see:
+\[\frac{\partial}{\partial q_i}\left( \exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q(\theta)} + \lambda^{LG} \int q_i -1)\right) \propto \exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q(\theta)\prod_{j\neq i} q_j(s_j)} - \log q_i(s_i)\]
 
-\[q_{\texbf{s}}(\textbf{s}) \propto \mathcal{N}(s | \mu_\textbf{s}^*, \Sigma_\textbf{s}^*)\]
+Setting this to zero we can solve for $\lambda_i$ where $q_i(s_i) = \lambda_i^{s_i}(1-\lambda_i)^{(1-s_i)}$:
 
-where
+\[ \lambda_i =  \frac{1}{1+\exp\left[ - \left(\frac{  \langle \mu_i\rangle_{q_{\mu_i}}^T}{\langle\sigma^2\rangle_{q(\Psi)}} \left( \textbf{x} -  \frac{\langle \mu_i\rangle_{q_{\mu_i}}}{2} -  \sum_{j=1, j\neq i}^{K}   \lambda_j  \langle \mu_j\rangle_{q_{\mu_j} \right) + \log \frac{\langle \pi_i\rangle_{q_{\pi_i}}}{1-\langle \pi_i\rangle_{q_{\pi_i}}}\right) \right]}\]
 
-\[\Sigma_\textbf{s}^* = \left\langle \left(\textbf{A}^T\Psi^{-1}\textbf{A}\right)^{-1}\right\rangle_{q(\theta)}\]
-
-and
-
-\[\mu_\textbf{s}^* = \left\langle \left(\textbf{A}^T\Psi^{-1}\textbf{A}\right)^{-1}\left(\textbf{A}^T\Psi^{-1} \textbf{x}  + 2\log\frac{\pi}{1-\pi}\right)\right\rangle_{q(\theta)}\]
-
-the E step updates.
+we have our partial E step update.
 
 For the Variational Bayes maximisation step, we set:
 
@@ -920,13 +984,13 @@ For $q_{\pi}(\pi)$:
 
 Substituting the appropriate terms:
 
-\[q_{\pi}(\pi) \propto \left(\prod_{k=1}^{K} \frac{\pi_k^{\alpha - 1}(1-\pi_k)^{\beta-1}}{B(\alpha, \beta)} \right)\exp \left\langle \sum_{i=1}^K s_k \log \pi_k + (1 - s_k) \log (1-\pi_k) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \pi}(\theta)}\]
+\[q_{\pi}(\pi) \propto \left(\prod_{k=1}^{K} \frac{\pi_k^{\alpha - 1}(1-\pi_k)^{\beta-1}}{B(\alpha, \beta)} \right)\exp \left\langle \sum_{k=1}^K s_k \log \pi_k + (1 - s_k) \log (1-\pi_k) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \pi}(\theta)}\]
 
 We see:
 
-\[q_{\pi}(\pi) \propto \prod_{k=1}^{K} \frac{\pi_k^{\alpha  + \left\langle s_k\right\rangle_{q_{s_k}} - 1}(1-\pi_k)^{\beta-\left\langle s_k\right\rangle_{q_{s_k}}}}{B(\alpha, \beta)}\]
+\[q_{\pi}(\pi) \propto \prod_{k=1}^{K} \frac{\pi_k^{\alpha  + \frac{1}{D}\left(\sum_{k=1}^K \left\langle s_k\right\rangle_{q_{s_k}}\right) - 1}(1-\pi_k)^{\beta-\frac{1}{D}\left(\sum_{k=1}^K \left\langle s_k\right\rangle_{q_{s_k}}\right)}}{B(\alpha, \beta)}\]
 
-\[q_{\pi}(\pi) = \prod_{k=1}^{K}  Beta(\alpha + \left\langle s_k\right\rangle_{q_{s_k}} , \beta+(1-\left\langle s_k\right\rangle_{q_{s_k}}}))\]
+\[q_{\pi}(\pi) = \prod_{k=1}^{K}  Beta\left(\alpha + \frac{1}{D}\sum_{k=1}^K \left\langle s_k\right\rangle_{q_{s_k}} , \beta+1- \frac{1}{D}\sum_{k=1}^K \left\langle s_k\right\rangle_{q_{s_k}}\right)\]
 
 
 %Substituting the appropriate terms:
@@ -946,13 +1010,13 @@ For $q_{\Psi}(\Psi)$:
 Substituting the appropriate terms:
 
 \[
-q_{\Psi}(\Psi) \propto \left( \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}\Psi_{dd}^{-a-1}\exp(-\frac{b}{\Psi_{dd}}) \right)\exp \left\langle  - \frac{1}{2} \sum_{d=1}^{D}\log\Psi_{dd}   -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \Psi(\theta)}}
+q_{\Psi}(\Psi) \propto \left( \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}(\sigma^2)^{-a-1}\exp\left(-\frac{b}{\sigma^2}\right) \right)\exp \left\langle   -\frac{-D}{2} \log (\sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}-\textbf{A}\textbf{s} \right)^T\left(\textbf{x}-\textbf{A}\textbf{s} \right)  \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \Psi(\theta)}}
 \]
 
 We see:
 
 \[
-q_{\Psi}(\Psi) \propto  \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}\Psi_{dd}^{-(a+\frac{1}{2})-1}\exp\left(-\frac{b+\frac{1}{2} \left\langle (x_d-\textbf{A}_{d :}\textbf{s})^2 \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}_{d :}}(\textbf{A}_{d :})}}{\Psi_{dd}}\right) }
+q_{\Psi}(\Psi) \propto  \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}(\sigma^2)^{-(a+\frac{1}{2})-1}\exp\left(-\frac{b+\frac{2}{D} \left\langle \left(\textbf{x}-\textbf{A}\textbf{s} \right)^T\left(\textbf{x}-\textbf{A}\textbf{s} \right) \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}}(\textbf{A})}}{\sigma^2}\right) }
 \]
 
 where $\textbf{A}_{d :} \in \mathbb{R}^{1 \times K}$ is the $d^{th}$ row of $\textbf{A}$.
@@ -960,32 +1024,32 @@ where $\textbf{A}_{d :} \in \mathbb{R}^{1 \times K}$ is the $d^{th}$ row of $\te
 Thus,
 
 \[
-q_{\Psi}(\Psi) = \prod_{d=1}^D  InvGamma\left(\Psi_{dd} \left| a+\frac{1}{2}, b+\frac{1}{2} \left\langle (x_d-\textbf{A}_{d :}\textbf{s})^2 \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}_{d :}}(\textbf{A}_{d :})}\right)
+q_{\Psi}(\Psi) = \prod_{d=1}^D  InvGamma\left(\sigma^2 \left| a+\frac{1}{2}, b+\frac{2}{D} \left\langle \left(\textbf{x}-\textbf{A}\textbf{s} \right)^T\left(\textbf{x}-\textbf{A}\textbf{s} \right) \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}}(\textbf{A})}\right)
 \]
 
-For $q_{\textbf{A}_{: k}}(\textbf{A}_{: k})$:
+For $q_{\mu_{k}}(\mu_{k})$:
 
-\[q_{\textbf{A}_{: k}}(\textbf{A}_{: k})  \propto P(\textbf{A}_{: k})\exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}_{: k}}(\theta)}\]
+\[q_{\mu_{k}}(\mu_{k})  \propto P(\mu_{k})\exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \mu_{k}}(\theta)}\]
 
 Substituting the appropriate terms:
 
-\[q_{\textbf{A}_{: k}}(\textbf{A}_{: k}) \propto \exp\left(-\frac{\textbf{A}_{: k}^T \textbf{A}_{: k}}{2\alpha_k^{2}} \right) \exp \left\langle -\frac{1}{2}(\textbf{x}-\textbf{A}_{: k} s_k)^T \Psi^{-1} (\textbf{x}-\textbf{A}_{: k} s_k) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}_{: k}}(\theta)}\]
+\[q_{\mu_{k}}(\mu_{k}) \propto \exp\left(-\frac{\mu_{k}^T \mu_{k}}{2\alpha_k^{2}} \right) \exp \left\langle \frac{-1}{2\sigma^2} \left(- 2 \textbf{x}^T s_k  \mu_k  + s_k \mu_k^T\mu_k  + 2 \sum_{k'=1, k'\neq k}^{K}  s_k s_{k'} \mu_k^T\mu_{k'}}\right) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \mu_{k}}(\theta)}\]
 
-\[q_{\textbf{A}_{: k}}(\textbf{A}_{: k}) \propto \exp\left(-\frac{\textbf{A}_{: k}^T \textbf{A}_{: k}}{2\alpha_k^{2}} \right) \exp \left\langle -\frac{1}{2} \textbf{A}_{: k}^T\frac{1 }{ s_k^2 \Psi_{dd}}\textbf{A}_{: k}  - 2 \frac{s_k}{\Psi_{dd}} \textbf{x}^T\textbf{A}_{: k} \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{A}_{: k}}(\theta)}\]
+\[q_{\mu_{k}}(\mu_{k}) \propto \exp\left(-\frac{1}{2}\left( \mu_{k}^T\left(\frac{1}{\alpha_k^{2}} + \frac{\langle s_k \rangle_{q_{s_k}}}{\langle\sigma^2\rangle_{q_{\Psi}}}}\right)\mu_{k} + 2 \langle s_k \rangle_{q_{s_k}}\left(-  \textbf{x}^T +  \sum_{k'=1, k'\neq k}^{K} \langle s_{k'} \rangle_{q_{s_{k'}}} \langle \mu_{k'} \rangle_{q_{\mu_{k'}}}^T\right)\mu_k\right)\]
 
 We see that
 
-\[q_{\textbf{A}_{: k}}(\textbf{A}_{: k}) = \mathcal{N}\left(\mu_{\textbf{A}_{: k}}, \Sigma_{\textbf{A}_{: k}}\right)}\]
+\[q_{\mu_{k}}(\mu_{k}) = \mathcal{N}\left(\mu_{\mu_{k}}, \Sigma_{\mu_{k}}\right)}\]
 
 where:
 
-\[ \Sigma_{\textbf{A}_{: k}} = \left(\frac{1}{\alpha_k^2} + \frac{1}{s_k^2\Psi_{dd}}\right)^{-1} \textbf{I}\]
+\[ \Sigma_{\mu_{k}} = \left(\frac{1}{\alpha_k^{2}} + \frac{\langle s_k \rangle_{q_{s_k}}}{\langle\sigma^2\rangle_{q_{\Psi}}}}\right)^{-1} \textbf{I}\]
 
 and
 
-\[\mu_{\textbf{A}_{: k}} = \Sigma_{\textbf{A}_{: k}}^{-1} \frac{s_k}{\Psi_{dd}}\textbf{x}\]
+\[\mu_{\mu_{k}} = \Sigma_{\mu_{k}} \left(\textbf{x}^T - \sum_{k'=1, k'\neq k}^{K} \langle s_{k'} \rangle_{q_{s_{k'}}} \langle \mu_{k'} \rangle_{q_{\mu_{k'}}}^T\right)\langle s_k \rangle_{q_{s_k}}\]
 
-By optimising with respect to the the distributions $\Psi$ and $\alpha$ in turn causes some $\alpha_i^2$ to diverge, the number of remaining $\alpha_i^2$ provide our determination for the value of $K$. This is automatic relevance determination through factor analysis.
+Optimising the parameters $\{a, b\}$, and $\alpha^2$ in turn, will cause some $\alpha_i^2$ to diverge, the number of remaining $\alpha_i^2$ provide our determination for the value of $K$. This is automatic relevance determination through factor analysis.
 
 \newpage
 \section*{Question 5}
@@ -1261,6 +1325,31 @@ This gives us a value for $K$, the number of latent factors that haven't diverge
 \includegraphics[scale=0.4]{outputs/q6/all-latent-factors}
 \caption{Learned Latent factors learned with EP/Loopy-BP}
 \label{fig:6-latent-factors}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{outputs/q3/f-latent-factors}
+\caption{Learned Latent Factors with Mean Field Approximation}
+\label{fig:3f-latent-factors}
+\end{figure}
+
+\newpage
+
+\begin{figure}[h]
+\centering
+\begin{minipage}{.5\textwidth}
+  \centering
+\includegraphics[scale=0.4]{outputs/q3/f-free-energy}
+\caption{Mean Field Approximation}
+\label{fig:3g-free-energy-diff-sigma}
+\end{minipage}%
+\begin{minipage}{.5\textwidth}
+  \centering
+\includegraphics[scale=0.4]{outputs/q6/all-free-energy}
+\caption{Loopy BP}
+\label{fig:3g-free-energy-diff-sigma}
+\end{minipage}
 \end{figure}
 
 \newpage

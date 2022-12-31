@@ -3,8 +3,8 @@ from typing import List
 import numpy as np
 
 from src.models.binary_latent_factor_model import (
+    AbstractBinaryLatentFactorModel,
     BinaryLatentFactorApproximation,
-    BinaryLatentFactorModel,
 )
 
 
@@ -41,7 +41,7 @@ class MeanFieldApproximation(BinaryLatentFactorApproximation):
     def _partial_expectation_step(
         self,
         x: np.ndarray,
-        binary_latent_factor_model: BinaryLatentFactorModel,
+        binary_latent_factor_model: AbstractBinaryLatentFactorModel,
         latent_factor: int,
     ) -> np.ndarray:
         """Partial Variational E step for factor i for all data points
@@ -88,7 +88,7 @@ class MeanFieldApproximation(BinaryLatentFactorApproximation):
         return lambda_vector
 
     def variational_expectation_step(
-        self, x: np.ndarray, binary_latent_factor_model: BinaryLatentFactorModel
+        self, x: np.ndarray, binary_latent_factor_model: AbstractBinaryLatentFactorModel
     ) -> List[float]:
         """Variational E step
 

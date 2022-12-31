@@ -4,14 +4,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.models.binary_latent_factor_model import (
+    AbstractBinaryLatentFactorModel,
+    BinaryLatentFactorModel,
     init_binary_latent_factor_model,
     is_converge,
     learn_binary_factors,
 )
-from src.models.mean_field_learning import (
-    BinaryLatentFactorModel,
-    init_mean_field_approximation,
-)
+from src.models.mean_field_approximation import init_mean_field_approximation
 
 
 def e_and_f(
@@ -21,7 +20,7 @@ def e_and_f(
     e_maximum_steps: int,
     e_convergence_criterion: float,
     save_path: str,
-) -> BinaryLatentFactorModel:
+) -> AbstractBinaryLatentFactorModel:
     n = x.shape[0]
     mean_field_approximation = init_mean_field_approximation(
         k, n, max_steps=e_maximum_steps, convergence_criterion=e_convergence_criterion
@@ -63,7 +62,7 @@ def e_and_f(
 
 def g(
     x: np.ndarray,
-    binary_latent_factor_model: BinaryLatentFactorModel,
+    binary_latent_factor_model: AbstractBinaryLatentFactorModel,
     sigmas: List[float],
     k: int,
     em_iterations: int,
@@ -105,6 +104,19 @@ def g(
             ):
                 break
         free_energies.append(free_energy)
+
+    for i, free_energy in enumerate(free_energies):
+        plt.plot(
+            free_energy,
+            label=f"sigma={sigmas[i]}",
+        )
+    plt.title(f"F(t)")
+    plt.xlabel("t (Variational E steps)")
+    plt.ylabel("F(t)")
+    plt.tight_layout()
+    plt.legend()
+    plt.savefig(save_path + f"-free-energy-sigma.png", bbox_inches="tight")
+    plt.close()
 
     for i, free_energy in enumerate(free_energies):
         diffs = np.log(np.diff(free_energy))

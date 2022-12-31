@@ -8,22 +8,29 @@ import numpy as np
 from demo_code.MStep import m_step
 
 
-class BinaryLatentFactorModel:
-    """
-    mu: matrix of means (number_of_dimensions, number_of_latent_variables)
-    sigma: gaussian noise parameter
-    pi: vector of priors (1, number_of_latent_variables)
-    """
+class AbstractBinaryLatentFactorModel(ABC):
+    @property
+    @abstractmethod
+    def mu(self) -> np.ndarray:
+        pass
 
-    def __init__(
+    @property
+    @abstractmethod
+    def variance(self) -> float:
+        pass
+
+    @property
+    @abstractmethod
+    def pi(self) -> np.ndarray:
+        pass
+
+    @abstractmethod
+    def maximisation_step(
         self,
-        mu: np.ndarray,
-        sigma: float,
-        pi: np.ndarray,
-    ):
-        self.mu = mu
-        self.sigma = sigma
-        self.pi = pi
+        x: np.ndarray,
+        binary_latent_factor_approximation: BinaryLatentFactorApproximation,
+    ) -> None:
+        pass
 
     def mu_exclude(self, exclude_latent_index: int) -> np.ndarray:
         return np.concatenate(  # (number_of_dimensions, number_of_latent_variables-1)
@@ -40,10 +47,6 @@ class BinaryLatentFactorModel:
         return np.log(1 - self.pi)
 
     @property
-    def variance(self) -> float:
-        return self.sigma**2
-
-    @property
     def precision(self) -> float:
         return 1 / self.variance
 
@@ -55,20 +58,62 @@ class BinaryLatentFactorModel:
     def k(self) -> int:
         return self.mu.shape[1]
 
+
+class BinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
+    """
+    mu: matrix of means (number_of_dimensions, number_of_latent_variables)
+    sigma: gaussian noise parameter
+    pi: vector of priors (1, number_of_latent_variables)
+    """
+
+    def __init__(
+        self,
+        mu: np.ndarray,
+        sigma: float,
+        pi: np.ndarray,
+    ):
+        self._mu = mu
+        self._sigma = sigma
+        self._pi = pi
+
+    @property
+    def mu(self):
+        return self._mu
+
+    @mu.setter
+    def mu(self, value):
+        self._mu = value
+
+    @property
+    def sigma(self):
+        return self._sigma
+
+    @sigma.setter
+    def sigma(self, value):
+        self._sigma = value
+
+    @property
+    def pi(self):
+        return self._pi
+
+    @pi.setter
+    def pi(self, value):
+        self._pi = value
+
+    @property
+    def variance(self) -> float:
+        return self.sigma**2
+
     @staticmethod
     def calculate_maximisation_parameters(
         x: np.ndarray,
         binary_latent_factor_approximation: BinaryLatentFactorApproximation,
     ) -> Tuple[np.ndarray, float, np.ndarray]:
-        expectation_s = binary_latent_factor_approximation.lambda_matrix
-        expectation_ss = (
-            binary_latent_factor_approximation.lambda_matrix.T
-            @ binary_latent_factor_approximation.lambda_matrix
+        return m_step(
+            x=x,
+            es=binary_latent_factor_approximation.expectation_s,
+            ess=binary_latent_factor_approximation.expectation_ss,
         )
-        np.fill_diagonal(
-            expectation_ss, binary_latent_factor_approximation.lambda_matrix.sum(axis=0)
-        )
-        return m_step(x, expectation_s, expectation_ss)
 
     def maximisation_step(
         self,
@@ -103,9 +148,19 @@ class BinaryLatentFactorApproximation(ABC):
     def variational_expectation_step(
         self,
         x: np.ndarray,
-        binary_latent_factor_model: BinaryLatentFactorModel,
+        binary_latent_factor_model: AbstractBinaryLatentFactorModel,
     ) -> List[float]:
         pass
+
+    @property
+    def expectation_s(self):
+        return self.lambda_matrix
+
+    @property
+    def expectation_ss(self):
+        ess = self.lambda_matrix.T @ self.lambda_matrix
+        np.fill_diagonal(ess, self.lambda_matrix.sum(axis=0))
+        return ess
 
     @property
     def log_lambda_matrix(self) -> np.ndarray:
@@ -126,7 +181,7 @@ class BinaryLatentFactorApproximation(ABC):
     def compute_free_energy(
         self,
         x: np.ndarray,
-        binary_latent_factor_model: BinaryLatentFactorModel,
+        binary_latent_factor_model: AbstractBinaryLatentFactorModel,
     ) -> float:
         """
         free energy associated with current EM parameters and data x
@@ -148,7 +203,7 @@ class BinaryLatentFactorApproximation(ABC):
     def _compute_expectation_log_p_x_s_given_theta(
         self,
         x: np.ndarray,
-        binary_latent_factor_model: BinaryLatentFactorModel,
+        binary_latent_factor_model: AbstractBinaryLatentFactorModel,
     ) -> float:
         """
         The first term of the free energy, the expectation of log P(X,S|theta)
@@ -222,9 +277,11 @@ def is_converge(
 def learn_binary_factors(
     x: np.ndarray,
     em_iterations: int,
-    binary_latent_factor_model: BinaryLatentFactorModel,
+    binary_latent_factor_model: AbstractBinaryLatentFactorModel,
     binary_latent_factor_approximation: BinaryLatentFactorApproximation,
-) -> Tuple[BinaryLatentFactorApproximation, BinaryLatentFactorModel, List[float]]:
+) -> Tuple[
+    BinaryLatentFactorApproximation, AbstractBinaryLatentFactorModel, List[float]
+]:
     free_energies: List[float] = [
         binary_latent_factor_approximation.compute_free_energy(
             x, binary_latent_factor_model
