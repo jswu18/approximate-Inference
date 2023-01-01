@@ -2,8 +2,8 @@ from typing import List
 
 import numpy as np
 
-from src.models.binary_latent_factor_model import (
-    AbstractBinaryLatentFactorModel,
+from src.models.binary_latent_factor_model import AbstractBinaryLatentFactorModel
+from src.models.binary_latent_factor_model_approximation import (
     BinaryLatentFactorApproximation,
 )
 

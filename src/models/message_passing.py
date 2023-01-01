@@ -2,7 +2,9 @@ from typing import List
 
 import numpy as np
 
-from src.models.binary_latent_factor_model import BinaryLatentFactorApproximation
+from src.models.binary_latent_factor_model_approximation import (
+    BinaryLatentFactorApproximation,
+)
 from src.models.boltzmann_machine import BoltzmannMachine
 
 
