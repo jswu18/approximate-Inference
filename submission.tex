@@ -993,7 +993,30 @@ Knowing $\left\langle (w_{d, k})^2 \right\rangle_{q(\textbf{w}_{d})} = (\mu_{\te
 
 we have our hyper-M steps for optimising $\alpha$.
 
-%Optimising the parameters $\{a, b\}$, and $\alpha^2$ in turn, will cause some $\alpha_i^2$ to diverge, the number of remaining $\alpha_i^2$ provide our determination for the value of $K$. This is automatic relevance determination through factor analysis.
+\newpage
+\begin{figure}[h]
+\centering
+\begin{minipage}{.6\textwidth}
+  \centering
+\includegraphics[scale=0.15]{outputs/q4/b-latent-factors}
+\caption{Learned Latent Factors}
+\label{fig:}
+\end{minipage}%
+\begin{minipage}{.2\textwidth}
+  \centering
+\includegraphics[scale=0.11]{outputs/q4/b-alpha-trained}
+\caption{Alpha values}
+\label{fig:}
+\end{minipage}
+\end{figure}
+
+\newpage
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.8]{outputs/q4/b-free-energy}
+\caption{Free Energy for different values of k}
+\label{fig:}
+\end{figure}
 
 \newpage
 The Python code for variational Bayes:
