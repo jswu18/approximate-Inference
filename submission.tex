@@ -884,75 +884,45 @@ The rest of the Python code for question 3:
 \newpage
 \section*{Question 4}
 
-We begin with the log joint:
+We begin by writing the expression for $x_d$:
 
-\[\log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) = \log P(\textbf{x}|  \textbf{s}, \textbf{A}, \Psi,  \eta)
-+ \log P( \textbf{s}| \pi, \eta) + \log P( \pi| \eta) + \log P( \textbf{A}| \eta) + \log P( \Psi| \eta)
+\[P(x_d | \texbf{s}, \textbf{w}_d, \sigma^2) = \mathcal{N}\left(\textbf{s}^T\textbf{w}_d, \sigma^2\right)\]
+
+where we know from the diagonal covariance of $P(\textbf{x} | \textbf{s}, \mu, \sigma^2)$ that each dimension is independent. Moreover, $\textbf{w}_d \in \mathbb{R}^{K\times 1}$, which is the $d^{th}$ row of $\mu \in \mathbb{R}^{D \times K}$
+
+Thus, we can write the posterior:
+
+\[\log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) = \log P( \textbf{s}| \pi) + \sum_{d=1}^{D} \log P(x_d | \texbf{s}, \textbf{w}_d, \sigma^2) + \log P( \textbf{w}_d| \alpha)
 \]
 
-where $\textbf{A} \in \mathbb{R}^{D \times K}$ is a concatenation of $\mu_k$ for $k \in \{1, ..., K\}$  and \eta$ is a collection of all hyperparameters.
+where we introduce priors on each $\textbf{w}_k$ with $\alpha \in \mathbb{R}^{K \times 1}$.
 
-We know:
+We choose each prior to be:
 
-\[P(\textbf{x}|  \textbf{s}, \textbf{A}, \Psi,  \eta) = \frac{1}{(2\pi)^{\frac{D}{2}} |\Psi|^{\frac{1}{2}}} \exp\left(-\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As})\right)\]
+\[P( \textbf{w}_d| \alpha) = \mathcal{N}(0, \textbf{A}^{-1})\]
 
-\[P( \textbf{s}| \pi, \eta) = \prod_{k=1}^{K} \pi_k^{s_i} (1-\pi_k)^{1-s_k}\]
-
-\[P( \pi| \eta) = \prod_{k=1}^{K} \frac{\pi_k^{\alpha - 1}(1-\pi_k)^{\beta-1}}{B(\alpha, \beta)}\]
-
-For $\textbf{A}$ we choose a factorised conjugate prior for each column, $\mu_k$:
-
-\[P( \textbf{A}| \eta) = \prod_{k=1}^{K}P( \mu_{k}| \eta)\]
-
-For each column we choose:
-
-\[P( \mu_{k}| \eta) = \mathcal{N}(\mu_{k}| \mu_{\mu_{k}}, \Sigma_{\mu_{k}}) =\frac{1}{(2\pi)^{\frac{D}{2}} |\Sigma_{\mu_{k}}|^{\frac{1}{2}}} \exp\left(-\frac{1}{2}(\mu_{k}} - \mu_{\mu_{k}})^T \Sigma_{\mu_{k}}^{-1}(\mu_{k} - \mu_{\mu_{k}})\right)\]
-
-a Gaussian prior with diagonal covariance $\Sigma_{\mu_{k}} = \alpha_k^{2}\textbf{I}$ and mean zero, so we can simplify:
-
-\[P( \mu_{k}| \alpha_k) = (2\pi\alpha_k^{2})^{\frac{-D}{2}} \exp\left(-\frac{\mu_{k}^T \mu_{k}}{2\alpha_k^{2}} \right)\]
-
-For $\Psi}$ we choose a conjugate prior:
-
-\[P( \Psi| \eta) = \prod_{d=1}^D InvGamma(\sigma^2| a, b) = \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}(\sigma^2)^{-a-1}\exp(-\frac{b}{\sigma^2})\]
-
-a product of inverse gamma distributions, assuming $\Psi$ is a diagonal matrix with elements \sigma^2.
+where $\textbf{A} = diag(\alpha)$, the precision matrix.
 
 Combining, we have our expression:
 
 \[
 \begin{array}{l}
-\log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) = \\
-\tab \tab -\frac{-D}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K}  s_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  s_k s_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  s_k \mu_k^T\mu_k \right) \\
+\log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) = \\
+\tab \tab + \sum_{d=1}^D-\frac{-1}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(x_d^2 - 2 x_d \textbf{s}^T \textbf{w}_d   + \textbf{w}_d^T \textbf{s}\textbf{s}^T\textbf{w}_d\right) \\
 \tab \tab + \sum_{k=1}^{K} s_k \log \pi_k + (1-s_k) \log (1-\pi_k)}\\
-\tab \tab + \sum_{i=1}^K (\alpha-1) \log \pi_k + (\beta - 1) \log (1-\pi_k) - \log B(\alpha, \beta)\\
-\tab \tab + \sum_{i=1}^K -\frac{D}{2} \log (2 \pi\alpha_k^2)  -\frac{\mu_{k}^T \mu_{k}}{2\alpha_k^{2}}\\
-\tab \tab + \sum_{d=1}^D a \log b + (-a - 1) \log(\sigma^2) - \frac{b}{\sigma^2} - \log \Gamma(a)\\
+\tab \tab + \sum_{d=1}^D -\frac{K}{2} \log (2 \pi) + \frac{1}{2}  \sum_{k=1}^K \left(\log\alpha_k \right)  -\frac{1}{2}\textbf{w}_{d}^T \textbf{A}\textbf{w}_{d}\\
 \end{array}
 \]
-
-%Simplifying:
-%
-%\[
-%\begin{array}{l}
-%\log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) = -\frac{D}{2} \log (2 \pi)  -\frac{1}{2}(\textbf{x}-\textbf{As})^T \Psi^{-1} (\textbf{x}-\textbf{As}) \\
-%\tab \tab \tab \tab \tab + \sum_{i=1}^K (s_k+\alpha-1) \log \pi_k + (\beta - s_k) \log (1-\pi_k) - \log B(\alpha, \beta)\\
-%\tab \tab \tab \tab \tab -\frac{DK}{2} \log (2 \pi) - \frac{1}{2} \log(|\Sigma_{\textbf{A}}|)   -\frac{1}{2}\textbf{A}^T \Sigma_{\textbf{A}}^{-1}\textbf{A}\\
-%\tab \tab \tab \tab \tab + \sum_{d=1}^D a_d \log b_d + (-a_d - \frac{3}{2}) \log\sigma^2 - \frac{b_d}{\sigma^2} - \log \Gamma(a_d)\\
-%\end{array}
-%\]
 
 
 
 For the Variational Bayes expectation step, we minimise $\textbf{KL}[q_{\texbf{s}}(\textbf{s} | \text{everything else}) \| P(\textbf{s} | \text{everything else})]$ by setting:
 
-\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q(\theta)}\]
-
-where $\theta$ denotes the parameters $\pi$, $\textbf{A}$, $\Psi$, $\eta$.
+\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha)  \right\rangle_{q(\mu)}\]
 
 Substituting the relevant terms:
 
-\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2 \sigma^2} \left( - 2 \textbf{x}^T\sum_{k=1}^{K}  s_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  s_k s_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  s_k \mu_k^T\mu_k \right) + \sum_{k=1}^{K} s_k \log \frac{\pi_k}{1-\pi_k}\right\rangle_{q(\theta)}\]
+\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2 \sigma^2} \left( - 2 \textbf{x}^T\sum_{k=1}^{K}  s_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  s_k s_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  s_k \mu_k^T\mu_k \right) + \sum_{k=1}^{K} s_k \log \frac{\pi_k}{1-\pi_k}\right\rangle_{q(\mu)}\]
 
 %Simplifying:
 %
@@ -960,96 +930,70 @@ Substituting the relevant terms:
 
 Given our factored approximation $q(\textbf{s}) = \prod_{i=1}^K q_i(s_i)$, we can see that we can derive a similar partial update for $q_i(s_i)$ as in Question 3, by taking the variation derivative of the Lagrangian to enforce the normalisation of $q_i$:
 
-\[\frac{\partial}{\partial q_i}\left( \exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q(\theta)} + \lambda^{LG} \int q_i -1)\right) \propto \exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q(\theta)\prod_{j\neq i} q_j(s_j)} - \log q_i(s_i)\]
+\[\frac{\partial}{\partial q_i}\left( \exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q(\mu)} + \lambda^{LG} \int q_i -1)\right) \propto \exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q(\mu)\prod_{j\neq i} q_j(s_j)} - \log q_i(s_i)\]
 
 Setting this to zero we can solve for $\lambda_i$ where $q_i(s_i) = \lambda_i^{s_i}(1-\lambda_i)^{(1-s_i)}$:
 
-\[ \lambda_i =  \frac{1}{1+\exp\left[ - \left(\frac{  \langle \mu_i\rangle_{q_{\mu_i}}^T}{\langle\sigma^2\rangle_{q(\Psi)}} \left( \textbf{x} -  \frac{\langle \mu_i\rangle_{q_{\mu_i}}}{2} -  \sum_{j=1, j\neq i}^{K}   \lambda_j  \langle \mu_j\rangle_{q_{\mu_j} \right) + \log \frac{\langle \pi_i\rangle_{q_{\pi_i}}}{1-\langle \pi_i\rangle_{q_{\pi_i}}}\right) \right]}\]
+\[ \lambda_i =  \frac{1}{1+\exp\left[ - \left(\frac{  \langle \mu_i\rangle_{q_{\mu_i}}^T}{\sigma^2} \left( \textbf{x} -  \frac{\langle \mu_i\rangle_{q_{\mu_i}}}{2} -  \sum_{j=1, j\neq i}^{K}   \lambda_j  \langle \mu_j\rangle_{q_{\mu_j} \right) + \log \frac{ \pi_i}{1- \pi_i\right) \right]}\]
 
 we have our partial E step update.
 
-For the Variational Bayes maximisation step, we set:
+For the maximisation step, we perform maximisation steps for the parameters $\sigma$ and $\pi$ in the same way as question 3. However, having defined a prior on $\mu$ (through $\textbf{w}$) so we will have to derive our expression for $\langle \mu_k\rangle_{q_{\mu_k}}$ the expectation of the posterior on $\mu_k$. This involves deriving the posterior distribution of $\textbf{w}_d$
 
-\[q_{\theta}(\theta) \propto P(\theta) \exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q(\textbf{s})}\]
-
-assuming the factorisation:
-
-\[q_{\theta}(\theta) = q_{\pi}(\pi)q_{\Psi}(\Psi)q_{\textbf{A}}(\textbf{A})\]
-
-we can calculate each factor independently.
-
-For $q_{\pi}(\pi)$:
-
-\[q_{\pi}(\pi) \propto P(\pi)\exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \pi}(\theta)}\]
+\[q_{\textbf{w}_d}(\textbf{w}_d})  \propto P(\textbf{w}_d)\exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{w}_d}(\textbf{w}_d)}\]
 
 Substituting the appropriate terms:
 
-\[q_{\pi}(\pi) \propto \left(\prod_{k=1}^{K} \frac{\pi_k^{\alpha - 1}(1-\pi_k)^{\beta-1}}{B(\alpha, \beta)} \right)\exp \left\langle \sum_{k=1}^K s_k \log \pi_k + (1 - s_k) \log (1-\pi_k) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \pi}(\theta)}\]
+\[q_{\textbf{w}_d}(\textbf{w}_d})\propto \exp\left(-\frac{1}{2}\textbf{w}_{d}^T \textbf{A}\textbf{w}_{d} \right) \exp \left\langle  -\frac{1}{2 \sigma^2} \left(- 2 x_d \textbf{s}^T \textbf{w}_d   + \textbf{w}_d^T \textbf{s}\textbf{s}^T\textbf{w}_d\right)\right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{w}_d}(\textbf{w}_d)}\]
 
-We see:
+Simplifying:
 
-\[q_{\pi}(\pi) \propto \prod_{k=1}^{K} \frac{\pi_k^{\alpha  + \frac{1}{D}\left(\sum_{k=1}^K \left\langle s_k\right\rangle_{q_{s_k}}\right) - 1}(1-\pi_k)^{\beta-\frac{1}{D}\left(\sum_{k=1}^K \left\langle s_k\right\rangle_{q_{s_k}}\right)}}{B(\alpha, \beta)}\]
+\[q_{\textbf{w}_d}(\textbf{w}_d})\propto \exp\left(-\frac{1}{2}\left(\textbf{w}_{d}^T \left(\textbf{A}+\frac{\langle  \textbf{s}\textbf{s}^T \rangle_{q_{\textbf{s}}(\textbf{s})}}{\sigma^2} \right)\textbf{w}_{d} - 2 \left(\frac{x_d \langle\textbf{s}^T \rangle_{q_{\textbf{s}}(\textbf{s})}}{\sigma^2}}\right) \textbf{w}_d  \right)\right)\right)\]
 
-\[q_{\pi}(\pi) = \prod_{k=1}^{K}  Beta\left(\alpha + \frac{1}{D}\sum_{k=1}^K \left\langle s_k\right\rangle_{q_{s_k}} , \beta+1- \frac{1}{D}\sum_{k=1}^K \left\langle s_k\right\rangle_{q_{s_k}}\right)\]
+We see that the posterior:
 
-
-%Substituting the appropriate terms:
-%
-%\[q_{\pi}(\pi) \propto \left(\prod_{k=1}^{K} \frac{\pi_k^{\alpha - 1}(1-\pi_k)^{\beta-1}}{B(\alpha, \beta)} \right)\exp \left\langle \sum_{i=1}^K (s_k+\alpha-1) \log \pi_k + (\beta - s_k) \log (1-\pi_k) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \pi}(\theta)}\]
-%
-%We see:
-%
-%\[q_{\pi}(\pi) \propto \prod_{k=1}^{K} \frac{\pi_k^{2\alpha - 2 + \left\langle s_k\right\rangle_{q_{s_k}}}(1-\pi_k)^{2\beta-\left\langle s_k\right\rangle_{q_{s_k}}}}{B(\alpha, \beta)}\]
-%
-%\[q_{\pi}(\pi) = \prod_{k=1}^{K}  Beta(2\alpha -2 + \left\langle s_k\right\rangle_{q_{s_k}} , 2\beta+1-\left\langle s_k\right\rangle_{q_{s_k}}})\]
-
-For $q_{\Psi}(\Psi)$:
-
-\[q_{\Psi}(\Psi) \propto P(\Psi)\exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \Psi}(\theta)}\]
-
-Substituting the appropriate terms:
-
-\[
-q_{\Psi}(\Psi) \propto \left( \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}(\sigma^2)^{-a-1}\exp\left(-\frac{b}{\sigma^2}\right) \right)\exp \left\langle   -\frac{-D}{2} \log (\sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}-\textbf{A}\textbf{s} \right)^T\left(\textbf{x}-\textbf{A}\textbf{s} \right)  \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \Psi(\theta)}}
-\]
-
-We see:
-
-\[
-q_{\Psi}(\Psi) \propto  \prod_{d=1}^D \frac{b^{a}}{\Gamma(a)}(\sigma^2)^{-(a+\frac{1}{2})-1}\exp\left(-\frac{b+\frac{2}{D} \left\langle \left(\textbf{x}-\textbf{A}\textbf{s} \right)^T\left(\textbf{x}-\textbf{A}\textbf{s} \right) \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}}(\textbf{A})}}{\sigma^2}\right) }
-\]
-
-where $\textbf{A}_{d :} \in \mathbb{R}^{1 \times K}$ is the $d^{th}$ row of $\textbf{A}$.
-
-Thus,
-
-\[
-q_{\Psi}(\Psi) = \prod_{d=1}^D  InvGamma\left(\sigma^2 \left| a+\frac{1}{2}, b+\frac{2}{D} \left\langle \left(\textbf{x}-\textbf{A}\textbf{s} \right)^T\left(\textbf{x}-\textbf{A}\textbf{s} \right) \right\rangle_{q_{\textbf{s}}(\textbf{s})q_{\textbf{A}}(\textbf{A})}\right)
-\]
-
-For $q_{\mu_{k}}(\mu_{k})$:
-
-\[q_{\mu_{k}}(\mu_{k})  \propto P(\mu_{k})\exp \left\langle \log P(\textbf{x}, \textbf{s}, \pi, \textbf{A}, \Psi | \eta) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \mu_{k}}(\theta)}\]
-
-Substituting the appropriate terms:
-
-\[q_{\mu_{k}}(\mu_{k}) \propto \exp\left(-\frac{\mu_{k}^T \mu_{k}}{2\alpha_k^{2}} \right) \exp \left\langle \frac{-1}{2\sigma^2} \left(- 2 \textbf{x}^T s_k  \mu_k  + s_k \mu_k^T\mu_k  + 2 \sum_{k'=1, k'\neq k}^{K}  s_k s_{k'} \mu_k^T\mu_{k'}}\right) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \mu_{k}}(\theta)}\]
-
-\[q_{\mu_{k}}(\mu_{k}) \propto \exp\left(-\frac{1}{2}\left( \mu_{k}^T\left(\frac{1}{\alpha_k^{2}} + \frac{\langle s_k \rangle_{q_{s_k}}}{\langle\sigma^2\rangle_{q_{\Psi}}}}\right)\mu_{k} + 2 \langle s_k \rangle_{q_{s_k}}\left(-  \textbf{x}^T +  \sum_{k'=1, k'\neq k}^{K} \langle s_{k'} \rangle_{q_{s_{k'}}} \langle \mu_{k'} \rangle_{q_{\mu_{k'}}}^T\right)\mu_k\right)\]
-
-We see that
-
-\[q_{\mu_{k}}(\mu_{k}) = \mathcal{N}\left(\mu_{\mu_{k}}, \Sigma_{\mu_{k}}\right)}\]
+\[q_{\textbf{w}_d}(\textbf{w}_d) = \mathcal{N}\left(\mu_{\textbf{w}_d}, \Sigma_{\textbf{w}_d}\right)}\]
 
 where:
 
-\[ \Sigma_{\mu_{k}} = \left(\frac{1}{\alpha_k^{2}} + \frac{\langle s_k \rangle_{q_{s_k}}}{\langle\sigma^2\rangle_{q_{\Psi}}}}\right)^{-1} \textbf{I}\]
+\[ \Sigma_{\textbf{w}_d} = \left(\frac{\langle  \textbf{s}\textbf{s}^T \rangle_{q_{\textbf{s}}(\textbf{s})}}{\sigma^2} + \textbf{A}\right)^{-1}\]
 
 and
 
-\[\mu_{\mu_{k}} = \Sigma_{\mu_{k}} \left(\textbf{x}^T - \sum_{k'=1, k'\neq k}^{K} \langle s_{k'} \rangle_{q_{s_{k'}}} \langle \mu_{k'} \rangle_{q_{\mu_{k'}}}^T\right)\langle s_k \rangle_{q_{s_k}}\]
+\[\mu_{\textbf{w}_d} = \Sigma_{\textbf{w}_d}} \left(\frac{x_d \langle\textbf{s}^T \rangle_{q_{\textbf{s}}(\textbf{s})}}{\sigma^2}}\right)\]
 
-Optimising the parameters $\{a, b\}$, and $\alpha^2$ in turn, will cause some $\alpha_i^2$ to diverge, the number of remaining $\alpha_i^2$ provide our determination for the value of $K$. This is automatic relevance determination through factor analysis.
+Thus, $\langle \mu_k\rangle_{q_{\mu_k}} \in \mathbb{R}^{D \times 1}$ is simply the concatenation of the $k^{th}$ elements of $\mu_{\textbf{w}_d}$ for $d\in \{1,...,D\}$
+
+For ARD, we must also optimise $\alpha$ with a hyper-M step. We start by choose $Ga(\alpha_k| a, b)$, a Gamma prior on \alpha_k$, with $a$ and $b$ being hyperparameters. Thus, to optimise $\alpha$ we want to maximise the penalised objective:
+
+\[ \alpha =  \arg \max_{\alpha} \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q(\textbf{w})} + \sum_{k=1}^K \log P( \alpha_k| a, b)\]
+
+Substituting the appropriate terms, we have our penalised objective $\mathcal{Q}$:
+
+\[\mathcal{Q} =  \left\langle \sum_{d=1}^D \frac{1}{2}  \sum_{k=1}^K \left(\log\alpha_k \right)  -\frac{1}{2}\textbf{w}_{d}^T \textbf{A}\textbf{w}_{d} \right\rangle_{q(\textbf{w})} + \sum_{k=1}^K (a-1)\log\alpha_k -b\alpha_k\]
+
+Simplifying:
+
+\[\mathcal{Q} =  \frac{D}{2}  \sum_{k=1}^K \left( \log\alpha_k \right)  - \frac{1}{2}\sum_{d=1}^D \left( tr \left[ \textbf{A}\left\langle  \textbf{w}_{d}\textbf{w}_{d}^T \right\rangle_{q(\textbf{w}_d)} \right]\right)+ \sum_{k=1}^K (a-1)\log\alpha_k -b\alpha_k\]
+
+%Knowing $\left\langle  \textbf{w}_{d}\textbf{w}_{d}^T \right\rangle_{q(\textbf{w})} = \mu_{\textbf{w}_d}\mu_{\textbf{w}_d}^T + \Sigma_{\textbf{w}_d}$:
+%
+%\[\mathcal{Q} =  \frac{D}{2}  \sum_{k=1}^K \left( \log\alpha_k \right)  - \frac{1}{2}\sum_{d=1}^D \left( tr \left[ \textbf{A}\left(\mu_{\textbf{w}_d}\mu_{\textbf{w}_d}^T + \Sigma_{\textbf{w}_d}\right)} \right] \right)+ \sum_{k=1}^K (a-1)\log\alpha_k -b\alpha_k\]
+
+
+Setting $\frac{d\mathcal{Q}}{d\alpha_k} = 0$ we get:
+
+\[ \frac{D}{2\alpha_k} -\frac{1}{2} \sum_{d=1}^D\left\langle (w_{d, k})^2 \right\rangle_{q(\textbf{w}_{d})} + \frac{a-1}{\alpha_k} - b = 0\]
+
+where $w_{d, k}$ is the $k^{th}$ element of $\textbf{w}_d$.
+
+Knowing $\left\langle (w_{d, k})^2 \right\rangle_{q(\textbf{w}_{d})} = (\mu_{\textbf{w}_{d, k}})^2 + \Sigma_{\textbf{w}_{d, (k, k)}}$, we can solve for $\alpha_k$:
+
+\[ \alpha_k = \frac{2a+D-2}{2b+ \sum_{d=1}^D \left((\mu_{\textbf{w}_{d, k}})^2 + \Sigma_{\textbf{w}_{d, (k, k)}}\right) }\]
+
+we have our hyper-M steps for optimising $\alpha$.
+
+%Optimising the parameters $\{a, b\}$, and $\alpha^2$ in turn, will cause some $\alpha_i^2$ to diverge, the number of remaining $\alpha_i^2$ provide our determination for the value of $K$. This is automatic relevance determination through factor analysis.
 
 \newpage
 The Python code for variational Bayes:

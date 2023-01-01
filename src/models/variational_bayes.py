@@ -1,153 +1,95 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-
 import numpy as np
 
 from src.models.binary_latent_factor_model import (
     AbstractBinaryLatentFactorModel,
     BinaryLatentFactorApproximation,
+    BinaryLatentFactorModel,
 )
 
 
-@dataclass
-class Distribution(ABC):
-    @property
-    @abstractmethod
-    def mean(self):
-        pass
+class GaussianPrior:
+    def __init__(self, a, b, d, k):
+        self.a = a
+        self.b = b
+        self.mu = np.zeros((d, k))
+        self.alpha = np.ones((k,))  # np.random.gamma(a, b, size=(k,))
+        self.w_covariance = np.zeros((k, k))
 
+    def mu_k(self, k):  # (number_of_dimensions,  1)
+        return self.mu[:, k : k + 1]
 
-@dataclass
-class Beta(Distribution):
-    alpha: np.ndarray
-    beta: np.ndarray
-
-    @property
-    def mean(self) -> np.ndarray:
-        return np.divide(self.alpha, (self.alpha + self.beta))
-
-
-@dataclass
-class InverseGamma(Distribution):
-    a: float
-    b: float
+    def w_d(self, d):  # (1,  number_of_latent_variables)
+        return self.mu[d : d + 1, :]
 
     @property
-    def mean(self) -> float:
-        return self.b / (self.a - 1)
-
-
-@dataclass
-class Gaussian(Distribution):
-    mu: np.ndarray  # (number_of_dimensions,  number_of_latent_variables)
-    variance: np.ndarray  # (number_of_latent_variables, )
-
-    @property
-    def precision(self) -> np.ndarray:
-        return 1 / self.variance
-
-    @property
-    def mean(self) -> np.ndarray:
-        return self.mu
+    def a_matrix(self) -> np.ndarray:
+        #  precision matrix for w_d
+        return np.diag(self.alpha)
 
 
 class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
-    def __init__(self, mu: Gaussian, variance: InverseGamma, pi: Beta):
-        self._mu = mu
+    def __init__(self, mu: GaussianPrior, variance: float, pi: np.ndarray):
+        self.gaussian_prior = mu
         self._variance = variance
         self._pi = pi
 
     @property
     def variance(self) -> float:
-        return self._variance.mean
+        return self._variance
 
     @property
     def pi(self) -> np.ndarray:
-        return self._pi.mean
+        return self._pi
 
     @property
     def mu(self) -> np.ndarray:
-        return self._mu.mean
+        return self.gaussian_prior.mu
 
-    def _update_pi(
-        self,
-        binary_latent_factor_approximation: BinaryLatentFactorApproximation,
-    ):
-        self._pi.alpha += np.sum(
-            binary_latent_factor_approximation.expectation_s, axis=0
-        ).reshape(1, -1)
-        self._pi.beta += binary_latent_factor_approximation.n - np.sum(
-            binary_latent_factor_approximation.expectation_s, axis=0
-        ).reshape(1, -1)
-
-    def _update_variance(
-        self,
-        x: np.ndarray,  # (number_of_points, number_of_dimensions)
-        binary_latent_factor_approximation: BinaryLatentFactorApproximation,
-    ):
-        #  expectation_s (number_of_points, number_of_latent_variables)
-        self._variance.a += (
-            0.5
-            * binary_latent_factor_approximation.n
-            * binary_latent_factor_approximation.k
-        )
-        # self._variance.b += 0.5 * np.mean(
-        #     (x - binary_latent_factor_approximation.expectation_s @ self.mu.T) ** 2
-        # )
-        self._variance.b += 2 * np.sum(
-            x - binary_latent_factor_approximation.expectation_s @ self.mu.T
-        )
-
-    def _update_mu_k(
-        self,
-        x: np.ndarray,  # (number_of_points, number_of_dimensions)
-        binary_latent_factor_approximation: BinaryLatentFactorApproximation,
-        k: int,  # latent dimension
+    def _update_w_d_covariance(
+        self, binary_latent_factor_approximation: BinaryLatentFactorApproximation
     ):
         #  expectation_s (number_of_points, number_of_latent_variables)
         #  expectation_ss (number_of_latent_variables, number_of_latent_variables)
-        self._mu.variance[k] = 1 / (
-            self._mu.precision[k]
-            + np.mean(binary_latent_factor_approximation.expectation_s[:, k])
-            * self.precision
+        self.gaussian_prior.w_covariance = np.linalg.inv(
+            self.gaussian_prior.a_matrix
+            + self.precision * binary_latent_factor_approximation.expectation_ss
         )
 
-        # (number_of_points, number_of_latent_variables-1)
-        es_except_k = np.concatenate(
-            (
-                binary_latent_factor_approximation.expectation_s[:, :k],
-                binary_latent_factor_approximation.expectation_s[:, k + 1 :],
-            ),
-            axis=1,
-        )
+    def _update_w_d_mean(
+        self,
+        x: np.ndarray,  # (number_of_points, number_of_dimensions)
+        binary_latent_factor_approximation: BinaryLatentFactorApproximation,
+        d: int,
+    ):
+        # (number_of_latent_variables x 1)
+        self.gaussian_prior.mu[d : d + 1, :] = (
+            self.gaussian_prior.w_covariance
+            @ (  # (number_of_latent_variables, number_of_latent_variables)
+                self.precision
+                * binary_latent_factor_approximation.expectation_s.T  # (number_of_latent_variables, number_of_points)
+                @ x[:, d : d + 1]  # (number_of_points, 1)
+            )
+        ).T
 
-        # (number_of_dimensions, number_of_latent_variables-1)
-        mu_except_k = np.concatenate((self.mu[:, :k], self.mu[:, k + 1 :]), axis=1)
-
-        # (number_of_dimensions x 1)
-        self._mu.mu[:, k] = self._mu.variance[k] * (
-            (
-                x  # (number_of_points, number_of_dimensions)
-                - es_except_k  # (number_of_points, number_of_latent_variables-1)
-                @ mu_except_k.T  # (number_of_dimensions, number_of_latent_variables-1)
-            ).T  # (number_of_dimensions, number_of_points)
-            @ binary_latent_factor_approximation.expectation_s[
-                :, k
-            ]  # (number_of_points, 1)
-        )
+    def _hyper_maximisation_step(self):
+        for k in range(self.k):
+            self.gaussian_prior.alpha[k] = (2 * self.gaussian_prior.a + self.d - 2) / (
+                2 * self.gaussian_prior.b
+                + np.sum(self.gaussian_prior.mu_k(k) ** 2)
+                + self.d * self.gaussian_prior.w_covariance[k, k]
+            )
 
     def maximisation_step(
         self,
         x: np.ndarray,
         binary_latent_factor_approximation: BinaryLatentFactorApproximation,
     ) -> None:
-        self._update_pi(binary_latent_factor_approximation)
-        self._update_variance(x, binary_latent_factor_approximation)
-        # es = binary_latent_factor_approximation.expectation_s
-        # ess = binary_latent_factor_approximation.expectation_ss
-        # n = binary_latent_factor_approximation.n
-        # self._pi = np.mean(es, axis=0, keepdims=True)
-        # self._sigma = np.sqrt((np.trace(np.dot(x.T, x)) + np.trace(np.dot(np.dot(self.mu.T, self.mu), ess))
-        #                  - 2 * np.trace(np.dot(np.dot(es.T, x), self.mu))) / (n * self.d))
-        for k in range(self.k):
-            self._update_mu_k(x, binary_latent_factor_approximation, k)
+        _, sigma, pi = BinaryLatentFactorModel.calculate_maximisation_parameters(
+            x, binary_latent_factor_approximation
+        )
+        self._variance = sigma**2
+        self._pi = pi
+        self._update_w_d_covariance(binary_latent_factor_approximation)
+        for d in range(self.d):
+            self._update_w_d_mean(x, binary_latent_factor_approximation, d)
+        self._hyper_maximisation_step()
