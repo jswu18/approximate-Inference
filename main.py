@@ -159,7 +159,7 @@ if __name__ == "__main__":
     q4.b(
         x=x,
         a_parameter=1,
-        b_parameter=1,
+        b_parameter=0,
         ks=ks,
         em_iterations=em_iterations,
         e_maximum_steps=e_maximum_steps,

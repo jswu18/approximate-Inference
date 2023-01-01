@@ -96,28 +96,18 @@ def b(
     plt.close()
 
     fig, ax = plt.subplots(len(ks), 1, figsize=(12, 6 + 3 * len(ks)))
-    max_alpha = (
-        np.max(
-            [
-                np.max(binary_latent_factor_models[i].gaussian_prior.alpha)
-                for i in range(len(ks))
-            ]
-        )
-        * 1.1
-    )
     for i, k in enumerate(ks):
         sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
         ax[i].set_title(f"{k=}")
         ax[i].set_xlabel("Latent Factor")
-        ax[i].set_ylabel("Alpha")
+        ax[i].set_ylabel("Inverse Alpha")
         ax[i].bar(
             [str(x + 1) for x in sort_indices]
             + [" " * (j + 1) for j in range(np.max(ks) - k)],
-            list(binary_latent_factor_models[i].gaussian_prior.alpha[sort_indices])
+            list(1 / binary_latent_factor_models[i].gaussian_prior.alpha[sort_indices])
             + [0] * (np.max(ks) - k),
         )
-        ax[i].set_ylim([0, max_alpha])
-    fig.suptitle("Alpha values (after optimisation)")
+    fig.suptitle("Inverse Alpha values (after optimisation)")
     plt.tight_layout()
     plt.savefig(save_path + "-alpha-trained", bbox_inches="tight")
     plt.close()
