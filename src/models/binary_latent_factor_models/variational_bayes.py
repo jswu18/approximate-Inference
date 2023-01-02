@@ -1,11 +1,11 @@
 import numpy as np
 
-from src.models.binary_latent_factor_model import (
+from src.models.binary_latent_factor_approximations.abstract_binary_latent_factor_approximation import (
+    AbstractBinaryLatentFactorApproximation,
+)
+from src.models.binary_latent_factor_models.binary_latent_factor_model import (
     AbstractBinaryLatentFactorModel,
     BinaryLatentFactorModel,
-)
-from src.models.binary_latent_factor_model_approximation import (
-    BinaryLatentFactorApproximation,
 )
 
 
@@ -48,7 +48,8 @@ class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
         return self.gaussian_prior.mu
 
     def _update_w_d_covariance(
-        self, binary_latent_factor_approximation: BinaryLatentFactorApproximation
+        self,
+        binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
     ):
         #  expectation_s (number_of_points, number_of_latent_variables)
         #  expectation_ss (number_of_latent_variables, number_of_latent_variables)
@@ -60,7 +61,7 @@ class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
     def _update_w_d_mean(
         self,
         x: np.ndarray,  # (number_of_points, number_of_dimensions)
-        binary_latent_factor_approximation: BinaryLatentFactorApproximation,
+        binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
         d: int,
     ):
         # (number_of_latent_variables x 1)
@@ -84,7 +85,7 @@ class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
     def maximisation_step(
         self,
         x: np.ndarray,
-        binary_latent_factor_approximation: BinaryLatentFactorApproximation,
+        binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
     ) -> None:
         _, sigma, pi = BinaryLatentFactorModel.calculate_maximisation_parameters(
             x, binary_latent_factor_approximation

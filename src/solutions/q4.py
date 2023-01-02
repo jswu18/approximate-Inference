@@ -6,9 +6,13 @@ import numpy as np
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
 from src.expectation_maximisation import learn_binary_factors
-from src.models.binary_latent_factor_model import BinaryLatentFactorModel
-from src.models.mean_field_approximation import init_mean_field_approximation
-from src.models.variational_bayes import (
+from src.models.binary_latent_factor_approximations.mean_field_approximation import (
+    init_mean_field_approximation,
+)
+from src.models.binary_latent_factor_models.binary_latent_factor_model import (
+    BinaryLatentFactorModel,
+)
+from src.models.binary_latent_factor_models.variational_bayes import (
     GaussianPrior,
     VariationalBayesBinaryLatentFactorModel,
 )

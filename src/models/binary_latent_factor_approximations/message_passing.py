@@ -2,13 +2,13 @@ from typing import List
 
 import numpy as np
 
-from src.models.binary_latent_factor_model_approximation import (
-    BinaryLatentFactorApproximation,
+from src.models.binary_latent_factor_approximations.abstract_binary_latent_factor_approximation import (
+    AbstractBinaryLatentFactorApproximation,
 )
-from src.models.boltzmann_machine import BoltzmannMachine
+from src.models.binary_latent_factor_models.boltzmann_machine import BoltzmannMachine
 
 
-class MessagePassing(BinaryLatentFactorApproximation):
+class MessagePassing(AbstractBinaryLatentFactorApproximation):
     """
     eta_matrix:  of parameters eta_matrix[n, i, j]
                 off diagonals corresponds to \tilda{g}_{ij, \neg s_i}(s_j) for data point n

@@ -2,8 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.expectation_maximisation import learn_binary_factors
-from src.models.boltzmann_machine import init_boltzmann_machine
-from src.models.message_passing import init_message_passing
+from src.models.binary_latent_factor_approximations.message_passing import (
+    init_message_passing,
+)
+from src.models.binary_latent_factor_models.boltzmann_machine import (
+    init_boltzmann_machine,
+)
 
 
 def run(x: np.ndarray, k: int, em_iterations: int, save_path: str) -> None:

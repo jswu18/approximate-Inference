@@ -2,13 +2,15 @@ from typing import List
 
 import numpy as np
 
-from src.models.binary_latent_factor_model import AbstractBinaryLatentFactorModel
-from src.models.binary_latent_factor_model_approximation import (
-    BinaryLatentFactorApproximation,
+from src.models.binary_latent_factor_approximations.abstract_binary_latent_factor_approximation import (
+    AbstractBinaryLatentFactorApproximation,
+)
+from src.models.binary_latent_factor_models.binary_latent_factor_model import (
+    AbstractBinaryLatentFactorModel,
 )
 
 
-class MeanFieldApproximation(BinaryLatentFactorApproximation):
+class MeanFieldApproximation(AbstractBinaryLatentFactorApproximation):
     """
     lambda_matrix: parameters variational approximation (number_of_points, number_of_latent_variables)
     """

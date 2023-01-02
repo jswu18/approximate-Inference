@@ -4,12 +4,14 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
-    from src.models.binary_latent_factor_model import AbstractBinaryLatentFactorModel
+    from src.models.binary_latent_factor_models.binary_latent_factor_model import (
+        AbstractBinaryLatentFactorModel,
+    )
 
 import numpy as np
 
 
-class BinaryLatentFactorApproximation(ABC):
+class AbstractBinaryLatentFactorApproximation(ABC):
     @property
     @abstractmethod
     def lambda_matrix(self) -> np.ndarray:

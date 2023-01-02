@@ -5,9 +5,11 @@ from typing import TYPE_CHECKING, List, Tuple
 import numpy as np
 
 if TYPE_CHECKING:
-    from src.models.binary_latent_factor_model import AbstractBinaryLatentFactorModel
-    from src.models.binary_latent_factor_model_approximation import (
-        BinaryLatentFactorApproximation,
+    from src.models.binary_latent_factor_approximations.abstract_binary_latent_factor_approximation import (
+        AbstractBinaryLatentFactorApproximation,
+    )
+    from src.models.binary_latent_factor_models.binary_latent_factor_model import (
+        AbstractBinaryLatentFactorModel,
     )
 
 
@@ -25,9 +27,11 @@ def learn_binary_factors(
     x: np.ndarray,
     em_iterations: int,
     binary_latent_factor_model: AbstractBinaryLatentFactorModel,
-    binary_latent_factor_approximation: BinaryLatentFactorApproximation,
+    binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
 ) -> Tuple[
-    BinaryLatentFactorApproximation, AbstractBinaryLatentFactorModel, List[float]
+    AbstractBinaryLatentFactorApproximation,
+    AbstractBinaryLatentFactorModel,
+    List[float],
 ]:
     free_energies: List[float] = [
         binary_latent_factor_approximation.compute_free_energy(

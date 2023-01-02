@@ -1,8 +1,10 @@
 import numpy as np
 
-from src.models.binary_latent_factor_model import BinaryLatentFactorModel
-from src.models.binary_latent_factor_model_approximation import (
-    BinaryLatentFactorApproximation,
+from src.models.binary_latent_factor_approximations.abstract_binary_latent_factor_approximation import (
+    AbstractBinaryLatentFactorApproximation,
+)
+from src.models.binary_latent_factor_models.binary_latent_factor_model import (
+    BinaryLatentFactorModel,
 )
 
 
@@ -59,7 +61,7 @@ class BoltzmannMachine(BinaryLatentFactorModel):
 
 def init_boltzmann_machine(
     x: np.ndarray,
-    binary_latent_factor_approximation: BinaryLatentFactorApproximation,
+    binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
 ) -> BinaryLatentFactorModel:
     mu, sigma, pi = BinaryLatentFactorModel.calculate_maximisation_parameters(
         x, binary_latent_factor_approximation

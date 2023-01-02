@@ -872,15 +872,11 @@ We can see that when $\sigma$ is smaller, we are able to converge at a higher fr
 
 \newpage
 The Python code for the binary latent factor model:
-\lstinputlisting[language=Python]{src/models/binary_latent_factor_model.py}
-
-\newpage
-The Python code for an abstract binary latent factor model approximation:
-\lstinputlisting[language=Python]{src/models/binary_latent_factor_model_approximation.py}
+\lstinputlisting[language=Python]{src/models/binary_latent_factor_models/binary_latent_factor_model.py}
 
 \newpage
 The Python code for mean field learning:
-\lstinputlisting[language=Python]{src/models/mean_field_approximation.py}
+\lstinputlisting[language=Python]{src/models/binary_latent_factor_approximations/mean_field_approximation.py}
 
 \newpage
 The Python code for expectation maximisation:
@@ -1002,23 +998,6 @@ Knowing $\left\langle (w_{d, k})^2 \right\rangle_{q(\textbf{w}_{d})} = (\mu_{\te
 
 we have our hyper-M steps for optimising $\alpha$.
 
-%\newpage
-%\begin{figure}[h]
-%\centering
-%\begin{minipage}{.6\textwidth}
-%  \centering
-%\includegraphics[scale=0.15]{outputs/q4/b-latent-factors}
-%\caption{Learned Latent Factors}
-%\label{fig:}
-%\end{minipage}%
-%\begin{minipage}{.2\textwidth}
-%  \centering
-%\includegraphics[scale=0.11]{outputs/q4/b-alpha-trained}
-%\caption{Inverse Alpha values}
-%\label{fig:}
-%\end{minipage}
-%\end{figure}
-
 \newpage
 \begin{figure}[h]
 \centering
@@ -1045,7 +1024,7 @@ we have our hyper-M steps for optimising $\alpha$.
 
 \newpage
 The Python code for Variational Bayes:
-\lstinputlisting[language=Python]{src/models/variational_bayes.py}
+\lstinputlisting[language=Python]{src/models/binary_latent_factor_models/variational_bayes.py}
 
 \newpage
 The rest of the Python code for question 4:
@@ -1354,26 +1333,36 @@ This gives us a value for $K$, the number of latent factors that haven't diverge
 
 \newpage
 The Python code for the Boltzmann machine:
-\lstinputlisting[language=Python]{src/models/boltzmann_machine.py}
+\lstinputlisting[language=Python]{src/models/binary_latent_factor_models/boltzmann_machine.py}
 
 \newpage
 The Python code for message passing:
-\lstinputlisting[language=Python]{src/models/message_passing.py}
+\lstinputlisting[language=Python]{src/models/binary_latent_factor_approximations/message_passing.py}
 
 \newpage
 The rest of the Python code for question 6:
 \lstinputlisting[language=Python]{src/solutions/q6.py}
 
 \newpage
-\section*{Appendix 1: constants.py}
-\lstinputlisting[language=Python]{src/constants.py}
+\section*{Appendix 1: abstract\_binary\_latent\_factor\_model.py}
+\lstinputlisting[language=Python]{src/models/binary_latent_factor_models/abstract_binary_latent_factor_model.py}
+
 \newpage
-\section*{Appendix 2: main.py}
+\section*{Appendix 2: abstract\_binary\_latent\_factor\_approximation.py}
+\lstinputlisting[language=Python]{src/models/binary_latent_factor_approximations/abstract_binary_latent_factor_approximation.py}
+
+\newpage
+\section*{Appendix 3: main.py}
 \lstinputlisting[language=Python]{main.py}
+
 \newpage
-\section*{Appendix 3: generate\_images.py}
+\section*{Appendix 4: constants.py}
+\lstinputlisting[language=Python]{src/constants.py}
+
+\newpage
+\section*{Appendix 5: generate\_images.py}
 \lstinputlisting[language=Python]{src/generate_images.py}
 \newpage
-\section*{Appendix 4: MStep.py}
+\section*{Appendix 6: MStep.py}
 \lstinputlisting[language=Python]{demo_code/MStep.py}
 \end{document}

@@ -4,11 +4,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.expectation_maximisation import is_converge, learn_binary_factors
-from src.models.binary_latent_factor_model import (
+from src.models.binary_latent_factor_approximations.mean_field_approximation import (
+    init_mean_field_approximation,
+)
+from src.models.binary_latent_factor_models.binary_latent_factor_model import (
     AbstractBinaryLatentFactorModel,
     init_binary_latent_factor_model,
 )
-from src.models.mean_field_approximation import init_mean_field_approximation
 
 
 def e_and_f(
