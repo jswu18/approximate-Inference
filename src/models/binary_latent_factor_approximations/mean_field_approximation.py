@@ -11,19 +11,18 @@ from src.models.binary_latent_factor_models.binary_latent_factor_model import (
 
 
 class MeanFieldApproximation(AbstractBinaryLatentFactorApproximation):
-    """
-    lambda_matrix: parameters variational approximation (number_of_points, number_of_latent_variables)
-    """
-
-    _lambda_matrix: np.ndarray
-
-    def __init__(self, lambda_matrix, max_steps, convergence_criterion):
-        self.lambda_matrix = lambda_matrix
+    def __init__(
+        self, lambda_matrix: np.ndarray, max_steps: int, convergence_criterion: float
+    ):
+        self._lambda_matrix = lambda_matrix
         self.max_steps = max_steps
         self.convergence_criterion = convergence_criterion
 
     @property
     def lambda_matrix(self) -> np.ndarray:
+        """
+        lambda_matrix: parameters variational approximation (number_of_points, number_of_latent_variables)
+        """
         return self._lambda_matrix
 
     @lambda_matrix.setter

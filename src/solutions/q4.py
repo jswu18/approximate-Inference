@@ -18,24 +18,6 @@ from src.models.binary_latent_factor_models.variational_bayes import (
 )
 
 
-def offset_image(coord, path, ax):
-    img = plt.imread(path)
-    im = OffsetImage(img, zoom=0.72)
-    im.image.axes = ax
-
-    ab = AnnotationBbox(
-        im,
-        (coord, 0),
-        xybox=(0.0, -19.0),
-        frameon=False,
-        xycoords="data",
-        boxcoords="offset points",
-        pad=0,
-    )
-
-    ax.add_artist(ab)
-
-
 def _run_automatic_relevance_determination(
     x: np.ndarray,
     a_parameter: int,
@@ -45,6 +27,18 @@ def _run_automatic_relevance_determination(
     e_maximum_steps: int,
     e_convergence_criterion: float,
 ) -> Tuple[VariationalBayesBinaryLatentFactorModel, List[float]]:
+    """
+    Run automatic relevance determination with variational Bayes.
+
+    :param x: data matrix (number_of_points, number_of_dimensions)
+    :param a_parameter: alpha parameter for gamma prior
+    :param b_parameter: beta parameter for gamma prior
+    :param k: number of latent variables
+    :param em_iterations: number of iterations to run EM
+    :param e_maximum_steps: maximum number of iterations of partial expectation steps
+    :param e_convergence_criterion: minimum required change in free energy for each partial expectation step
+    :return: a Tuple containing the optimised VB model and a list of free energies during each EM step
+    """
     n = x.shape[0]
     mean_field_approximation = init_mean_field_approximation(
         k, n, max_steps=e_maximum_steps, convergence_criterion=e_convergence_criterion
@@ -65,13 +59,37 @@ def _run_automatic_relevance_determination(
             pi=pi,
         )
     )
-    (_, binary_latent_factor_model, free_energy,) = learn_binary_factors(
+    _, binary_latent_factor_model, free_energy = learn_binary_factors(
         x=x,
         em_iterations=em_iterations,
         binary_latent_factor_model=binary_latent_factor_model,
         binary_latent_factor_approximation=mean_field_approximation,
     )
     return binary_latent_factor_model, free_energy
+
+
+def _offset_image(coord: int, path: str, ax: plt.axis):
+    """
+    Add image to matplotlib axis.
+
+    :param coord: coordinate on axis
+    :param path: path to image
+    :param ax: plot axis
+    """
+    img = plt.imread(path)
+    im = OffsetImage(img, zoom=0.72)
+    im.image.axes = ax
+
+    ab = AnnotationBbox(
+        im,
+        (coord, 0),
+        xybox=(0.0, -19.0),
+        frameon=False,
+        xycoords="data",
+        boxcoords="offset points",
+        pad=0,
+    )
+    ax.add_artist(ab)
 
 
 def b(
@@ -104,22 +122,7 @@ def b(
         binary_latent_factor_models.append(binary_latent_factor_model)
         free_energies.append(free_energy)
 
-    n = len(ks)
-    m = np.max(ks)
-    fig = plt.figure()
-    fig.set_figwidth(2 * n)
-    fig.set_figheight(2 * m)
-    for i, k in enumerate(ks):
-        sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
-        for j, idx in enumerate(sort_indices):
-            ax = plt.subplot(n, m, m * i + j + 1)
-            ax.imshow(binary_latent_factor_models[i].mu[:, idx].reshape(4, 4))
-            ax.set_title(f"Latent Feature {idx+1}/{k}")
-    fig.suptitle("Learned Features (Variational Bayes)")
-    plt.tight_layout()
-    plt.savefig(save_path + "-latent-factors", bbox_inches="tight")
-    plt.close()
-
+    # store each feature as an image for later use
     for i, k in enumerate(ks):
         sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
         for j, idx in enumerate(sort_indices):
@@ -131,6 +134,7 @@ def b(
             fig.savefig(save_path + f"-latent-factor-{i}-{j}", bbox_inches="tight")
             plt.close()
 
+    # bar plot of alphas
     fig, ax = plt.subplots(len(ks), 1, figsize=(12, 2 * len(ks)))
     plt.subplots_adjust(hspace=1)
     for i, k in enumerate(ks):
@@ -142,15 +146,17 @@ def b(
         ax[i].bar(range(max_k), y)
         ax[i].set_xticks([])
         ax[i].set_ylabel("Inverse Alpha")
+    # add feature image ticks
     for i, k in enumerate(ks):
         sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
         for j in range(len(sort_indices)):
             path = save_path + f"-latent-factor-{i}-{j}.png"
-            offset_image(j, path, ax[i])
+            _offset_image(j, path, ax[i])
             os.remove(path)
     fig.savefig(save_path + f"-latent-factors-comparison", bbox_inches="tight")
     plt.close()
 
+    # free energy plot
     fig = plt.figure()
     fig.set_figwidth(10)
     fig.set_figheight(10)

@@ -5,14 +5,24 @@ import numpy as np
 
 @dataclass
 class LinearRegressionParameters:
-    mean: np.ndarray
-    covariance: np.ndarray
+    """
+    Parameters for linear regression
+    """
+
+    mean: np.ndarray  # weight vector (1, number of features)
+    covariance: np.ndarray  # covariance matrix on mean (number of features, number of features)
 
     @property
     def precision(self) -> np.ndarray:
         return np.linalg.inv(self.covariance)
 
     def predict(self, x: np.ndarray) -> np.ndarray:
+        """
+        Linear regression prediction.
+
+        :param x: design matrix (number of features, number of data points)
+        :return: predicted response matrix (1, number of data points)
+        """
         return self.mean.T @ x
 
 

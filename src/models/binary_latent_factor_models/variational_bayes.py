@@ -11,26 +11,56 @@ from src.models.binary_latent_factor_models.binary_latent_factor_model import (
 
 class GaussianPrior:
     def __init__(self, a, b, d, k):
+        """
+        Gaussian prior on mu matrix
+
+        :param a: alpha parameter of Gamma Prior
+        :param b: beta parameter of Gamma Prior
+        :param d: number of dimensions
+        :param k: number of latent factors
+        """
         self.a = a
         self.b = b
         self.mu = np.zeros((d, k))
-        self.alpha = np.ones((k,))  # np.random.gamma(a, b, size=(k,))
+        self.alpha = np.ones((k,))
         self.w_covariance = np.zeros((k, k))
 
-    def mu_k(self, k):  # (number_of_dimensions,  1)
+    def mu_k(self, k):
+        """
+        Column vector of mu matrix, the latent feature vector
+
+        :param k: latent factor index
+        :return: column vector (number_of_dimensions,  1)
+        """
         return self.mu[:, k : k + 1]
 
-    def w_d(self, d):  # (1,  number_of_latent_variables)
+    def w_d(self, d):
+        """
+        Row vector of mu matrix, the weight vector for a particular dimension (pixel) of the data
+
+        :param d: data dimension index
+        :return: row vector (1,  number_of_latent_variables)
+        """
         return self.mu[d : d + 1, :]
 
     @property
     def a_matrix(self) -> np.ndarray:
-        #  precision matrix for w_d
+        """
+        Precision matrix for a weight vector w_d
+        :return: matrix of shape (number_of_latent_variables, number_of_latent_variables)
+        """
         return np.diag(self.alpha)
 
 
 class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
     def __init__(self, mu: GaussianPrior, variance: float, pi: np.ndarray):
+        """
+        Variational Bayes implementation with prior on mu
+
+        :param mu: Gaussian prior on latent features
+        :param variance: Gaussian noise parameter
+        :param pi: vector of priors (1, number_of_latent_variables)
+        """
         self.gaussian_prior = mu
         self._variance = variance
         self._pi = pi
@@ -51,8 +81,7 @@ class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
         self,
         binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
     ):
-        #  expectation_s (number_of_points, number_of_latent_variables)
-        #  expectation_ss (number_of_latent_variables, number_of_latent_variables)
+        #  (number_of_latent_variables, number_of_latent_variables)
         self.gaussian_prior.w_covariance = np.linalg.inv(
             self.gaussian_prior.a_matrix
             + self.precision * binary_latent_factor_approximation.expectation_ss
@@ -63,8 +92,17 @@ class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
         x: np.ndarray,  # (number_of_points, number_of_dimensions)
         binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
         d: int,
-    ):
-        # (number_of_latent_variables x 1)
+    ) -> None:
+        """
+        Update mean vector for w_d.
+
+        :param x: data matrix (number_of_points, number_of_dimensions)
+        :param binary_latent_factor_approximation: a binary_latent_factor_approximation
+        :param d: index of data dimension to update
+        :return:
+        """
+
+        # (number_of_latent_variables,  1)
         self.gaussian_prior.mu[d : d + 1, :] = (
             self.gaussian_prior.w_covariance
             @ (  # (number_of_latent_variables, number_of_latent_variables)
@@ -74,7 +112,10 @@ class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
             )
         ).T
 
-    def _hyper_maximisation_step(self):
+    def _hyper_maximisation_step(self) -> None:
+        """
+        Hyper M step updating alpha, which parameterize the covariance matrix of the Gaussian prior on mu
+        """
         for k in range(self.k):
             self.gaussian_prior.alpha[k] = (2 * self.gaussian_prior.a + self.d - 2) / (
                 2 * self.gaussian_prior.b
@@ -87,6 +128,12 @@ class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
         x: np.ndarray,
         binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
     ) -> None:
+        """
+        Maximisation step which runs the usual M-step followed by posterior updates to the
+        distribution of mu as well as a hyper M-step updating the prior parameters on mu, the alpha vector
+        :param x: data matrix (number_of_points, number_of_dimensions)
+        :param binary_latent_factor_approximation: a binary_latent_factor_approximation
+        """
         _, sigma, pi = BinaryLatentFactorModel.calculate_maximisation_parameters(
             x, binary_latent_factor_approximation
         )

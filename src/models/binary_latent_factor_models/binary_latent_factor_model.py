@@ -12,18 +12,18 @@ from src.models.binary_latent_factor_models.abstract_binary_latent_factor_model 
 
 
 class BinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
-    """
-    mu: matrix of means (number_of_dimensions, number_of_latent_variables)
-    sigma: gaussian noise parameter
-    pi: vector of priors (1, number_of_latent_variables)
-    """
-
     def __init__(
         self,
         mu: np.ndarray,
         sigma: float,
         pi: np.ndarray,
     ):
+        """
+
+        :param mu: matrix of means (number_of_dimensions, number_of_latent_variables)
+        :param sigma: Gaussian noise parameter
+        :param pi: vector of priors (1, number_of_latent_variables)
+        """
         self._mu = mu
         self._sigma = sigma
         self._pi = pi
@@ -84,6 +84,14 @@ def init_binary_latent_factor_model(
     x: np.ndarray,
     binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
 ) -> BinaryLatentFactorModel:
+    """
+    Initialise binary latent factor model by running a maximisation step with the parameters of the
+    binary latent factor approximation
+
+    :param x: data matrix (number_of_points, number_of_dimensions)
+    :param binary_latent_factor_approximation: a binary_latent_factor_approximation
+    :return: an initialised binary latent factor model
+    """
     mu, sigma, pi = BinaryLatentFactorModel.calculate_maximisation_parameters(
         x, binary_latent_factor_approximation
     )

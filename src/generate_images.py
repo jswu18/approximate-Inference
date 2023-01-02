@@ -5,11 +5,12 @@ from src.constants import DEFAULT_SEED, M1, M2, M3, M4, M5, M6, M7, M8
 
 def generate_images(n: int = 400, seed: int = DEFAULT_SEED, sigma: float = 0.1):
     """
+    Image generation, adapted from provided demo code
 
     :param n: number of data points
     :param seed: random seed
     :param sigma: Gaussian noise
-    :return:
+    :return: images as a data matrix (number_of_points, number_of_dimensions)
     """
     d = 16  # dimensionality of the data
     np.random.seed(seed)

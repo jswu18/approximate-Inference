@@ -15,6 +15,9 @@ class AbstractBinaryLatentFactorApproximation(ABC):
     @property
     @abstractmethod
     def lambda_matrix(self) -> np.ndarray:
+        """
+        lambda_matrix: parameters variational approximation (number_of_points, number_of_latent_variables)
+        """
         pass
 
     @abstractmethod
@@ -45,10 +48,16 @@ class AbstractBinaryLatentFactorApproximation(ABC):
 
     @property
     def n(self) -> int:
+        """
+        Number of data points
+        """
         return self.lambda_matrix.shape[0]
 
     @property
     def k(self) -> int:
+        """
+        Number of latent variables
+        """
         return self.lambda_matrix.shape[1]
 
     def compute_free_energy(
@@ -125,6 +134,11 @@ class AbstractBinaryLatentFactorApproximation(ABC):
         return expectation_log_p_x_given_s_theta + expectation_log_p_s_given_theta
 
     def _compute_approximation_model_entropy(self) -> float:
+        """
+        Compute the model entropy
+
+        :return: model entropy
+        """
         return -np.sum(
             np.multiply(
                 self.lambda_matrix,

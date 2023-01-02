@@ -15,16 +15,25 @@ class AbstractBinaryLatentFactorModel(ABC):
     @property
     @abstractmethod
     def mu(self) -> np.ndarray:
+        """
+        matrix of means (number_of_dimensions, number_of_latent_variables)
+        """
         pass
 
     @property
     @abstractmethod
     def variance(self) -> float:
+        """
+        gaussian noise parameter
+        """
         pass
 
     @property
     @abstractmethod
     def pi(self) -> np.ndarray:
+        """
+        (1, number_of_latent_variables)
+        """
         pass
 
     @abstractmethod

@@ -150,6 +150,7 @@ if __name__ == "__main__":
         e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q3_OUTPUT_FOLDER, "g"),
     )
+
     # Question 4
     Q4_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q4")
     if not os.path.exists(Q4_OUTPUT_FOLDER):
@@ -188,6 +189,7 @@ if __name__ == "__main__":
         e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q4_OUTPUT_FOLDER, "b-2"),
     )
+
     # Question 6
     Q6_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q6")
     if not os.path.exists(Q6_OUTPUT_FOLDER):
