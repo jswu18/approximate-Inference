@@ -1,7 +1,9 @@
+import os
 from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
 from src.expectation_maximisation import learn_binary_factors
 from src.models.binary_latent_factor_model import BinaryLatentFactorModel
@@ -10,6 +12,24 @@ from src.models.variational_bayes import (
     GaussianPrior,
     VariationalBayesBinaryLatentFactorModel,
 )
+
+
+def offset_image(coord, path, ax):
+    img = plt.imread(path)
+    im = OffsetImage(img, zoom=0.72)
+    im.image.axes = ax
+
+    ab = AnnotationBbox(
+        im,
+        (coord, 0),
+        xybox=(0.0, -19.0),
+        frameon=False,
+        xycoords="data",
+        boxcoords="offset points",
+        pad=0,
+    )
+
+    ax.add_artist(ab)
 
 
 def _run_automatic_relevance_determination(
@@ -55,6 +75,7 @@ def b(
     a_parameter: int,
     b_parameter: int,
     ks: List[int],
+    max_k: int,
     em_iterations: int,
     e_maximum_steps: int,
     e_convergence_criterion: float,
@@ -95,21 +116,35 @@ def b(
     plt.savefig(save_path + "-latent-factors", bbox_inches="tight")
     plt.close()
 
-    fig, ax = plt.subplots(len(ks), 1, figsize=(12, 6 + 3 * len(ks)))
     for i, k in enumerate(ks):
         sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
+        for j, idx in enumerate(sort_indices):
+            fig = plt.figure(figsize=(0.3, 0.3))
+            ax = plt.Axes(fig, [0.0, 0.0, 1.0, 1.0])
+            ax.set_axis_off()
+            fig.add_axes(ax)
+            ax.imshow(binary_latent_factor_models[i].mu[:, idx].reshape(4, 4))
+            fig.savefig(save_path + f"-latent-factor-{i}-{j}", bbox_inches="tight")
+            plt.close()
+
+    fig, ax = plt.subplots(len(ks), 1, figsize=(10, 2 * len(ks)))
+    plt.subplots_adjust(hspace=1)
+    for i, k in enumerate(ks):
+        sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
+        y = list(
+            1 / binary_latent_factor_models[i].gaussian_prior.alpha[sort_indices]
+        ) + [0] * (max_k - k)
         ax[i].set_title(f"{k=}")
-        ax[i].set_xlabel("Latent Factor")
+        ax[i].bar(range(max_k), y)
+        ax[i].set_xticks([])
         ax[i].set_ylabel("Inverse Alpha")
-        ax[i].bar(
-            [str(x + 1) for x in sort_indices]
-            + [" " * (j + 1) for j in range(np.max(ks) - k)],
-            list(1 / binary_latent_factor_models[i].gaussian_prior.alpha[sort_indices])
-            + [0] * (np.max(ks) - k),
-        )
-    fig.suptitle("Inverse Alpha values (after optimisation)")
-    plt.tight_layout()
-    plt.savefig(save_path + "-alpha-trained", bbox_inches="tight")
+    for i, k in enumerate(ks):
+        sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
+        for j in range(len(sort_indices)):
+            path = save_path + f"-latent-factor-{i}-{j}.png"
+            offset_image(j, path, ax[i])
+            os.remove(path)
+    fig.savefig(save_path + f"-latent-factors-comparison", bbox_inches="tight")
     plt.close()
 
     shades = np.flip(np.linspace(0, 0.7, len(ks)))

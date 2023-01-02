@@ -120,8 +120,8 @@ if __name__ == "__main__":
     number_of_images = 2000
     x = generate_images(n=number_of_images)
     k = 8
-    em_iterations = 200
-    e_maximum_steps = 100
+    em_iterations = 100
+    e_maximum_steps = 50
     e_convergence_criterion = 0
 
     binary_latent_factor_model = q3.e_and_f(
@@ -150,23 +150,44 @@ if __name__ == "__main__":
         e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q3_OUTPUT_FOLDER, "g"),
     )
-
     # Question 4
     Q4_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q4")
     if not os.path.exists(Q4_OUTPUT_FOLDER):
         os.makedirs(Q4_OUTPUT_FOLDER)
-    ks = np.arange(int(k / 2), int(2 * k) + 1)
+    max_k = 21
     q4.b(
         x=x,
         a_parameter=1,
         b_parameter=0,
-        ks=ks,
+        ks=np.arange(4, 22),
+        max_k=max_k,
         em_iterations=em_iterations,
         e_maximum_steps=e_maximum_steps,
         e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q4_OUTPUT_FOLDER, "b"),
     )
-
+    q4.b(
+        x=x,
+        a_parameter=1,
+        b_parameter=0,
+        ks=np.arange(4, 13),
+        max_k=max_k,
+        em_iterations=em_iterations,
+        e_maximum_steps=e_maximum_steps,
+        e_convergence_criterion=e_convergence_criterion,
+        save_path=os.path.join(Q4_OUTPUT_FOLDER, "b-1"),
+    )
+    q4.b(
+        x=x,
+        a_parameter=1,
+        b_parameter=0,
+        ks=np.arange(13, 22),
+        max_k=max_k,
+        em_iterations=em_iterations,
+        e_maximum_steps=e_maximum_steps,
+        e_convergence_criterion=e_convergence_criterion,
+        save_path=os.path.join(Q4_OUTPUT_FOLDER, "b-2"),
+    )
     # Question 6
     Q6_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q6")
     if not os.path.exists(Q6_OUTPUT_FOLDER):
