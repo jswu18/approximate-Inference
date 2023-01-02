@@ -131,7 +131,7 @@ def b(
             fig.savefig(save_path + f"-latent-factor-{i}-{j}", bbox_inches="tight")
             plt.close()
 
-    fig, ax = plt.subplots(len(ks), 1, figsize=(10, 2 * len(ks)))
+    fig, ax = plt.subplots(len(ks), 1, figsize=(12, 2 * len(ks)))
     plt.subplots_adjust(hspace=1)
     for i, k in enumerate(ks):
         sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
@@ -151,6 +151,9 @@ def b(
     fig.savefig(save_path + f"-latent-factors-comparison", bbox_inches="tight")
     plt.close()
 
+    fig = plt.figure()
+    fig.set_figwidth(10)
+    fig.set_figheight(10)
     shades = np.flip(np.linspace(0, 0.7, len(ks)))
     for i, k in enumerate(ks):
         plt.plot(free_energies[i], label=f"{k=}", color=np.ones(3) * shades[i])

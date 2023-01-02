@@ -84,6 +84,8 @@
 \end{tikzpicture}
 \end{center}
 
+\newpage
+
 
 \subsection*{(b)} The moralised graph:
 
@@ -115,44 +117,8 @@
 \end{tikzpicture}
 \end{center}
 
-\newpage
 
 An effective triangulation:
-
-%\begin{center}
-%\begin{tikzpicture}[node distance={15mm}, main/.style = {draw, circle}]
-%    \node[main] (A) {$A$};
-%    \node[main] (B) [below left of=A] {$B$};
-%    \node[main] (C) [below right of=A] {$C$};
-%    \node[main] (E) [below right of=C] {$E$};
-%    \node[main] (D) [below left of=C] {$D$};
-%    \node[main] (H) [below of=E] {$H$};
-%    \node[main] (G) [right of=E] {$G$};
-%    \node[main] (I) [below left of=H] {$I$};
-%    \node[main] (F) [above left of=I] {$F$};
-%
-%    \draw (A) -- (B);
-%    \draw (A) -- (C);
-%    \draw (B) -- (F);
-%    \draw (B) -- (D);
-%    \draw (C) -- (D);
-%    \draw (C) -- (E);
-%    \draw (E) -- (G);
-%    \draw (G) -- (H);
-%    \draw (D) -- (F);
-%    \draw (E) -- (H);
-%    \draw (F) -- (H);
-%    \draw (F) -- (I);
-%    \draw (H) -- (I);
-%
-%    \draw[dashed] (I) -- (E);
-%    \draw[dashed] (F) -- (E);
-%    \draw[dashed] (C) -- (F);
-%    \draw[dashed] (B) -- (D);
-%    \draw[dashed] (B) -- (C);
-%
-%\end{tikzpicture}
-%\end{center}
 
 
 \begin{center}
@@ -190,56 +156,28 @@ An effective triangulation:
 \end{center}
 
 where the dashed lines are edges added to triangulate the moralised graph.
-
 \newpage
+
 
 The resulting junction tree:
 
 
 
 %\begin{center}
-%\begin{tikzpicture}[node distance={15mm}, main/.style = {draw, circle}, square/.style={regular polygon,regular polygon sides=4}]
+%\begin{tikzpicture}[node distance={25mm}, main/.style = {draw, circle}, square/.style={regular polygon,regular polygon sides=4}]
 %    \node[main] (ABC) {$ABC$};
-%    \node[square] (BC) [square,draw] [below of=ABC] {$BC$};
-%    \node[main] (BCDF) [below of=BC] {$BCDF$};
-%    \node[square] (CF) [square,draw] [below of=BCDF] {$CF$};
-%    \node[main] (CEF) [below of=CF] {$CEF$};
-%    \node[square] (EF) [square,draw] [below of=CEF] {$EF$};
-%    \node[main] (EFHI) [below of=EF] {$EFHI$};
-%    \node[square] (EH) [square,draw] [below of=EFHI] {$EH$};
-%    \node[main] (EGH) [below of=EH] {$EGH$};
-%    \draw (ABC) -- (BC);
-%    \draw (BC) -- (BCDF);
-%    \draw (BCDF) -- (CF);
-%    \draw (CF) -- (CEF);
-%    \draw (CEF) -- (EF);
-%    \draw (EF) -- (EFHI);
-%    \draw (EFHI) -- (EH);
-%    \draw (EH) -- (EGH);
+%    \node[main] (BCDF) [below of=ABC] {$BCDF$};
+%    \node[main] (CFH) [below of=BCDF] {$CFH$};
+%    \node[main] (FHI) [below left of=CFH] {$FHI$};
+%    \node[main] (CEH) [below right of=CFH] {$CEH$};
+%    \node[main] (EGH) [below of=CEH] {$EGH$};
+%    \draw (ABC) -- (BCDF);
+%    \draw (BCDF) -- (CFH);
+%    \draw (CFH) -- (FHI);
+%    \draw (CFH)  -- (CEH);
+%    \draw (EGH)  -- (CEH);
 %\end{tikzpicture}
 %\end{center}
-
-\begin{center}
-\begin{tikzpicture}[node distance={25mm}, main/.style = {draw, circle}, square/.style={regular polygon,regular polygon sides=4}]
-    \node[main] (ABC) {$ABC$};
-    \node[main] (BCDF) [below of=ABC] {$BCDF$};
-    \node[main] (CFH) [below of=BCDF] {$CFH$};
-    \node[main] (FHI) [below left of=CFH] {$FHI$};
-    \node[main] (CEH) [below right of=CFH] {$CEH$};
-    \node[main] (EGH) [below of=CEH] {$EGH$};
-    \draw (ABC) -- (BCDF);
-    \draw (BCDF) -- (CFH);
-    \draw (CFH) -- (FHI);
-    \draw (CFH)  -- (CEH);
-    \draw (EGH)  -- (CEH);
-\end{tikzpicture}
-\end{center}
-
-where the circular nodes are cliques.
-
-\newpage
-
-The junction tree redrawn as a factor graph:
 
 \begin{center}
 \begin{tikzpicture}[node distance={15mm}, main/.style = {draw, circle}, square/.style={regular polygon,regular polygon sides=4}]
@@ -269,7 +207,50 @@ The junction tree redrawn as a factor graph:
 
 where the circular nodes are cliques and the square nodes are separators/factors.
 
+
+The junction tree redrawn as a factor graph:
+
+\begin{center}
+\begin{tikzpicture}[node distance={10mm}, main/.style = {draw, circle}, square/.style={fill=black, regular polygon,regular polygon sides=4}]
+    \node[main] (A) {$A$};
+    \node[square] (ABC) [square,draw] [below of=A];
+    \node[main] (B) [below left of=ABC] {$B$};
+    \node[main] (C) [below right of=ABC] {$C$};
+    \node[square] (BCDF) [square,draw] [below left of=C];
+    \node[square] (CEH) [right of=C];
+    \node[main] (E) [above right of=CEH] {$E$};
+    \node[square] (GEH) [below right of=E];
+    \node[main] (G) [right of=GEH] {$G$};
+    \node[main] (D) [below left of=BCDF] {$D$};
+    \node[square] (CFH) [below right of=C];
+    \node[main] (H) [right of=CFH] {$H$};
+    \node[square] (FHI) [below left of = H];
+    \node[main] (I) [below right of=FHI] {$I$};
+    \node[main] (F) [below right of=BCDF] {$F$};
+
+    \draw (ABC) -- (A);
+    \draw (ABC) -- (C);
+    \draw (ABC) -- (B);
+    \draw (BCDF) -- (B);
+    \draw (BCDF) -- (C);
+    \draw (BCDF) -- (D);
+    \draw (BCDF) -- (F);
+    \draw (CEH) -- (C);
+    \draw (CEH) -- (E);
+    \draw (CEH) -- (H);
+    \draw (GEH) -- (G);
+    \draw (GEH) -- (E);
+    \draw (GEH) -- (H);
+    \draw (CFH) -- (C);
+    \draw (CFH) -- (F);
+    \draw (CFH) -- (H);
+    \draw (FHI) -- (F);
+    \draw (FHI) -- (H);
+    \draw (FHI) -- (I);
+\end{tikzpicture}
+\end{center}
 \newpage
+
 
 \subsection*{(c)}
 
@@ -304,9 +285,84 @@ The set $\{A, D, E, F, H\}$ is a non-unique smallest set of molecules such that 
 
 \subsection*{(d)}
 
-\newpage
+Using our factor analysis model, we can describe the biochemical pathway as:
+
+\[\delta[\textbf{x}] = \Lambda \textbf{z} + \epsilon\]
+
+where $\delta[\textbf{x}]$ are the concentration perturbations, $\epsilon \sim \mathcal{N} (0, \Psi)$, and the latent factors $z \sim \mathcal{N} (0, I)$.
+
+From the graph structure, we know that:
+
+\[\Lambda = \begin{bmatrix}
+                 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0  \\
+                 \Lambda_{BA} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0  \\
+                 \Lambda_{CA} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0  \\
+                 0 & 0 & \Lambda_{DC} & 0 & 0 & 0 & 0 & 0 & 0  \\
+                 0 & 0 & \Lambda_{EC} & 0 & 0 & 0 & 0 & 0 & 0  \\
+                 0 & \Lambda_{FB} & 0 & \Lambda_{FD} & 0 & 0 & 0 & 0 & 0  \\
+                 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0  \\
+                 0 & 0 & 0 & 0 & \Lambda_{HE} & 0 & \Lambda_{HG} & 0 & 0  \\
+                 0 & 0 & 0 & 0 & 0 & \Lambda_{IF} & 0 & \Lambda_{IH} & 0 \\
+         \end{bmatrix} \text{ and }
+    \textbf{z} = \begin{bmatrix}
+                 z_A  \\
+                 z_B  \\
+                 z_C  \\
+                 z_D  \\
+                 z_E  \\
+                 z_F  \\
+                 z_G  \\
+                 z_H  \\
+                 z_I \\
+         \end{bmatrix}
+\]
+
+Having observations for $\delta[B]$, $\delta[D]$, $\delta[E]$ and $\delta[G]$:
+
+\[
+\begin{bmatrix}
+                 \delta[B]  \\
+                 \delta[D]  \\
+                 \delta[E]  \\
+                 \delta[G]  \\
+         \end{bmatrix} = \begin{bmatrix}
+                 \Lambda_{BA} & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0  \\
+                 0 & 0 & \Lambda_{DC} & 0 & 0 & 0 & 0 & 0 & 0  \\
+                 0 & 0 & \Lambda_{EC} & 0 & 0 & 0 & 0 & 0 & 0  \\
+                 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0  \\
+         \end{bmatrix} \begin{bmatrix}
+                 z_A  \\
+                 z_B  \\
+                 z_C  \\
+                 z_D  \\
+                 z_E  \\
+                 z_F  \\
+                 z_G  \\
+                 z_H  \\
+                 z_I \\
+         \end{bmatrix} +  \begin{bmatrix}
+                 \epsilon_B  \\
+                 \epsilon_D  \\
+                 \epsilon_E  \\
+                 \epsilon_G  \\
+         \end{bmatrix}
+\]
+
+We can see that these simplify to the equations:
+
+\begin{gather*}
+    \delta[B] = \Lambda_{BA}z_A + \epsilon_B\\
+    \delta[D] = \Lambda_{DC}z_C  + \epsilon_D\\
+    \delta[E] = \Lambda_{EC}z_C  + \epsilon_E\\
+    \delta[G] = \epsilon_G\\
+\end{gather*}
+
+
+Thus, we see that the only latent variables present are $z_A$ and $z_C$, so would expect to recover the factors of $A$ and $C$, the two parent nodes of the observations.
+
 
 \subsection*{(e)}
+
 
 \newpage
 \section*{Question 2}
@@ -850,7 +906,7 @@ When implementing the algorithm, the mean field parameters were initialised rand
 \subsection*{(g)}
 
 
-Plotting the convergence of the variational approximation for different $\sigma$'s:
+Plotting the free energy at each partial expectation step of the variational approximation for different $\sigma$'s:
 
 \begin{figure}[h]
 \centering
@@ -868,7 +924,11 @@ Plotting the convergence of the variational approximation for different $\sigma$
 \end{minipage}
 \end{figure}
 
-We can see that when $\sigma$ is smaller, we are able to converge at a higher free energy. However, convergence is only reached after more steps, as seen in the plot of $\log(F(t)-F(t-1))$
+We know that our free energy is a upper bounded on the log likelihood:
+
+\[\log P(\mathcal{X} | \theta) \geq \mathcal{F}(q, \theta)\]
+
+In the variational expectation step, $\log P(\mathcal{X} | \theta)$ is fixed and we adjust our approximation $q$ to reach this upper bound. We know that $\sigma$ quantifies the noise of $\textbf{x}$, thus a higher $\sigma$ means a wider spread in our distribution $\log P(\mathcal{X} | \theta)$, meaning we are reducing our upper bound for $\mathcal{F}(q, \theta)$. As such, we can see in the plot for free energy above that when $\sigma$ is increased, our free energy converges to a lower value, due to being bounded above by a lower log-likelihood. Moreover, by reducing the upper bound, we see in the plot of $\log(F(t)-F(t-1))$ that our free energy is able to converge faster. Because we have reduced the upper bound by increasing $\sigma$, our free energy can reach this upper bound faster.
 
 \newpage
 The Python code for the binary latent factor model:
