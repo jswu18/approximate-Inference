@@ -948,6 +948,7 @@ The rest of the Python code for question 3:
 \lstinputlisting[language=Python]{src/solutions/q3.py}
 \newpage
 \section*{Question 4}
+\subsection*{(a)}
 
 We begin by writing the expression for $x_d$:
 
@@ -1059,6 +1060,10 @@ Knowing $\left\langle (w_{d, k})^2 \right\rangle_{q(\textbf{w}_{d})} = (\mu_{\te
 we have our hyper-M steps for optimising $\alpha$.
 
 \newpage
+\subsection*{(b)}
+
+Running variational Bayes for different values of $k$, we can visualise the learned features $\mu_k$ and corresponding $\alpha_k^{-1}$:
+
 \begin{figure}[h]
 \centering
 \includegraphics[scale=0.47]{outputs/q4/b-1-latent-factors-comparison}
@@ -1073,14 +1078,23 @@ we have our hyper-M steps for optimising $\alpha$.
 \caption{Learned Latent Factors vs Inverse Alpha}
 \label{fig:}
 \end{figure}
+As we expect, when running the algorithm for higher $K$ values, many of the features have $\alpha_k \rightarrow \infty$, depicted as $\alpha^{-1}_k$ for visual convenience. Moreover, visualising the learned features, we can see the clearest features often have the highest $\alpha^{-1}_k$ while the features deemed irrelevant are often noisy or duplicates.
+
 
 \newpage
+
+Comparing the free energy plots of models trained on different $K$ values:
+
+
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.8]{outputs/q4/b-free-energy}
+\includegraphics[scale=0.4]{outputs/q4/b-free-energy}
 \caption{Free Energy for different values of k}
 \label{fig:}
 \end{figure}
+
+We can see that initially, for $k=4$ to $k=8$, increasing $k$ significantly increases the convergence value of the free energy. However, beyond $k=8$ there is a no clear trend of $k$ versus the free energy convergence value. We can see that this corresponds to the visualisation of $\alpha^{-1}$ where beyond $k=11$, the effective number of features remains more or less the same. We know that there are only eight latent features, thus models with $k>8$ should be learning duplicate or irrelevant features. As such, we wouldn't expect a model to be able to increase it's free energy significantly when provided with additional degrees of freedom by increasing the value of $k$ beyond eight. We see that for models with $k>>8$, there are typically ten or eleven features that might be deemed relevant (depending on how you threshold) and this is likely from slight overfitting, noise in the data, or duplicate features. Thus, the relationship between the free energy and the effective number of latent features for each model is as we would expect with ARD.
+
 
 \newpage
 The Python code for Variational Bayes:
@@ -1343,21 +1357,14 @@ This leads to a loopy BP algorithm because the nodes are fully connected (i.e. e
 
 \subsection*{(d)}
 
-We can use automatic relevance determination (ARD) as a hyperparameter method to select relevant features
+Similar to question 3, we can use automatic relevance determination (ARD) as a hyperparameter method to select relevant features by placing a prior on $\mu_i$. With a hyper-M step, certain features will have diverging precision, indicating that they are not relevant to the model output. Thus, the number of remaining features will be our selection for $K$.
 
-Place prior on $\sigma^2$ and optimise with respect to the distributions would cause some to diverge and only relevant latent dimensions will remain.
-This gives us a value for $K$, the number of latent factors that haven't diverged.
 
 
 \newpage
 \section*{Question 6}
 
-\begin{figure}[h]
-\centering
-\includegraphics[scale=0.4]{outputs/q6/all-init-latent-factors}
-\caption{Initial Latent factors learned with EP/Loopy-BP}
-\label{fig:6-init-latent-factors}
-\end{figure}
+Implementing the EP/loopy-BP algorithm, we can compare the learned latent factors with those of the variational mean-field algorithm:
 
 \begin{figure}[h]
 \centering
@@ -1373,7 +1380,7 @@ This gives us a value for $K$, the number of latent factors that haven't diverge
 \label{fig:3f-latent-factors}
 \end{figure}
 
-\newpage
+We can see that the mean field algorithm seems to learn better latent features. In particular there's are fewer duplicates, unlike loopy BP that has a few duplicates of the two by two square in the middle. Moreover, the learned features have less noise. For example $\mu_0$ for the mean field algorithm looks almost like a binary image. We can understand the reason for this by comparing the free energies of the two algorithms:
 
 \begin{figure}[h]
 \centering
@@ -1391,13 +1398,15 @@ This gives us a value for $K$, the number of latent factors that haven't diverge
 \end{minipage}
 \end{figure}
 
+We can observe that the free energy of the mean field algorithm converges while our loopy belief propagation is unable to converge to a free energy. Because loopy BP does not have convergence guarantees, this is one of the limitations of this approach.
+
 \newpage
 The Python code for the Boltzmann machine:
 \lstinputlisting[language=Python]{src/models/binary_latent_factor_models/boltzmann_machine.py}
 
 \newpage
 The Python code for message passing:
-\lstinputlisting[language=Python]{src/models/binary_latent_factor_approximations/message_passing.py}
+\lstinputlisting[language=Python]{src/models/binary_latent_factor_approximations/message_passing_approximation.py}
 
 \newpage
 The rest of the Python code for question 6:

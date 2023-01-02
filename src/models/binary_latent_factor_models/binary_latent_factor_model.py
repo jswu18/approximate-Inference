@@ -1,18 +1,14 @@
-from __future__ import annotations
-
 from typing import TYPE_CHECKING, Tuple
 
 import numpy as np
 
 from demo_code.MStep import m_step
+from src.models.binary_latent_factor_approximations.abstract_binary_latent_factor_approximation import (
+    AbstractBinaryLatentFactorApproximation,
+)
 from src.models.binary_latent_factor_models.abstract_binary_latent_factor_model import (
     AbstractBinaryLatentFactorModel,
 )
-
-if TYPE_CHECKING:
-    from src.models.binary_latent_factor_approximations.abstract_binary_latent_factor_approximation import (
-        AbstractBinaryLatentFactorApproximation,
-    )
 
 
 class BinaryLatentFactorModel(AbstractBinaryLatentFactorModel):

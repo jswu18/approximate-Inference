@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from src.expectation_maximisation import learn_binary_factors
-from src.models.binary_latent_factor_approximations.message_passing import (
+from src.models.binary_latent_factor_approximations.message_passing_approximation import (
     init_message_passing,
 )
 from src.models.binary_latent_factor_models.boltzmann_machine import (

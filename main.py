@@ -96,7 +96,7 @@ if __name__ == "__main__":
         kernel=asdict(init_kernel_parameters),
         log_sigma=jnp.log(1),
     )
-    years_to_predict = 15
+    years_to_predict = 14
     t_new = t[-1] + np.linspace(0, years_to_predict, years_to_predict * 12)
     t_test = np.concatenate((t, t_new))
     q2.f(

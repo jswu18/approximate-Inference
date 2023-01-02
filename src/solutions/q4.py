@@ -154,7 +154,7 @@ def b(
     fig = plt.figure()
     fig.set_figwidth(10)
     fig.set_figheight(10)
-    shades = np.flip(np.linspace(0, 0.7, len(ks)))
+    shades = np.flip(np.linspace(0.3, 0.9, len(ks)))
     for i, k in enumerate(ks):
         plt.plot(free_energies[i], label=f"{k=}", color=np.ones(3) * shades[i])
     plt.title("Free Energy (Variational Bayes)")
