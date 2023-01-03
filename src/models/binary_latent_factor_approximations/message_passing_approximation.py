@@ -10,14 +10,14 @@ from src.models.binary_latent_factor_models.boltzmann_machine import BoltzmannMa
 
 class MessagePassingApproximation(AbstractBinaryLatentFactorApproximation):
     """
-    eta_matrix:  of parameters eta_matrix[n, i, j]
+    bernoulli_parameter_matrix (theta): matrix of parameters bernoulli_parameter_matrix[n, i, j]
                 off diagonals corresponds to \tilda{g}_{ij, \neg s_i}(s_j) for data point n
                 diagonals correspond to \tilda{f}_{i}(s_i)
                 (number_of_points, number_of_latent_variables, number_of_latent_variables)
     """
 
-    def __init__(self, eta_matrix: np.ndarray):
-        self.eta_matrix = eta_matrix
+    def __init__(self, bernoulli_parameter_matrix: np.ndarray):
+        self.bernoulli_parameter_matrix = bernoulli_parameter_matrix
 
     @property
     def lambda_matrix(self) -> np.ndarray:
@@ -25,14 +25,25 @@ class MessagePassingApproximation(AbstractBinaryLatentFactorApproximation):
         Aggregate messages and compute parameter for Bernoulli distribution
         :return:
         """
-        lambda_matrix = 1 / (1 + np.exp(-self.xi.sum(axis=1)))
+        lambda_matrix = 1 / (1 + np.exp(-self.natural_parameter_matrix.sum(axis=1)))
         lambda_matrix[lambda_matrix == 0] = 1e-10
         lambda_matrix[lambda_matrix == 1] = 1 - 1e-10
         return lambda_matrix
 
     @property
-    def xi(self) -> np.ndarray:
-        return np.log(np.divide(self.eta_matrix, 1 - self.eta_matrix))
+    def natural_parameter_matrix(self) -> np.ndarray:
+        """
+        The matrix containing natural parameters (eta) of each factor
+                off diagonals corresponds to \tilda{g}_{ij, \neg s_i}(s_j) for data point n
+                diagonals correspond to \tilda{f}_{i}(s_i)
+                (number_of_points, number_of_latent_variables, number_of_latent_variables)
+        :return:
+        """
+        return np.log(
+            np.divide(
+                self.bernoulli_parameter_matrix, 1 - self.bernoulli_parameter_matrix
+            )
+        )
 
     def aggregate_incoming_binary_factor_messages(
         self, node_index: int, excluded_node_index: int
@@ -40,18 +51,26 @@ class MessagePassingApproximation(AbstractBinaryLatentFactorApproximation):
         # (number_of_points, )
         #  exclude message from excluded_node_index -> node_index
         return (
-            np.sum(self.xi[:, :excluded_node_index, node_index], axis=1)
-            + np.sum(self.xi[:, excluded_node_index + 1 :, node_index], axis=1)
+            np.sum(
+                self.natural_parameter_matrix[:, :excluded_node_index, node_index],
+                axis=1,
+            )
+            + np.sum(
+                self.natural_parameter_matrix[:, excluded_node_index + 1 :, node_index],
+                axis=1,
+            )
         ).reshape(
             -1,
         )
 
     @staticmethod
-    def calculate_eta(xi: np.ndarray) -> np.ndarray:
-        eta = 1 / (1 + np.exp(-xi))
-        eta[eta == 0] = 1e-10
-        eta[eta == 1] = 1 - 1e-10
-        return eta
+    def calculate_bernoulli_parameter(
+        natural_parameter_matrix: np.ndarray,
+    ) -> np.ndarray:
+        bernoulli_parameter = 1 / (1 + np.exp(-natural_parameter_matrix))
+        bernoulli_parameter[bernoulli_parameter == 0] = 1e-10
+        bernoulli_parameter[bernoulli_parameter == 1] = 1 - 1e-10
+        return bernoulli_parameter
 
     def variational_expectation_step(
         self, x: np.ndarray, binary_latent_factor_model: BoltzmannMachine
@@ -65,30 +84,36 @@ class MessagePassingApproximation(AbstractBinaryLatentFactorApproximation):
         free_energy = [self.compute_free_energy(x, binary_latent_factor_model)]
         for i in range(self.k):
             # singleton factor update
-            xi_new_ii = self.calculate_singleton_message_update(
+            natural_parameter_ii = self.calculate_singleton_message_update(
                 boltzmann_machine=binary_latent_factor_model,
                 x=x,
                 i=i,
             )
-            self.eta_matrix[:, i, i] = self.calculate_eta(xi_new_ii)
+            self.bernoulli_parameter_matrix[
+                :, i, i
+            ] = self.calculate_bernoulli_parameter(natural_parameter_ii)
             free_energy.append(self.compute_free_energy(x, binary_latent_factor_model))
 
             for j in range(i):
                 # binary factor update
-                xi_new_ij = self.calculate_binary_message_update(
+                natural_parameter_ij = self.calculate_binary_message_update(
                     boltzmann_machine=binary_latent_factor_model,
                     x=x,
                     i=i,
                     j=j,
                 )
-                self.eta_matrix[:, i, j] = self.calculate_eta(xi_new_ij)
-                xi_new_ji = self.calculate_binary_message_update(
+                self.bernoulli_parameter_matrix[
+                    :, i, j
+                ] = self.calculate_bernoulli_parameter(natural_parameter_ij)
+                natural_parameter_ji = self.calculate_binary_message_update(
                     boltzmann_machine=binary_latent_factor_model,
                     x=x,
                     i=j,
                     j=i,
                 )
-                self.eta_matrix[:, j, i] = self.calculate_eta(xi_new_ji)
+                self.bernoulli_parameter_matrix[
+                    :, j, i
+                ] = self.calculate_bernoulli_parameter(natural_parameter_ji)
                 free_energy.append(
                     self.compute_free_energy(x, binary_latent_factor_model)
                 )
@@ -110,13 +135,15 @@ class MessagePassingApproximation(AbstractBinaryLatentFactorApproximation):
         :param j: ending node for the message
         :return: new parameter from aggregating incoming messages
         """
-        eta_i_not_j = boltzmann_machine.b_index(
+        natural_parameter_i_not_j = boltzmann_machine.b_index(
             x=x, node_index=i
         ) + self.aggregate_incoming_binary_factor_messages(
             node_index=i, excluded_node_index=j
         )
         w_i_j = boltzmann_machine.w_matrix_index(i, j)
-        return np.log(1 + np.exp(w_i_j + eta_i_not_j)) - np.log(1 + np.exp(eta_i_not_j))
+        return np.log(1 + np.exp(w_i_j + natural_parameter_i_not_j)) - np.log(
+            1 + np.exp(natural_parameter_i_not_j)
+        )
 
     @staticmethod
     def calculate_singleton_message_update(
@@ -144,5 +171,5 @@ def init_message_passing(k: int, n: int) -> MessagePassingApproximation:
     :param n: number of data points
     :return: message passing
     """
-    eta_matrix = np.random.random(size=(n, k, k))
-    return MessagePassingApproximation(eta_matrix)
+    bernoulli_parameter_matrix = np.random.random(size=(n, k, k))
+    return MessagePassingApproximation(bernoulli_parameter_matrix)

@@ -48,10 +48,10 @@ if __name__ == "__main__":
     kernel_parameters = CombinedKernelParameters(
         log_theta=jnp.log(1),
         log_sigma=jnp.log(1),
-        log_phi=jnp.log(1),
+        log_phi=jnp.log(5e-1),
         log_eta=jnp.log(1),
-        log_tau=jnp.log(1),
-        log_zeta=jnp.log(1e-1),
+        log_tau=jnp.log(1.5),
+        log_zeta=jnp.log(1e-2),
     )
 
     prior_linear_regression_parameters = LinearRegressionParameters(
@@ -131,14 +131,6 @@ if __name__ == "__main__":
         e_maximum_steps=e_maximum_steps,
         e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q3_OUTPUT_FOLDER, "f"),
-    )
-    _ = q3.e_and_f(
-        x=x,
-        k=int(k * 1.5),
-        em_iterations=em_iterations,
-        e_maximum_steps=e_maximum_steps,
-        e_convergence_criterion=e_convergence_criterion,
-        save_path=os.path.join(Q3_OUTPUT_FOLDER, "f-larger-k"),
     )
     q3.g(
         x=x[:1, :],

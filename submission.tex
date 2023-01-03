@@ -55,9 +55,18 @@
 
 \begin{document}
 \maketitle
-\section*{Question 1}
+\section*{Question 1: A biochemical pathway}
 
-\subsection*{(a)} The directed acyclic graph:
+\subsection*{(a)} We are given that:
+
+\begin{itemize}
+    \item The concentrations of both species B and C depend on that of A.
+    \item Molecule C seems to redirect the process that produces enzyme D to produce enzyme E instead.
+    \item D catalyses the production of F from B, while E catalyses the production of H from G.
+    \item F and H then combine to form the end product I.
+\end{itemize}
+
+The corresponding directed acyclic graph:
 
 \begin{center}
 \begin{tikzpicture}[node distance={15mm}, main/.style = {draw, circle}]
@@ -161,24 +170,6 @@ where the dashed lines are edges added to triangulate the moralised graph.
 
 The resulting junction tree:
 
-
-
-%\begin{center}
-%\begin{tikzpicture}[node distance={25mm}, main/.style = {draw, circle}, square/.style={regular polygon,regular polygon sides=4}]
-%    \node[main] (ABC) {$ABC$};
-%    \node[main] (BCDF) [below of=ABC] {$BCDF$};
-%    \node[main] (CFH) [below of=BCDF] {$CFH$};
-%    \node[main] (FHI) [below left of=CFH] {$FHI$};
-%    \node[main] (CEH) [below right of=CFH] {$CEH$};
-%    \node[main] (EGH) [below of=CEH] {$EGH$};
-%    \draw (ABC) -- (BCDF);
-%    \draw (BCDF) -- (CFH);
-%    \draw (CFH) -- (FHI);
-%    \draw (CFH)  -- (CEH);
-%    \draw (EGH)  -- (CEH);
-%\end{tikzpicture}
-%\end{center}
-
 \begin{center}
 \begin{tikzpicture}[node distance={15mm}, main/.style = {draw, circle}, square/.style={regular polygon,regular polygon sides=4}]
     \node[main] (ABC) {$ABC$};
@@ -281,6 +272,7 @@ The junction tree redrawn as a factor graph:
 
 
 The set $\{A, D, E, F, H\}$ is a non-unique smallest set of molecules such that if the concentrations of the species within the set are known, the concentrations of the others $\{B, C, G, I\}$ would all be independent (conditioned on the measured ones).
+\newpage
 
 
 \subsection*{(d)}
@@ -289,7 +281,7 @@ Using our factor analysis model, we can describe the biochemical pathway as:
 
 \[\delta[\textbf{x}] = \Lambda \textbf{z} + \epsilon\]
 
-where $\delta[\textbf{x}]$ are the concentration perturbations, $\epsilon \sim \mathcal{N} (0, \Psi)$, and the latent factors $z \sim \mathcal{N} (0, I)$.
+where $\delta[\textbf{x}]$ are the concentration perturbations, $\epsilon \sim \mathcal{N} (0, \Psi)$ are the reaction specific Gaussian noise variables, and $z \sim \mathcal{N} (0, I)$ are the latent factor, the parent concentration perturbations.
 
 From the graph structure, we know that:
 
@@ -348,24 +340,40 @@ Having observations for $\delta[B]$, $\delta[D]$, $\delta[E]$ and $\delta[G]$:
          \end{bmatrix}
 \]
 
-We can see that these simplify to the equations:
+Knowing \textbf{z} are the parent concentration perturbations, we can see that these simplify to a factor analysis set up:
 
-\begin{gather*}
-    \delta[B] = \Lambda_{BA}z_A + \epsilon_B\\
-    \delta[D] = \Lambda_{DC}z_C  + \epsilon_D\\
-    \delta[E] = \Lambda_{EC}z_C  + \epsilon_E\\
-    \delta[G] = \epsilon_G\\
-\end{gather*}
+\[
+    \begin{bmatrix}
+                 \delta[B]  \\
+                 \delta[D]  \\
+                 \delta[E]  \\
+         \end{bmatrix} = \begin{bmatrix}
+                 \Lambda_{BA} & 0   \\
+                 0 & \Lambda_{DC} \\
+                 0 & \Lambda_{EC} \\
+         \end{bmatrix} \begin{bmatrix}
+                 \delta[A]  \\
+                 \delta[C]  \\
+         \end{bmatrix} +  \begin{bmatrix}
+                 \epsilon_B  \\
+                 \epsilon_D  \\
+                 \epsilon_E  \\
+         \end{bmatrix}
+\]
 
-
-Thus, we see that the only latent variables present are $z_A$ and $z_C$, so would expect to recover the factors of $A$ and $C$, the two parent nodes of the observations.
+Thus, we would expect to recover the factors of $A$ and $C$, $\delta[A]$ and $\delta[C]$, the two parent nodes of the observations.
+\newpage
 
 
 \subsection*{(e)}
 
+From factor analysis, we would recover $\delta[A]$ and $\delta[C]$.
+In theory, if these concentration perturbations had unknown parent factors, we could use the results to recover the concentration perturbations of those parent features.
+However, in our DAG this is not hte case, so we would not be able to recover any other species in the cascade because  they are all downstream from the known concentration perturbations and those recovered from factor analysis.
+
 
 \newpage
-\section*{Question 2}
+\section*{Question 2: Bayesian linear and Gaussian process regression}
 
 \subsection*{(a)}
 
@@ -377,7 +385,7 @@ Defining a weight vector $\textbf{w}$:
          \end{bmatrix}\]
 
 Our distribution for $\textbf{w}$:
-\[P(\textbf{w}) = \mathcal{N} \left(
+\[P(\textbf{w}) = \mathcal{N}(\mu_{\textbf{w}}, \Sigma_{\textbf{w}}) = \mathcal{N} \left(
 \begin{bmatrix}
                  \mu_a \\
                  \mu_b
@@ -387,46 +395,54 @@ Our distribution for $\textbf{w}$:
                  0 & \sigma_b^2
          \end{bmatrix}
 \right)
-  = \mathcal{N}(\mu_{\textbf{w}}, \Sigma_{\textbf{w}})
+
 \]
 
-Moreover, for our data $\mathcal{D} = \{\textbf{X}, \textbf{Y}\}$:
-\[P(\mathcal{D} | \textbf{w}) = \mathcal{N} \left( \textbf{Y} - \textbf{w}^T \textbf{X}, \sigma^2 \textbf{I}
+
+For our data $\mathcal{D} = \{\textbf{X}, \textbf{y}\}$:
+\[P(\mathcal{D} | \textbf{w}) = \prod_{t=1}^{T}\mathcal{N} \left( y_t - \textbf{w}^T \textbf{x}_t, \sigma^2
 \right)
 \]
 
-where $\textbf{X} =  \begin{bmatrix}
-                 t_1 & t_2 \cdots t_N \\
-                 1 & 1 \cdots 1
-         \end{bmatrix} \in  \mathbb{R}^{2 \times N}$ and $\textbf{Y} \in \mathbb{R}^{1 \times N}$.
+where $\textbf{x}_t =  \begin{bmatrix}
+                 t_1 \\
+                 1
+         \end{bmatrix} \in  \mathbb{R}^{2 \times 1}$ and $y_t \in \mathbb{R}^{1 \times 1}$ our response $f_{obs}(t_1)$.
 
 Knowing:
 \[P(\textbf{w} | \mathcal{D}) \propto P(\mathcal{D} | \textbf{w}) P(\textbf{w})\]
 
 we can substitute the above distributions:
 \[P(\textbf{w} | \mathcal{D}) \propto
-  \exp \left(\frac{-1}{2 \sigma^2} \left( \textbf{Y} - \textbf{w}^T \textbf{X}\right) \left( \textbf{Y} - \textbf{w}^T \textbf{X}\right)^T \right)
+  \exp \left(\frac{-1}{2 \sigma^2} \left( \textbf{y} - \textbf{w}^T \textbf{X}\right) \left( \textbf{y} - \textbf{w}^T \textbf{X}\right)^T \right)
 \exp \left(\frac{-1}{2} \left( \textbf{w} -\mu_{\textbf{w}}\right)^T \Sigma_{\textbf{w}}^{-1} \left( \textbf{w} -\mu_{\textbf{w}}\right)\right)
 \]
 
-expanding:
+where $\textbf{X} =  \begin{bmatrix}
+                 t_1 & t_2 \cdots t_T \\
+                 1 & 1 \cdots 1
+         \end{bmatrix} \in  \mathbb{R}^{2 \times T}$ and $\textbf{y} \in \mathbb{R}^{1 \times T}$.
+Expanding:
+
 \[\log P(\textbf{w} | \mathcal{D}) \propto
-  \frac{-1}{2} \left( \frac{\textbf{Y} \textbf{Y}^T}{\sigma^2} - 2\textbf{w}^T \frac{\textbf{X}\textbf{Y}^T}{\sigma^2} + \textbf{w}^T \frac{\textbf{X} \textbf{X}^T}{\sigma^2} \textbf{w} +  \textbf{w}^T \Sigma_{\textbf{w}}^{-1}  \textbf{w} - 2\textbf{w}^T \Sigma_{\textbf{w}}^{-1}\mu_{\textbf{w}} + \mu_{\textbf{w}}^T\Sigma_{\textbf{w}}^{-1}\mu_{\textbf{w}} \right)
+  \frac{-1}{2} \left( \frac{\textbf{y} \textbf{y}^T}{\sigma^2} - 2\textbf{w}^T \frac{\textbf{X}\textbf{y}^T}{\sigma^2} + \textbf{w}^T \frac{\textbf{X} \textbf{X}^T}{\sigma^2} \textbf{w} +  \textbf{w}^T \Sigma_{\textbf{w}}^{-1}  \textbf{w} - 2\textbf{w}^T \Sigma_{\textbf{w}}^{-1}\mu_{\textbf{w}} + \mu_{\textbf{w}}^T\Sigma_{\textbf{w}}^{-1}\mu_{\textbf{w}} \right)
 \]
 
 collecting $\textbf{w}$ terms:
 \[\log P(\textbf{w} | \mathcal{D}) \propto
-  \frac{-1}{2} \left( \textbf{w}^T \left(\frac{\textbf{X} \textbf{X}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \right)  \textbf{w} - 2\textbf{w}^T \left(\frac{\textbf{X}\textbf{Y}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \mu_{\textbf{w}}\right)  \right)
+  \frac{-1}{2} \left( \textbf{w}^T \left(\frac{\textbf{X} \textbf{X}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \right)  \textbf{w} - 2\textbf{w}^T \left(\frac{\textbf{X}\textbf{y}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \mu_{\textbf{w}}\right)  \right)
 \]
 
-Knowing that the posterior $P(\textbf{w} | \mathcal{D})$ will be Gaussian with mean $\bar{\mu}_w$ and covariance $\bar{\Sigma}_w$, we can see that expanding the exponent component would have the form:
+Knowing that the posterior $P(\textbf{w} | \mathcal{D})$ will be Gaussian with mean $\bar{\mu}_w$ and covariance $\bar{\Sigma}_w$, we can see that expanding the exponent component of a Gaussian would have the form:
+
 \[\left( \textbf{w} - \bar{\mu}_w \right)^T \bar{\Sigma}_w^{-1} \left( \textbf{w} - \bar{\mu}_w \right) = \textbf{w}^T \bar{\Sigma}_w^{-1} \textbf{w} -2 \textbf{w}^T \bar{\Sigma}_w^{-1} \bar{\mu}_w + \bar{\mu}_w^T \bar{\Sigma}_w^{-1} \bar{\mu}_w\]
 
 Thus we can identify the posterior covariance:
 \[\bar{\Sigma}_w = \left(\frac{\textbf{X} \textbf{X}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \right)^{-1}\]
 
 and the posterior mean:
-\[\bar{\mu}_w = \bar{\Sigma}_w \left(\frac{\textbf{X}\textbf{Y}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \mu_{\textbf{w}}\right) \]
+\[\bar{\mu}_w = \bar{\Sigma}_w \left(\frac{\textbf{X}\textbf{y}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \mu_{\textbf{w}}\right) \]
+
 
 \newpage
 Computing the posterior mean and covariance over $a$ and $b$ given by the $CO_2$ data:
@@ -450,7 +466,7 @@ Computing the posterior mean and covariance over $a$ and $b$ given by the $CO_2$
 
 \subsection*{(b)}
 
-Plotting the residuals:
+Plotting the residuals $g_{obs}(t) = f_{obs}(t) - (a_{MAP}t + b_{MAP})$:
 
 \begin{figure}[h]
 \centering
@@ -468,7 +484,8 @@ Plotting the residuals:
 
 We can see that the residuals do not perfectly conform to our prior over $e(t) \sim \mathcal{N}(0, 1)$.
 The density estimation shows that a mean of zero is a reasonable prior belief however the data does not seem to exhibit unit variance.
-Also we know it's not iid because timeseries.
+Also, observing $g_{obs}(t)$ we see that there is periodic structure in the timeseries meaning that the data is not independently and identically distributed as $e(t) \sim \mathcal{N}(0, 1)$ would suggest.
+Otherwise, we would expect $g(t)$ to look like random noise.
 
 \newpage
 \subsection*{(c \& d)}
@@ -477,7 +494,7 @@ We are considering the kernel:
 
 \[k(s, t) = \theta^2 \left( \exp\left( - \frac{2\sin^2(\pi(s-t)/\tau)}{\sigma^2}\right) + \phi^2 \exp\left( - \frac{(s-t)^2}{2\eta^2}\right)\right) + \zeta^2 \delta_{s=t}\]
 
-We can make qualitative observations this kernel by visualising the covariance (gram) matrix:
+We can make qualitative observations of this kernel by visualising the covariance (gram) matrix:
 
 \begin{figure}[h]
 \centering
@@ -487,10 +504,10 @@ We can make qualitative observations this kernel by visualising the covariance (
 \end{figure}
 
 We can observe a striped pattern which indicate higher covariance at regular intervals.
-This can be attributed to the sinusoidal term in the kernel and encourages sinusoidal functions.
+This can be attributed to the sinusoidal term in the kernel and encourages periodic structure in functions.
 Additionally, we can see that covariance values also decay as they are further away from the diagonal.
 This can be attributed to the exponential term in the kernel, encouraging points closer in time to be more correlated and vice versa.
-From our $CO_2$ data, we would want a class of functions which exhibit both of these behaviours as the data looks sinusoidal (seasonal with respect to each year) and correlations locally.
+From visualising $g(t)$, we would want to model this with a class of functions which exhibit both of these behaviours as $g(t)$ looks periodic (seasonal with respect to each year) and locally correlated (smooth).
 
 We can also visualise some samples from a Gaussian Process with the same covariance matrix and zero mean.
 This verifies our observations about the covariance matrix.
@@ -522,37 +539,38 @@ More specifically, we can see how changing each hyper-parameter will affect the 
 \end{figure}
 
 \begin{itemize}
-\item [$\theta$:] As $\theta$ increases, we see more pronounced periodic behavior in the sample function.
+\item [$\theta$:] As $\theta$ increases, we see more pronounced periodic behavior in the sample function by increasing its amplitude.
     The covariance matrix shows how increasing $\theta$ visually reveals the striped periodic component.
-        This is expected because it is the parameter that adjusts the weight of the periodic component.
-\item [$\sigma$:] As $\sigma$ increases, we see reduced periodic behaviour in the sample function.
-    The covariance matrix shows how increasing $\sigma$ will increase covariance values in the off-diagonals.
-    This is expected because it adjusts the lengthscale of the periodic portion of the kernel, which ends up dominating the function.
+        This is expected because it is the parameter that adjusts the amplitude of the periodic component.
+\item [$\sigma$:] As $\sigma$ increases, we see smoother periodic behaviour in the sample function.
+    The covariance matrix shows how increasing $\sigma$ will increase covariance values around each periodic stripe of the covariance matrix.
+    This is expected because it adjusts the lengthscale of the periodic portion of the kernel.
 \item [$\phi$:] As $\phi$ increases, we see the ratio of the amplitude of the periodicity component of the sample function reduces compared to the baseline.
-    The covariance matrix shows how increasing $\phi$ will start to increase the non-periodic component.
-    This is expected because it adjusts the weight of the non-periodic portion of the kernel, thus the periodic component remains the same (i.e.same amplitude) but the large baseline shifts from increasing $\phi$ ends up dominating the function visually.
+    The covariance matrix shows how increasing $\phi$ will start to increase the non-periodic component masking the periodic stripes.
+    This is expected because it adjusts the weight of the squared exponential portion of the kernel, thus the periodic component remains the same (i.e.same amplitude) but the large baseline shifts from increasing $\phi$ ends up dominating the function visually.
 \item [$\eta$:] As $\eta$ increases we see smoother sample functions.
 This is expected because the $\eta$ increases the lengthscale of the non-periodic component, allowing for smoother functions.
-This causes the off-diagonals of the gram matrix to increase, however the periodic component is still maintained because $\eta$ doesn't affect the relative weight of the two components.
+This causes the off-diagonals of the gram matrix to increase, however the periodic component is still maintained because $\eta$ doesn't affect the relative weighting between the two components.
 \item [$\tau$:] As $\tau$ increases, the period of the periodic function increases.
-We can see this reflected in the stripes in the gram matrix getting further apart.
-This makes sense because we are adjusting the period in the sinusoid function of the periodic term with $\tau$.
+We can see this reflected in the stripes in the gram matrix getting further apart and the period of the samples.
+This makes sense because we are adjusting the period parameter in the sinusoid function of the periodic term with $\tau$.
 \item [$\zeta$:] As $\zeta$ increases, the function becomes less smooth.
-    This is because the $\zeta$ parameter adjusts the weight of the $\delta_{s=t}$ parameter.
+    This is because the $\zeta$ parameter adjusts the weight of the $\delta_{s=t}$ kernel.
     This places stronger emphasis on the independence of each timestep, which can be seen with the reduction of relative magnitude of off-diagonals in the gram matrix.
-    However, this is simply masking the periodic and squared-exponential terms as we can see with the increased magnitude of the functions as $\zeta$ increases.
+    This masks the periodic and squared-exponential components as we can see with the increased magnitude of the functions as $\zeta$ increases.
 \end{itemize}
 \subsection*{(e)}
 Suitable values for hyper-parameters can be chosen through a combination of visual inspection and prior knowledge.
 For example, it is a reasonable assumption that the $CO_2$ concentration levels have a strong yearly seasonality behaviour due to the cyclic changes in temperature, humidity, etc.
-Thus we can choose $\tau=1$ to ensure functions with a period of one year to reflect this knowledge.
+This behaviour cannot be modelled by our Bayesian linear regression and is reflected in our residuals $g(t)$.
+Thus we can choose $\tau=1$ to ensure functions with a period of one year to reflect this prior knowledge.
 It can be difficult to quantitatively choose values for the other parameters as they can relate to the uncertainty exhibited in the data (i.e.the smoothness of the function).
 One approach is to maximise:
 
-\[\log P(\textbf{Y} | \textbf{X}) = -\frac{1}{2} \textbf{Y}^T (\textbf{K} + \sigma^2\textbf{I})^{-1} \textbf{Y} - \frac{1}{2} \log |\textbf{K}+ \sigma^2\textbf{I}| - \frac{n}{2}\log(2\pi)\]
+\[\log P(\textbf{y} | \textbf{X}) = -\frac{1}{2} \textbf{y}^T (\textbf{K} + \sigma^2\textbf{I})^{-1} \textbf{y} - \frac{1}{2} \log |\textbf{K}+ \sigma^2\textbf{I}| - \frac{n}{2}\log(2\pi)\]
 
 the log-likelihood  of the posterior distribution with respect to the given data where $\textbf{K}$ is the gram matrix for the kernel (equation 2.30 from http://gaussianprocess.org/gpml/chapters/RW2.pdf).
-We can define a loss function as the negative log-likelihood and employ gradient-based algorithms to find optimal parameters.
+We define a loss function as the negative log-likelihood and employ gradient-based algorithms to find optimal values for these parameters.
 
 Comparing the hyperparameters corresponding to before and after training side by side:
 
@@ -572,13 +590,13 @@ Comparing the hyperparameters corresponding to before and after training side by
 \end{minipage}
 \end{figure}
 
-We can analyse some of the changes in these parameters after training to gain some insights.
-We can see that $\tau$ remains the same as we would expect given the yearly seasonality we have prior knowledge of.
+We can analyse some of the changes in these parameters from optimisation, to gain some insights.
+We can see that $\tau$ remains the same as we would expect, given the yearly seasonality we knew apriori.
 On the other hand, the value for $\zeta$ is significantly reduced signifying that $\delta_{s=t}$ is not a very good kernel for representing the data as datapoints at different timesteps do exhibit correlations.
 
 \newpage
 \subsection*{(f)}
-Extrapolating the $CO_2$ concentration levels:
+Extrapolating the $CO_2$ concentration levels using both the untrained and trained hyperparameters:
 
 \begin{figure}[h]
 \centering
@@ -597,16 +615,16 @@ Extrapolating the $CO_2$ concentration levels:
 \end{figure}
 
 We can see that the extrapolation shows a continued increase in $CO_2$ in the future.
-This follows our expectations given that the levels has been steadily increasing in the past.
-Moreover, the concentration continues to exhibit yearly seasonality (for the trained extrapolation) as we would expect.
-We can see that the conclusions can be quite sensitive to kernel hyperparameters when comparing the values from before and after training.
-Prior to training, the extrapolated prediction is not representative of the given data, with pretty much no seasonal behaviour and very large uncertainty.
+This follows our expectations given that the levels has been steadily increasing in the past and our Bayesian linear regression model assumption.
+Moreover, the concentration continues to exhibit yearly seasonality (for the trained extrapolation) as we would expect through the choice of our kernel for modelling the residuals $g(t)$.
+We can see that the conclusions can be quite sensitive to kernel hyperparameters when comparing the extrapolations from before and after training.
+Prior to training, the extrapolated prediction is not representative of the given data with very large uncertainty.
 After training, we can see that the prediction is much more reasonable, and qualitatively the uncertainty bounds seem to exhibit the historical variability in the data.
 
 
 \subsection*{(g)}
 
-This procedure is not fully Bayesian because despite using a posterior estimate of our linear regression terms, we only use a point estimate when making prediction.
+This procedure is not fully Bayesian because despite using a posterior estimate of our linear regression terms, we only use a MAP point estimate when making prediction.
 For a fully Bayesian approach, we should also incorporate the uncertainty of the linear regression parameters into our extrapolation/uncertainty bounds.
 For our procedure, we only include the uncertainty of $g(t)$ however it can be observed in the plots that the trend is not perfectly linear so this should be reflected in the uncertainty of our extrapolation.
 Another approach could be to add a linear kernel to our combined kernel function and model $f(t)$ directly with our kernel, removing the linear regression component in our procedure.
@@ -629,11 +647,11 @@ The rest of the Python code for question 2:
 \lstinputlisting[language=Python]{src/solutions/q2.py}
 
 \newpage
-\section*{Question 3}
+\section*{Question 3: Mean-field learning}
 
 \subsection*{(a)}
 
-The free energy is can be calculated as:
+The free energy is can be expressed as:
 \[\mathcal{F}(q, \theta) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{q(\textbf{s})} + H[Q(\textbf{s})]\]
 
 
@@ -647,67 +665,69 @@ we can write:
 
 \[\mathcal{F}(Q, \theta) = \left\langle \log P(\textbf{x} | \textbf{s}, \theta)\right\rangle_{q(\textbf{s})} + \left\langle \log P(\textbf{s} | \theta)\right\rangle_{q(\textbf{s})} + H\left[ q(\textbf{s})\right] \]
 
-Moreover, our mean field approximation:
-\[q(\textbf{s}) = \prod_{i=1}^{K} q_{i} (s_i) \]
-
-where $q_{i} (s_i) = \lambda_i^{s_i} (1-\lambda_i)^{(1-s_i)}$.
+Moreover, our mean field approximation is:
+\[q(\textbf{s}) = \prod_{k=1}^{K} q_{k} (s_k) \]
 
 
-To compute the first term:
+where $q_{k} (s_k) = (\lambda_k)^{s_k} (1-\lambda_k)^{(1-s_k)}$.
 
-\[ P(\textbf{x} | \textbf{s}, \theta)  = \mathcal{N}\left( \sum_{i=1}^{K} s_i \mu_i, \sigma^2 \textbf{I} \right)}\]
 
-substituting the appropriate terms:
+Given that:
 
-\[ P(\textbf{x} | \textbf{s}, \theta)  = 2\pi^{-\frac{d}{2}} |\sigma^2 \textbf{I}|^{-\frac{1}{2}} \exp \left( -\frac{1}{2} \left(\textbf{x} - \sum_{i=1}^{K} s_i \mu_i\right)^T \frac{1}{\sigma^2} \textbf{I}  \left(\textbf{x} - \sum_{i=1}^{K} s_i \mu_i\right) \right) \]
+\[ P(\textbf{x} | \textbf{s}, \theta)  = \mathcal{N}\left( \sum_{k=1}^{K} s_k \mu_k, \sigma^2 \textbf{I} \right)}\]
+
+we can substitute the appropriate terms:
+
+\[ P(\textbf{x} | \textbf{s}, \theta)  = 2\pi^{-\frac{d}{2}} |\sigma^2 \textbf{I}|^{-\frac{1}{2}} \exp \left( -\frac{1}{2} \left(\textbf{x} - \sum_{k=1}^{K} s_k \mu_k\right)^T \frac{1}{\sigma^2} \textbf{I}  \left(\textbf{x} - \sum_{k=1}^{K} s_k \mu_k\right) \right) \]
 
 with $d$ being the number of dimensions.
 
 
 Taking the logarithm:
 
-\[ \log P(\textbf{x} | \textbf{s}, \theta)  = -\frac{d}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K} s_i \mu_i   + \sum_{i=1}^{K} \sum_{i=1}^{K} s_i s_j \mu_i^T\mu_j \right) \]
+\[ \log P(\textbf{x} | \textbf{s}, \theta)  = -\frac{d}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K} s_k \mu_k   + \sum_{k=1}^{K} \sum_{k=1}^{K} s_k s_{k'} \mu_k^T\mu_{k'} \right) \]
 
 The expectation distributed to the relevant terms:
 
 \[
 \left\langle \log P(\textbf{x} | \textbf{s}, \theta)\right\rangle_{q(\textbf{s})} \\
-= -\frac{d}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K} \left\langle s_i \right\rangle_{q_{i} (s_i)} \mu_i   + \sum_{i=1}^{K} \sum_{j=1}^{K} \left\langle s_i s_j \right\rangle_{q_{i} (s_i) q_{j} (s_j)} \mu_i^T\mu_j \right)\]
+= -\frac{d}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K} \left\langle s_k \right\rangle_{q_{k} (s_k)} \mu_k   + \sum_{k=1}^{K} \sum_{k'=1}^{K} \left\langle s_k s_{k'} \right\rangle_{q_{k} (s_k) q_{k\} (s_{k'})} \mu_k^T\mu_{k'} \right)\]
 
 Evaluating the expectations:
 
 \[
 \left\langle \log P(\textbf{x} | \textbf{s}, \theta)\right\rangle_{q(\textbf{s})} \\
-= -\frac{d}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K}  \lambda_i  \mu_i   + \sum_{i=1}^{K} \sum_{j=1, j\neq i}^{K}  \lambda_i \lambda_j \mu_i^T\mu_j + \sum_{i=1}^{K}  \lambda_i \mu_i^T\mu_i \right)\]
+= -\frac{d}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K}  \lambda_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  \lambda_k \lambda_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  \lambda_k \mu_k^T\mu_k \right)\]
 
-where $\left\langle s_i s_i \right\rangle_{q_{i} (s_i)} = \left\langle s_i \right\rangle_{q_{i} (s_i)}$ because $s_i \in \{0, 1\}$.
+where $\left\langle s_k s_k \right\rangle_{q_{k} (s_k)} = \left\langle s_k \right\rangle_{q_{k} (s_k)}$ because $s_k \in \{0, 1\}$.
 
-To compute the second term:
-\[ P(\textbf{s} | \theta) = \prod_{i=1}^{K}\pi_i^{s_i} (1-\pi_i)^{(1-s_i)}\]
+Given that:
+
+\[ P(\textbf{s} | \theta) = \prod_{k=1}^{K}\pi_k^{s_k} (1-\pi_k)^{(1-s_k)}\]
 
 Taking the logarithm:
 
-\[ \log P(\textbf{s} | \theta) = \sum_{i=1}^{K}s_i \log \pi_i + (1-s_i) \log (1-\pi_i)}\]
+\[ \log P(\textbf{s} | \theta) = \sum_{k=1}^{K}s_k \log \pi_k + (1-s_k) \log (1-\pi_k)}\]
 
 The expectation distributed to the relevant terms:
 
-\[ \left\langle \log P(\textbf{s} | \theta)\right\rangle_{q(\textbf{s})}= \sum_{i=1}^{K} \left\langle s_i \right\rangle_{q_{i} (s_i)} \log \pi_i + (1-\left\langle s_i\right\rangle_{q_{i} (s_i)}) \log (1-\pi_i)}\]
+\[ \left\langle \log P(\textbf{s} | \theta)\right\rangle_{q(\textbf{s})}= \sum_{k=1}^{K} \left\langle s_k \right\rangle_{q_{k} (s_k)} \log \pi_k + (1-\left\langle s_k\right\rangle_{q_{k} (s_k)}) \log (1-\pi_k)}\]
 
-Evaluating the expectations:
+Evaluating the expectations with respect to $q(\textbf{s})$:
 
-\[ \left\langle \log P(\textbf{s} | \theta)\right\rangle_{q(\textbf{s})}= \sum_{i=1}^{K} \lambda_i \log \pi_i + (1-\lambda_i) \log (1-\pi_i)}\]
+\[ \left\langle \log P(\textbf{s} | \theta)\right\rangle_{q(\textbf{s})}= \sum_{k=1}^{K} \lambda_k \log \pi_k + (1-\lambda_k) \log (1-\pi_k)}\]
 
 To compute the third term, we use the mean field factorisation:
 
-\[H\left[ q(\textbf{s})\right] = \sum_{i=1}^K H\left[ q_{i} (s_i)\right] \]
+\[H\left[ q(\textbf{s})\right] = \sum_{k=1}^K H\left[ q_{k} (s_k)\right] \]
 
 Thus,
 
-\[H\left[ q(\textbf{s})\right] = - \sum_{i=1}^K \sum_{s_i \in \{0, 1\}} q_{i} (s_i) \log q_{i} (s_i) \]
+\[H\left[ q(\textbf{s})\right] = - \sum_{k=1}^K \sum_{s_k \in \{0, 1\}} q_{k} (s_k) \log q_{k} (s_k) \]
 
 Substituting the appropriate values:
 
-\[H\left[ q(\textbf{s})\right] = - \sum_{i=1}^K \lambda_i \log \lambda_i + (1-\lambda_i) \log (1-\lambda_i) \]
+\[H\left[ q(\textbf{s})\right] = - \sum_{k=1}^K \lambda_k \log \lambda_k + (1-\lambda_k) \log (1-\lambda_k) \]
 
 Combining, we have our free energy expression:
 
@@ -715,61 +735,61 @@ Combining, we have our free energy expression:
 \[
 \begin{array}{l}
 \tab \mathcal{F}(q, \theta) = \\
-\tab \tab \frac{-d}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{i=1}^{K}  \lambda_i  \mu_i   + \sum_{i=1}^{K} \sum_{j=1, j\neq i}^{K}  \lambda_i \lambda_j \mu_i^T\mu_j + \sum_{i=1}^{K}  \lambda_i \mu_i^T\mu_i \right) \\
-\tab \tab + \sum_{i=1}^{K} \lambda_i \log \pi_i + (1-\lambda_i) \log (1-\pi_i)}\\
-\tab \tab - \sum_{i=1}^K \lambda_i \log \lambda_i + (1-\lambda_i) \log (1-\lambda_i)
+\tab \tab \frac{-d}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K}  \lambda_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  \lambda_k \lambda_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  \lambda_k \mu_k^T\mu_k \right) \\
+\tab \tab + \sum_{k=1}^{K} \lambda_k \log \pi_k + (1-\lambda_k) \log (1-\pi_k)}\\
+\tab \tab - \sum_{k=1}^K \lambda_k \log \lambda_k + (1-\lambda_k) \log (1-\lambda_k)
 \end{array}
 \]
 
-To derive the partial update for $q_i(s_i)$ we take the variational derivative of the Lagrangian, enforcing the normalisation of $q_i$:
+To derive the partial update for $q_k(s_k)$ we take the variational derivative of the Lagrangian, enforcing the normalisation of $q_k$:
 
-\[\frac{\partial}{\partial q_i}\left( \mathcal{F}(q, \theta) + \lambda^{LG} \int q_i -1)\right) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} - \log q_i(s_i) - 1 + \lambda^{LG}\]
+\[\frac{\partial}{\partial q_k}\left( \mathcal{F}(q, \theta) + \lambda^{LG} \int q_k -1)\right) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{\prod_{k'\neq k} q_{k'}(s_{k'})} - \log q_k(s_k) - 1 + \lambda^{LG}\]
 
 where $\lambda^{LG}$ is the Lagrange multiplier.
 
-Setting this to zero we can solve for the $\lambda_i$ that maximises the free energy:
+Setting this to zero we can solve for the $\lambda_k$ that maximises the free energy:
 
-\[\log q_i(s_i) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} - 1 + \lambda^{LG}\]
+\[\log q_k(s_k) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{\prod_{k'\neq k} q_{k'}(s_{k'})} - 1 + \lambda^{LG}\]
 
 
 Similar to our free energy derivation:
 
-\[\left\langle \log P(\textbf{x} |  \textbf{s}, \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} \propto  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K} \left\langle s_k \right\rangle_{\prod_{j\neq i} q_j(s_j)} \mu_i   + \sum_{k=1}^{K} \sum_{j=1}^{K} \left\langle s_k s_j \right\rangle_{\prod_{j\neq i} q_j(s_j)} \right)\]
+\[\left\langle \log P(\textbf{x} |  \textbf{s}, \theta)\right\rangle_{\prod_{k'\neq k} q_{k'}(s_{k'})} \propto  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K} \left\langle s_k \right\rangle_{\prod_{k'\neq k} q_{k'}(s_{k'})} \mu_k   + \sum_{k=1}^{K} \sum_{k'=1}^{K} \left\langle s_k s_{k'} \right\rangle_{\prod_{k'\neq k} q_{k'}(s_{k'})} \right)\]
 
 and
 
-\[ \left\langle \log P(\textbf{s} | \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} = \sum_{k=1}^{K} \left\langle s_k \right\rangle_{\prod_{j\neq i} q_j(s_j)} \log \pi_k + (1-\left\langle s_k\right\rangle_{\prod_{j\neq i} q_j(s_j)}) \log (1-\pi_k)}\]
+\[ \left\langle \log P(\textbf{s} | \theta)\right\rangle_{\prod_{k'\neq k} q_{k'}(s_{k'})} = \sum_{k=1}^{K} \left\langle s_k \right\rangle_{\prod_{k'\neq k} q_{k'}(s_{k'})} \log \pi_k + (1-\left\langle s_k\right\rangle_{\prod_{k'\neq k} q_{k'}(s_{k'})}) \log (1-\pi_k)}\]
 
 We can write:
 
-\[\log q_i(s_i) \propto  \log P(\textbf{x} |  \textbf{s}, \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} + \left\langle \log P(\textbf{s} | \theta)\right\rangle_{\prod_{j\neq i} q_j(s_j)} \]
+\[\log q_k(s_k) \propto  \log P(\textbf{x} |  \textbf{s}, \theta)\right\rangle_{\prod_{k'\neq k} q_{k'}(s_{k'})} + \left\langle \log P(\textbf{s} | \theta)\right\rangle_{\prod_{k'\neq k} q_{k'}(s_{k'})} \]
 
 Substituting the relevant terms:
 
-\[\log q_i(s_i) \propto  -\frac{1}{2 \sigma^2} \left( - 2 s_i \textbf{x}^T \mu_i   + s_i s_i  \mu_i^T\mu_i +  2 \sum_{j=1, j\neq i}^{K}  s_i \lambda_j  \mu_i^T\mu_j  \right) + s_i \log \pi_i + (1- s_i ) \log (1-\pi_i)}
+\[\log q_k(s_k) \propto  -\frac{1}{2 \sigma^2} \left( - 2 s_k \textbf{x}^T \mu_k   + s_k s_k  \mu_k^T\mu_k +  2 \sum_{k'=1, k'\neq k}^{K}  s_k \lambda_{k'}  \mu_k^T\mu_{k'}  \right) + s_k \log \pi_k + (1- s_k ) \log (1-\pi_k)}
 \]
 
-Knowing $\log q_i(s_i) = s_i \log \lambda_i + (1-s_i) \log (1-\lambda_i)$:
+Knowing $\log q_k(s_k) = s_k \log \lambda_k + (1-s_k) \log (1-\lambda_k)$:
 
-\[\log q_i(s_i) \propto s_i \log \frac{\lambda_i}{1-\lambda_i}\]
+\[\log q_k(s_k) \propto s_k \log \frac{\lambda_k}{1-\lambda_k}\]
 
 Thus,
 
-\[s_i \log \frac{\lambda_i}{1-\lambda_i} \propto  -\frac{1}{2 \sigma^2} \left( - 2 s_i \textbf{x}^T \mu_i   + s_i s_i  \mu_i^T\mu_i +  2 \sum_{j=1, j\neq i}^{K}  s_i \lambda_j  \mu_i^T\mu_j  \right) + s_i \log \frac{\pi_i}{1-\pi_i}}\]
+\[s_k \log \frac{\lambda_k}{1-\lambda_k} \propto  -\frac{1}{2 \sigma^2} \left( - 2 s_k \textbf{x}^T \mu_k   + s_k s_k  \mu_k^T\mu_k +  2 \sum_{k'=1, k'\neq k}^{K}  s_k \lambda_{k'}  \mu_k^T\mu_{k'}  \right) + s_k \log \frac{\pi_k}{1-\pi_k}}\]
 
-Also, because $s_i \in \{0, 1\}}$ we know that $s_i^2 = s_i$:
+Also, because $s_k \in \{0, 1\}}$ we know that $s_k^2 = s_k$:
 
-\[s_i \log \frac{\lambda_i}{1-\lambda_i} \propto  -\frac{1}{2 \sigma^2} \left( - 2 s_i \textbf{x}^T \mu_i   +  s_i  \mu_i^T\mu_i +  2 \sum_{j=1, j\neq i}^{K}  s_i \lambda_j  \mu_i^T\mu_j  \right) + s_i \log \frac{\pi_i}{1-\pi_i}}\]
+\[s_k \log \frac{\lambda_k}{1-\lambda_k} \propto  -\frac{1}{2 \sigma^2} \left( - 2 s_k \textbf{x}^T \mu_k   +  s_k  \mu_k^T\mu_k +  2 \sum_{k'=1, k'\neq k}^{K}  s_k \lambda_{k'}  \mu_k^T\mu_{k'}  \right) + s_k \log \frac{\pi_k}{1-\pi_k}}\]
 
-Because we have only kept terms with $s_i$, this is an equality:
+Because we have only kept terms with $s_k$, this is an equality:
 
-\[s_i \log \frac{\lambda_i}{1-\lambda_i} =  \frac{  s_i \mu_i^T}{2 \sigma^2} \left( 2\textbf{x} - \mu_i -  2 \sum_{j=1, j\neq i}^{K}   \lambda_j  \mu_j \right) + s_i \log \frac{\pi_i}{1-\pi_i}}\]
+\[s_k \log \frac{\lambda_k}{1-\lambda_k} =  \frac{  s_k \mu_k^T}{2 \sigma^2} \left( 2\textbf{x} - \mu_k -  2 \sum_{k'=1, k'\neq k}^{K}   \lambda_{k'}  \mu_{k'} \right) + s_k \log \frac{\pi_k}{1-\pi_k}}\]
 
-Solving for $\lambda_i$:
+Solving for $\lambda_k$:
 
-\[ \lambda_i =  \frac{1}{1+\exp\left[ - \left(\frac{  \mu_i^T}{\sigma^2} \left( \textbf{x} -  \frac{\mu_i}{2} -  \sum_{j=1, j\neq i}^{K}   \lambda_j  \mu_j \right) + \log \frac{\pi_i}{1-\pi_i}}\right) \right]}\]
+\[ \lambda_k =  \frac{1}{1+\exp\left[ - \left(\frac{  \mu_k^T}{\sigma^2} \left( \textbf{x} -  \frac{\mu_k}{2} -  \sum_{k'=1, k'\neq k}^{K}   \lambda_{k'}  \mu_{k'} \right) + \log \frac{\pi_k}{1-\pi_k}}\right) \right]}\]
 
-we have our partial update.
+we have our partial update for $q_k(s_k)$
 
 \newpage
 
@@ -783,10 +803,10 @@ where $\mu \in \mathbb{R}^{K \times D}$, \textbf{s} \in \mathbb{R}^{K \times N}$
 
 This mimics the least squares solution:
 
-\[\hat{\beta} = (\textbf{X}\textbf{X}^T) \textbf{X} \textbf{Y}\]
+\[\hat{\beta} = (\textbf{X}\textbf{X}^T)^{-1} \textbf{X} \textbf{Y}\]
 
-for the linear regression problem $\textbf{Y} = \textbf{X}^T \beta$ where $\beta$ corresponds to the mean parameters $\mu$, the design matrix $\textbf{X}$ corresponds to the input $\textbf{s}$ and the response $Y$ corresponds to the image pixels denoted $\textbf{x}$.
-This makes sense because our resulting images $\textbf{x}$ are modeled as linear combinations of features $\mu$, weighted by $\textbf{s}$.
+for the linear regression problem $\textbf{Y} = \textbf{X}^T \beta$ where $\beta$ corresponds to our mean parameters $\mu$, the design matrix $\textbf{X}$ corresponds to our input $\textbf{s}$ and the response $Y$ corresponds to the image pixels we denoted as $\textbf{x}$.
+This makes sense because our resulting images $\textbf{x}$ are modeled as linear combinations of features $\mu$, weighted by $\textbf{s}$, $\textbf{x} = \mu \textbf{s}$ where $\textbf{x} \in \mathbb{R}^{D \times 1}$, $\mu \in \mathbb{R}^{D \times K}$, and $\textbf{s} \in \mathbb{R}^{K \times 1}$.
 
 \subsection*{(c)}
 
@@ -796,13 +816,15 @@ The computational complexity of the implemented M step function can be broken do
 \item [$\mu$:]\begin{itemize}
 \item The inversion $\text{ESS}^{-1}$ where $\text{ESS} \in \mathbb{R}^{K \times K}$ is $\mathcal{O}(K^3)$
 \item The dot product $\text{ESS}^{-1} \text{ES}^T$ where $\text{ESS}^{-1} \in \mathbb{R}^{K \times K}$ and $\text{ES} \in \mathbb{R}^{N \times K}$ is  $\mathcal{O}(K^2N)$
-\item The dot product $(\text{ESS}^{-1} \text{ES}^T)\textbf{x}$ where $(\text{ESS}^{-1} \text{ES}^T)\ \in \mathbb{R}^{K \times N}$ and $\textbf{x} \in \mathbb{R}^{N \times D}$ is  $\mathcal{O}(KND )$
+\item The dot product $(\text{ESS}^{-1} \text{ES}^T)\textbf{x}$ where $(\text{ESS}^{-1} \text{ES}^T)\ \in \mathbb{R}^{K \times N}$ and $\textbf{x} \in \mathbb{R}^{N \times D}$ is  $\mathcal{O}(KND)$
 \end{itemize}
 
 \item [$\sigma$:] \begin{itemize}
 \item The dot product $(\textbf{x}^{T} \textbf{x})$ where $\textbf{x} \in \mathbb{R}^{N \times D}$ is  $\mathcal{O}(D^2N)$
 \item The dot product $\mu^{T} \mu$ where $\mu \in \mathbb{R}^{D \times K}$ is  $\mathcal{O}(K^2D)$
 \item The dot product $(\mu^{T} \mu)\text{ESS}$ where $\mu^{T} \mu \in \mathbb{R}^{K \times K}$ and $\text{ESS} \in \mathbb{R}^{K \times K}$ is $\mathcal{O}(K^3)$
+\item The dot product  $\text{ESS}^T\textbf{x}$ where $\text{ES} \in \mathbb{R}^{N \times K}$ and $\textbf{x} \in \mathbb{R}^{N \times D}$ is  $\mathcal{O}(KND)$
+\item The dot product $(\text{ESS}^T\textbf{x}) \mu$ where $\text{ESS}^T\textbf{x} \in \mathbb{R}^{K\times D}$ and $\mu \in \mathbb{R}^{D \times K}$ is $\mathcal{O}(K^2 D)$
 \end{itemize}
 \item [$\pi$:] \begin{itemize}
     \item The mean operation for $\text{ES} \in \mathbb{R}^{N \times K}$ along the first dimension is $\mathcal{O}(NK)$
@@ -829,32 +851,32 @@ Examining the generated images, we can see eight features:
 \item a diagonal from top left to bottom right
 \item a vertical line in the second column
 \item a vertical line in the fourth column
-\item a a horizontal line in the first row
+\item a horizontal line in the first row
 \end{enumerate}
 
 Factor analysis assumes a model:
 
 \[\textbf{x} = \textbf{W}\textbf{s} + \epsilon\]
 
-where $\epsilon \sim \mathcal{N}(\mu_{\epsilon}, \Sigma_{\epsilon})$ and $\textbf{s} \sim \mathcal{N}(\mu_{\textbf{s}}, \Sigma_{\textbf{s}})$. Factor analysis would be inappropriate for this data because the our latent variables are binary (i.e. whether or not a feature is present) and not Gaussians. Moreover, the presence of each feature is independent of the presence of another which is not enforced in this model with a covariance matrix that might not be diagonal.
+where $\epsilon \sim \mathcal{N}(0, \Psi)$ and $\textbf{s} \sim \mathcal{N}(0, \textbf{I})$. Factor analysis would be inappropriate for this data because the our latent variables are binary (i.e. whether or not a feature is present) and not Gaussians.
 
 A mixture of Gaussians assumes as model:
 
-\[\textbf{x} = \sum_{k=1}^K\pi_k \mu_k + \epsilon\]
+\[\textbf{x} = \sum_{k=1}^K\pi_k s_k + \epsilon \text{ and } \sum_{k=1}^K s_k = 1\]
 
-where $\epsilon \sim \mathcal{N}(0, \Sigma_{\epsilon})$. This also wouldn't be appropriate because each mixture component (feature) is assumed to have some covariance, whereas our mixtures are defined as binary vectors (a cross, a border, etc) and added together before adding some noise.
+where $\epsilon \sim \mathcal{N}(0, \Sigma_{\epsilon})$. This also wouldn't be appropriate because it assumes a dirichlet distribution on the vector $\textbf{s}$. Our data is constructed by having each $s_k$ independently sampled from a Bernoulli distribution for that feature.
 
-The independent component analysis assumes a model:
+Independent component analysis assumes a model:
 
 \[\textbf{x} = \textbf{W}\textbf{s} + \epsilon\]
 
-where $\epsilon \sim \mathcal{N}(0, \sigma^2\textbf{I})$ and $p(\textbf{s}) = \prod_{k=1}^K p(s_k)$. This is appropriate for our data because we are linearly combining different features and then adding noise.
+where $\epsilon \sim \mathcal{N}(0, \sigma^2\textbf{I})$ and $P(\textbf{s}) = \prod_{k=1}^K P(s_k)$. This is appropriate for our data because $P(s_k)$ is our Bernoulli distribution and we are linearly combining different features with $\textbf{w} in \mathbb{R}^{D \times K}$and then adding noise $\epsilon$.
 
-Thus, it would be expected that ICA does a good job modelling this data while factor analysis and mixture of Gaussians would not.
+Thus, it would be expected that ICA does a good job modelling this data while factor analysis and mixture of Gaussians models would not.
 
 \subsection*{(e)}
 
-We can plot the free energy to make sure it increases each iteration:
+We can plot the free energy at each EM step to make sure it increases each iteration:
 
 \begin{figure}[h]
 \centering
@@ -884,21 +906,11 @@ The features learned by the algorithm:
 \label{fig:3f-latent-factors}
 \end{figure}
 
-We can see that it has learned some of previously identified features, such as the vertical line in the second column, the two by two square in the bottom left corner, the border, and the a two by two square in the middle. THe other features seem to be some linear combination of two or more features, such as $\mu_4$ which looks like a combination of the cross and two by two square in the middle.
+We can see that it has learned some of the previously identified features, such as the vertical line in the second column, the two by two square in the bottom left corner, the border, the horizontal line in the first row, and the a two by two square in the middle. The other features seem to be some linear combination of two or more features, such as $\mu_4$ which looks like a combination of the cross and two by two square in the middle.
 
-A possible way to improve our algorithm is reinitialising our algorithm a few times to find better potential convergence results (i.e. choose model with best free energy).
-Another way to improve the algorithm could be to increase the $K$, although it may learn some duplicate features, there is also a higher chance of capturing all the features. We can visualise this:
+A possible way to improve our algorithm is reinitialising our algorithm a few times to find better potential convergence results (i.e. choose model with highest free energy convergence). We can also increase the number of data samples, with the hopes of learning better features. Finally, we can perform Variational Bayes by setting priors on $\pi$, $\sigma^2$, and $\mu$ for better estimation of these parameters.
 
-\begin{figure}[h]
-\centering
-\includegraphics[scale=0.25]{outputs/q3/f-larger-k-latent-factors}
-\caption{Increasing Number of Latent Factors}
-\label{fig:3f-larger-k-latent-factors}
-\end{figure}
-
-Here we can identify a few more features such as the vertical line in the fourth column the cross, and some of the diagonal feature in $\mu_7$.
-
-When implementing the algorithm, the mean field parameters were initialised randomly, each independently from a uniform distribution. However $\pi$, $\sigma$, and $\mu$ by running the maximisation step using the randomly initialised mean field parameters. $K$ was set to eight, after visually identifying eight features in part d.
+When implementing the algorithm, the mean field parameters were initialised randomly, each independently from a uniform distribution on $\[ 0, 1\]$. $\pi$, $\sigma$, and $\mu$ were initialised by running a maximisation step using the randomly initialised mean field parameters. $K$ was set to eight, after visually identifying eight features in part d. Moreover, for computational stability, when calculating $\log(\lambda_i)$ and $\log(1-\lambda_i)$, we manually shifted $\lambda_i$ by $1e^{-10}$ to prevent $\lambda_i=0$ or $\lambda_i = 1$.
 
 
 \newpage
@@ -927,7 +939,7 @@ We know that our free energy is a upper bounded on the log likelihood:
 
 \[\log P(\mathcal{X} | \theta) \geq \mathcal{F}(q, \theta)\]
 
-In the variational expectation step, $\log P(\mathcal{X} | \theta)$ is fixed and we adjust our approximation $q$ to reach this upper bound. We know that $\sigma$ quantifies the noise of $\textbf{x}$, thus a higher $\sigma$ means a wider spread in our distribution $\log P(\mathcal{X} | \theta)$, meaning we are reducing our upper bound for $\mathcal{F}(q, \theta)$. As such, we can see in the plot for free energy above that when $\sigma$ is increased, our free energy converges to a lower value, due to being bounded above by a lower log-likelihood. Moreover, by reducing the upper bound, we see in the plot of $\log(F(t)-F(t-1))$ that our free energy is able to converge faster. Because we have reduced the upper bound by increasing $\sigma$, our free energy can reach this upper bound faster.
+In the variational expectation step, $\log P(\mathcal{X} | \theta)$ is fixed by the parameters $\pi$, $\sigma$, and $\mu$ and we adjust our approximation $q$ with parameter $\lambda$ to try to reach this upper bound by increasing $\mathcal{F}(q, \theta)$. We know that $\sigma$ quantifies the noise of $\textbf{x}$, thus a higher $\sigma$ means a wider spread in our distribution $\log P(\mathcal{X} | \theta)$, meaning we are reducing our upper bound for $\mathcal{F}(q, \theta)$. As such, we can see in the plot for free energy above that when $\sigma$ is increased, our free energy converges to a lower value, due to being bounded above by a lower log-likelihood. Moreover, by reducing the upper bound, we see in the plot of $\log(F(t)-F(t-1))$ that our free energy is able to converge faster. Because we have reduced the upper bound by increasing $\sigma$, our free energy reaches the upper bound faster.
 
 \newpage
 The Python code for the binary latent factor model:
@@ -946,16 +958,16 @@ The Python code for expectation maximisation:
 The rest of the Python code for question 3:
 \lstinputlisting[language=Python]{src/solutions/q3.py}
 \newpage
-\section*{Question 4}
+\section*{Question 4: Variational Bayes for binary factors}
 \subsection*{(a)}
 
-We begin by writing the expression for $x_d$:
+To derive a Variational Bayesian hyperparameter optimisation algorithm to automatically determine $K$, the number of hidden binary variables in this model, we begin by writing the expression for $x_d$:
 
 \[P(x_d | \texbf{s}, \textbf{w}_d, \sigma^2) = \mathcal{N}\left(\textbf{s}^T\textbf{w}_d, \sigma^2\right)\]
 
 where we know from the diagonal covariance of $P(\textbf{x} | \textbf{s}, \mu, \sigma^2)$ that each dimension is independent. Moreover, $\textbf{w}_d \in \mathbb{R}^{K\times 1}$, which is the $d^{th}$ row of $\mu \in \mathbb{R}^{D \times K}$
 
-Thus, we can write the posterior:
+Thus, we can express the posterior as:
 
 \[\log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) = \log P( \textbf{s}| \pi) + \sum_{d=1}^{D} \log P(x_d | \texbf{s}, \textbf{w}_d, \sigma^2) + \log P( \textbf{w}_d| \alpha)
 \]
@@ -972,10 +984,9 @@ Combining, we have our expression:
 
 \[
 \begin{array}{l}
-\log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) = \\
-\tab \tab + \sum_{d=1}^D-\frac{-1}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(x_d^2 - 2 x_d \textbf{s}^T \textbf{w}_d   + \textbf{w}_d^T \textbf{s}\textbf{s}^T\textbf{w}_d\right) \\
-\tab \tab + \sum_{k=1}^{K} s_k \log \pi_k + (1-s_k) \log (1-\pi_k)}\\
-\tab \tab + \sum_{d=1}^D -\frac{K}{2} \log (2 \pi) + \frac{1}{2}  \sum_{k=1}^K \left(\log\alpha_k \right)  -\frac{1}{2}\textbf{w}_{d}^T \textbf{A}\textbf{w}_{d}\\
+\log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) = \sum_{d=1}^D\frac{-1}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(x_d^2 - 2 x_d \textbf{s}^T \textbf{w}_d   + \textbf{w}_d^T \textbf{s}\textbf{s}^T\textbf{w}_d\right) \\
+\tab \tab \tab \tab + \sum_{k=1}^{K} s_k \log \pi_k + (1-s_k) \log (1-\pi_k)}\\
+\tab \tab \tab \tab + \sum_{d=1}^D \left( \frac{-K}{2} \log (2 \pi) + \frac{1}{2}  \sum_{k=1}^K \left(\log\alpha_k \right)  -\frac{1}{2}\textbf{w}_{d}^T \textbf{A}\textbf{w}_{d} \right)\\
 \end{array}
 \]
 
@@ -993,23 +1004,27 @@ Substituting the relevant terms:
 %
 %\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2}\left(\textbf{s}^T\textbf{A}^T\Psi^{-1}\textbf{As} - 2\textbf{s}^T\left(\textbf{A}^T\Psi^{-1} \textbf{x}  + 2\log\frac{\pi}{1-\pi}\right)\right)\right\rangle_{q(\theta)}\]
 
-Given our factored approximation $q(\textbf{s}) = \prod_{i=1}^K q_i(s_i)$, we can see that we can derive a similar partial update for $q_i(s_i)$ as in Question 3, by taking the variation derivative of the Lagrangian to enforce the normalisation of $q_i$:
+Given our factored approximation $q(\textbf{s}) = \prod_{k=1}^K q_k(s_k)$, we can see that we can derive a similar partial update for $q_k(q_k)$ as in Question 3, by taking the variation derivative of the Lagrangian to enforce the normalisation of $q_k$:
 
-\[\frac{\partial}{\partial q_i}\left( \exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q(\mu)} + \lambda^{LG} \int q_i -1)\right) \propto \exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q(\mu)\prod_{j\neq i} q_j(s_j)} - \log q_i(s_i)\]
+\[
+\begin{array}{l}
+\frac{\partial}{\partial q_k}\left( \exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q(\mu)} + \lambda^{LG} \int q_k -1)\right) \propto \exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q(\mu)\prod_{k'\neq k} q_{k'}(s_{k})} - \log q_k(s_k)\\
+\end{array}
+\]
 
-Setting this to zero we can solve for $\lambda_i$ where $q_i(s_i) = \lambda_i^{s_i}(1-\lambda_i)^{(1-s_i)}$:
+Setting this to zero we can solve for $\lambda_i$ where $q_k(s_k) = \lambda_k^{s_k}(1-\lambda_k)^{(1-s_k)}$:
 
-\[ \lambda_i =  \frac{1}{1+\exp\left[ - \left(\frac{  \langle \mu_i\rangle_{q_{\mu_i}}^T}{\sigma^2} \left( \textbf{x} -  \frac{\langle \mu_i\rangle_{q_{\mu_i}}}{2} -  \sum_{j=1, j\neq i}^{K}   \lambda_j  \langle \mu_j\rangle_{q_{\mu_j} \right) + \log \frac{ \pi_i}{1- \pi_i\right) \right]}\]
+\[ \lambda_k =  \frac{1}{1+\exp\left[ - \left(\frac{  \langle \mu_k\rangle_{q_{\mu_k}}^T}{\sigma^2} \left( \textbf{x} -  \frac{\langle \mu_k\rangle_{q_{\mu_k}}}{2} -  \sum_{k'=1, k'\neq k}^{K}   \lambda_{k'}  \langle \mu_k\rangle_{q_{\mu_k} \right) + \log \frac{ \pi_k}{1- \pi_k\right) \right]}\]
 
 we have our partial E step update.
 
 For the maximisation step, we perform maximisation steps for the parameters $\sigma$ and $\pi$ in the same way as question 3. However, having defined a prior on $\mu$ (through $\textbf{w}$) so we will have to derive our expression for $\langle \mu_k\rangle_{q_{\mu_k}}$ the expectation of the posterior on $\mu_k$. This involves deriving the posterior distribution of $\textbf{w}_d$
 
-\[q_{\textbf{w}_d}(\textbf{w}_d})  \propto P(\textbf{w}_d)\exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{w}_d}(\textbf{w}_d)}\]
+\[q_{\textbf{w}_d}(\textbf{w}_d})  \propto P(\textbf{w}_d)\exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{w}_d}}\]
 
 Substituting the appropriate terms:
 
-\[q_{\textbf{w}_d}(\textbf{w}_d})\propto \exp\left(-\frac{1}{2}\textbf{w}_{d}^T \textbf{A}\textbf{w}_{d} \right) \exp \left\langle  -\frac{1}{2 \sigma^2} \left(- 2 x_d \textbf{s}^T \textbf{w}_d   + \textbf{w}_d^T \textbf{s}\textbf{s}^T\textbf{w}_d\right)\right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{w}_d}(\textbf{w}_d)}\]
+\[q_{\textbf{w}_d}(\textbf{w}_d})\propto \exp\left(-\frac{1}{2}\textbf{w}_{d}^T \textbf{A}\textbf{w}_{d} \right) \exp \left\langle  -\frac{1}{2 \sigma^2} \left(- 2 x_d \textbf{s}^T \textbf{w}_d   + \textbf{w}_d^T \textbf{s}\textbf{s}^T\textbf{w}_d\right)\right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{w}_d}}\]
 
 Simplifying:
 
@@ -1027,9 +1042,9 @@ and
 
 \[\mu_{\textbf{w}_d} = \Sigma_{\textbf{w}_d}} \left(\frac{x_d \langle\textbf{s}^T \rangle_{q_{\textbf{s}}(\textbf{s})}}{\sigma^2}}\right)\]
 
-Thus, $\langle \mu_k\rangle_{q_{\mu_k}} \in \mathbb{R}^{D \times 1}$ is simply the concatenation of the $k^{th}$ elements of $\mu_{\textbf{w}_d}$ for $d\in \{1,...,D\}$
+Thus, $\langle \mu_k\rangle_{q_{\mu_k}} \in \mathbb{R}^{D \times 1}$ is the concatenation of the $k^{th}$ elements of $\mu_{\textbf{w}_d} \in \mathbb{R}^{K \times 1}$ for $d\in \{1,...,D\}$
 
-For ARD, we must also optimise $\alpha$ with a hyper-M step. We start by choose $Ga(\alpha_k| a, b)$, a Gamma prior on \alpha_k$, with $a$ and $b$ being hyperparameters. Thus, to optimise $\alpha$ we want to maximise the penalised objective:
+For ARD, we must also optimise $\alpha$ with a hyper-M step. We start by choosing $Ga(\alpha_k| a, b)$, a Gamma prior on \alpha_k$, with $a$ and $b$ being hyperparameters. Thus, to optimise $\alpha$ we want to maximise the penalised objective:
 
 \[ \alpha =  \arg \max_{\alpha} \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q(\textbf{w})} + \sum_{k=1}^K \log P( \alpha_k| a, b)\]
 
@@ -1041,18 +1056,13 @@ Simplifying:
 
 \[\mathcal{Q} =  \frac{D}{2}  \sum_{k=1}^K \left( \log\alpha_k \right)  - \frac{1}{2}\sum_{d=1}^D \left( tr \left[ \textbf{A}\left\langle  \textbf{w}_{d}\textbf{w}_{d}^T \right\rangle_{q(\textbf{w}_d)} \right]\right)+ \sum_{k=1}^K (a-1)\log\alpha_k -b\alpha_k\]
 
-%Knowing $\left\langle  \textbf{w}_{d}\textbf{w}_{d}^T \right\rangle_{q(\textbf{w})} = \mu_{\textbf{w}_d}\mu_{\textbf{w}_d}^T + \Sigma_{\textbf{w}_d}$:
-%
-%\[\mathcal{Q} =  \frac{D}{2}  \sum_{k=1}^K \left( \log\alpha_k \right)  - \frac{1}{2}\sum_{d=1}^D \left( tr \left[ \textbf{A}\left(\mu_{\textbf{w}_d}\mu_{\textbf{w}_d}^T + \Sigma_{\textbf{w}_d}\right)} \right] \right)+ \sum_{k=1}^K (a-1)\log\alpha_k -b\alpha_k\]
-
-
 Setting $\frac{d\mathcal{Q}}{d\alpha_k} = 0$ we get:
 
 \[ \frac{D}{2\alpha_k} -\frac{1}{2} \sum_{d=1}^D\left\langle (w_{d, k})^2 \right\rangle_{q(\textbf{w}_{d})} + \frac{a-1}{\alpha_k} - b = 0\]
 
 where $w_{d, k}$ is the $k^{th}$ element of $\textbf{w}_d$.
 
-Knowing $\left\langle (w_{d, k})^2 \right\rangle_{q(\textbf{w}_{d})} = (\mu_{\textbf{w}_{d, k}})^2 + \Sigma_{\textbf{w}_{d, (k, k)}}$, we can solve for $\alpha_k$:
+Knowing $\left\langle (w_{d, k})^2 \right\rangle_{q(\textbf{w}_{d})} = (\mu_{\textbf{w}_{d, k}})^2 + \Sigma_{\textbf{w}_{d, (k, k)}}$, the $k^{th}$ element of $\mu_{\textbf{w}_d}$ and element $(k, k)$ of $\Sigma_{\textbf{w}_d$ respectively, we can solve for $\alpha_k$:
 
 \[ \alpha_k = \frac{2a+D-2}{2b+ \sum_{d=1}^D \left((\mu_{\textbf{w}_{d, k}})^2 + \Sigma_{\textbf{w}_{d, (k, k)}}\right) }\]
 
@@ -1077,7 +1087,7 @@ Running variational Bayes for different values of $k$, we can visualise the lear
 \caption{Learned Latent Factors vs Inverse Alpha}
 \label{fig:}
 \end{figure}
-As we expect, when running the algorithm for higher $K$ values, many of the features have $\alpha_k \rightarrow \infty$, depicted as $\alpha^{-1}_k$ for visual convenience. Moreover, visualising the learned features, we can see the clearest features often have the highest $\alpha^{-1}_k$ while the features deemed irrelevant are often noisy or duplicates.
+As we expect, when running the algorithm for higher $K$ values, many of the features have $\alpha_k \rightarrow \infty$, depicted as $\alpha^{-1}_k \rightarrow 0$ for visual convenience. Moreover, visualising the learned features, we can see the clearest features often have the highest $\alpha^{-1}_k$ while the features deemed irrelevant are often noisy or duplicates.
 
 
 \newpage
@@ -1092,7 +1102,7 @@ Comparing the free energy plots of models trained on different $K$ values:
 \label{fig:}
 \end{figure}
 
-We can see that initially, for $k=4$ to $k=8$, increasing $k$ significantly increases the convergence value of the free energy. However, beyond $k=8$ there is a no clear trend of $k$ versus the free energy convergence value. We can see that this corresponds to the visualisation of $\alpha^{-1}$ where beyond $k=11$, the effective number of features remains more or less the same. We know that there are only eight latent features, thus models with $k>8$ should be learning duplicate or irrelevant features. As such, we wouldn't expect a model to be able to increase it's free energy significantly when provided with additional degrees of freedom by increasing the value of $k$ beyond eight. We see that for models with $k>>8$, there are typically ten or eleven features that might be deemed relevant (depending on how you threshold) and this is likely from slight overfitting, noise in the data, or duplicate features. Thus, the relationship between the free energy and the effective number of latent features for each model is as we would expect with ARD.
+We can see that initially for $K=4$ to $K=8$, increasing $K$ significantly increases the convergence value of the free energy. However, beyond $K=8$ there is a no clear trend of $K$ versus the free energy convergence value. We can see that this corresponds to the visualisation of $\alpha^{-1}$ where beyond $K=11$, the effective number of features remains more or less the same. We know that there are only eight latent features, thus models with $K>8$ should be learning duplicate or irrelevant features. As such, we wouldn't expect a model to be able to increase it's free energy significantly when provided with additional degrees of freedom by increasing the value of $k$ beyond eight. We see that for models with $K>>8$, there are typically ten or eleven features that might be deemed relevant (depending on how you threshold) and this is likely from slight overfitting, noise in the data, or duplicate features. Thus, the relationship between the free energy and the effective number of latent features for each model is as we would expect with ARD.
 
 
 \newpage
@@ -1108,12 +1118,13 @@ The Python code for Automatic Relevance Determination:
 The rest of the Python code for question 4:
 \lstinputlisting[language=Python]{src/solutions/q4.py}
 
+
 \newpage
-\section*{Question 5}
+\section*{Question 5: EP for the binary factor model}
 
 \subsection*{(a)}
 
-The log-joint probability for a single observation-source pair:
+To derive an EP algorithm to infer marginals on the source variables in the binary latent factor model from Question 3, we first write the log-joint probability for a single observation-source pair:
 
 \[\log p(\textbf{s}, \textbf{x}) = \log p(\textbf{s}) + \logp(\textbf{x}|\textbf{s})\]
 
@@ -1175,12 +1186,17 @@ and
 
 For $f_i(s_i)$, we will choose a Bernoulli approximation:
 
-\[\tilde{f}_i(s_i) = \lambda_i^{s_i} + (1-\lambda_i)^{1-s_i}\]
+\[\tilde{f}_i(s_i) = (\theta_{ii})^{s_i} + (1-\theta_{ii})^{1-s_i}\]
 
 
 Thus,
 
-\[\log \tilde{f}_i(s_i) \propto \log \left(\frac{\lambda_i}{1-\lambda_i} \right)s_i\]
+\[\log \tilde{f}_i(s_i) \propto \log \left(\frac{\theta_{ii}}{1-\theta_{ii}} \right)s_i\]
+
+we can define $\eta_{ii} = \log \left(\frac{\theta_{ii}}{1-\theta_{ii}} \right)$:
+
+\[\log \tilde{f}_i(s_i) \propto \eta_{ii}s_i\]
+
 
 For $g_{ij}(s_i, s_j)$, we will choose a product of Bernoulli's approximation:
 
@@ -1198,41 +1214,41 @@ Thus,
 
 \[\log \tilde{g}_{ij}(s_i, s_j) \propto \log \left(\frac{\theta_{ji}}{1-\theta_{ji}} \right) s_i + \log \left(\frac{\theta_{ij}}{1-\theta_{ij}} \right) s_j\]
 
-we can define $\xi_{ji} = \log \left(\frac{\theta_{ji}}{1-\theta_{ji}} \right)$ and $\xi_{ij} = \log \left(\frac{\theta_{ij}}{1-\theta_{ij}} \right)$:
+we can define $\eta_{ji} = \log \left(\frac{\theta_{ji}}{1-\theta_{ji}} \right)$ and $\eta_{ij} = \log \left(\frac{\theta_{ij}}{1-\theta_{ij}} \right)$:
 
-\[\log \tilde{g}_{ij}(s_i, s_j) \propto \xi_{ji} s_i + \xi_{ij} s_j\]
+\[\log \tilde{g}_{ij}(s_i, s_j) \propto \eta_{ji} s_i + \eta_{ij} s_j\]
 
 
-To derive the a message passing scheme, we first define the incoming message to node $i$ from the singleton factor:
+To derive a message passing scheme, we define the incoming message to node $i$ from the singleton factor:
 
-\[\mathcal{M}_{i}(s_i) = \tilde{f}_i(s_i)\]
+\[\mathcal{M}_{i \rightarrow i}(s_i) = \tilde{f}_i(s_i)\]
 
-and the message incoming message to node $i$ from node $j$:
+and the incoming message to node $i$ from node $j$:
 
 %\[\mathcal{M}_{j \rightarrow i} = \sum_{\substack{s_m \in \{0, 1\} \\ m \in \{1, ..., j-1, j+1,... K\}}} \tilde{f}_j(s_j) \prod_{k\in ne(j), k\neq i}^{K}} g_{kj}(s_k, s_j)\]
 
 %\[\mathcal{M}_{j \rightarrow i}(s_i) = \sum_{s_1 \in \{0, 1\} } \cdots \sum_{s_{i-1} \in \{0, 1\} } \sum_{s_{i+1} \in \{0, 1\} } \cdots \sum_{s_1 \in \{0, 1\} } \tilde{f}_j(s_j) \tilde{g}_{ji}(s_j, s_i) \prod_{k\in ne(j), k\neq i}^{K}} \tilde{g}_{kj}(s_k, s_j)\]
 
 
-\[\mathcal{M}_{j \rightarrow i}(s_i) = \sum_{s_1 \in \{0, 1\} } \cdots \sum_{s_{i-1} \in \{0, 1\} } \sum_{s_{i+1} \in \{0, 1\} } \cdots \sum_{s_1 \in \{0, 1\} } \tilde{f}_j(s_j) \tilde{g}_{ji}(s_j, s_i) \prod_{k\in ne(j), k\neq i}^{K}} \mathcal{M}_{k \rightarrow j}(s_j)\]
+\[\mathcal{M}_{j \rightarrow i}(s_i) = \sum_{s_1 \in \{0, 1\} } \cdots \sum_{s_{i-1} \in \{0, 1\} } \sum_{s_{i+1} \in \{0, 1\} } \cdots \sum_{s_1 \in \{0, 1\} }  \tilde{g}_{ji}(s_j, s_i) \mathcal{M}_{j \rightarrow j}(s_j)\prod_{k\in ne(j), k\neq i}^{K}} \mathcal{M}_{k \rightarrow j}(s_j)\]
 
-where $ne(j)$ are indices of neighbouring nodes of node $j$.
+where $ne(j)$ are indices of neighbouring nodes of node $j$. This is the product of the incoming messages to node $j$ from its neighbours, the singleton message from node $j$, and $\tilde{g}_{ji}(s_j, s_i)$ with all nodes except $s_i$ marginalised out.
 
 Because $\tilde{g}_{ji}(s_j, s_i)$ is a product:
 
 \[\mathcal{M}_{j \rightarrow i}(s_i) = \tilde{g}_{ji, \neg s_j}(s_i) \sum_{s_1 \in \{0, 1\} } \cdots \sum_{s_{i-1} \in \{0, 1\} } \sum_{s_{i+1} \in \{0, 1\} } \cdots \sum_{s_1 \in \{0, 1\} } \tilde{f}_j(s_j) \tilde{g}_{ji, \neg s_i}(s_j) \prod_{k\in ne(j), k\neq i}^{K}} \mathcal{M}_{k \rightarrow j}(s_j)\]
 
-Simplifying:
+We are left with:
 
 \[\mathcal{M}_{j \rightarrow i}(s_i) = \tilde{g}_{ji, \neg s_j}(s_i)\]
 
 and,
 
-\[\mathcal{M}_{j \rightarrow i}(s_i) \propto \exp\left(\xi_{ji} s_i\right)\]
+\[\mathcal{M}_{j \rightarrow i}(s_i) \propto \exp\left(\eta_{ji} s_i\right)\]
 
 
 
-Thus, the cavity distributions are:
+The cavity distributions are:
 
 \[q_{\neg \tilde{f}_i(s_i)}(s_i) =
 \prod_{j\in ne(i)}^{K} \mathcal{M}_{j \rightarrow i}(s_i)
@@ -1240,7 +1256,7 @@ Thus, the cavity distributions are:
 
 and
 
-\[q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) = \left( \mathcal{M}_{i}(s_i) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i}(s_i)
+\[q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) = \left( \mathcal{M}_{i \rightarrow i}(s_i) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i}(s_i)
 \right)\left( \mathcal{M}_{j}(s_j) \prod_{k\in ne(j), k\neq i}^{K} \mathcal{M}_{k \rightarrow j}(s_j)
 \right)
 \]
@@ -1250,14 +1266,14 @@ This is because we are minimising:
 
 \[\tilde{f}_{i}(s_{i}) = \arg \min_{\tilde{f}_{i}(s_{i})} \textbf{KL} \left[ f_{i}(s_{i}) q_{\neg \tilde{f}_i(s_i)}(s_i) \| \tilde{f}_{i}(s_{i}) q_{\neg \tilde{f}_i(s_i)}(s_i) \right]\]
 
-We know that the factor $\log f_i(s_i)$ is a Bernoulli of the form $b_i s_i$. Because our approximation for this site is also Bernoulli, we can simply solve for $\lambda_i$ in $\log \tilde{f}_{i}(s_{i})$:
+We know that the factor $\log f_i(s_i)$ is a Bernoulli of the form $b_i s_i$. Because our approximation for this site is also Bernoulli, we can simply solve for $\theta_{ii}$ in $\log \tilde{f}_{i}(s_{i})$:
 
 \[\log \tilde{f}_i(s_i) = \log f_{i}(s_{i})\]
 
 
-\[\log \left(\frac{\lambda_i}{1-\lambda_i} \right)s_i = b_i s_i\]
+\[\log \left(\frac{\theta_{ii}}{1-\theta_{ii}} \right)s_i = b_i s_i\]
 
-\[\lambda_i = \frac{1}{1+\exp(-b_i)}\]
+\[\theta_{ii} = \frac{1}{1+\exp(-b_i)}\]
 
 On the other hand, for $\tilde{g}_{ij}(s_i, s_j)$, we will approximate with:
 
@@ -1265,33 +1281,33 @@ On the other hand, for $\tilde{g}_{ij}(s_i, s_j)$, we will approximate with:
 
 We can define natural parameters $\eta_{i, \neg s_j}$ and $\eta_{j, \neg s_i}$ for $q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)$ such that:
 
-\[\mathcal{M}_{i}(s_i) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i}(s_i) \propto \exp(\eta_{i, \neg s_j} s_i)\]
+\[\mathcal{M}_{i \rightarrow i}(s_i) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i}(s_i) \propto \exp(\eta_{i, \neg s_j} s_i)\]
 
 \[ \mathcal{M}_{j}(s_j) \prod_{k\in ne(j), k\neq j}^{K} \mathcal{M}_{k \rightarrow j}(s_j) \propto \exp(\eta_{j, \neg s_i} s_j)\]
 
-Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, updates to this site approximation involves updating the  parameters $\xi_{ij}$ and $\xi_{ji}$, for $s_i$ and $s_j$ respectively.
+Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, updates to this site approximation involves updating the  parameters $\eta_{ij}$ and $\eta_{ji}$, for $s_i$ and $s_j$ respectively.
 
 We can write:
-%\[\log \tilde{g}_{ij}q_{\neg \tilde{g}_{ij}} \propto \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j + \sum_{i=1}^{K}  \log \left(\frac{\lambda_i}{1-\lambda_i} \right) +  \sum_{i'=1}^{K}\sum_{\substack{j'=1 \\ i', j' \neq i, j}}^{i'-1}  \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j\]
+%\[\log \tilde{g}_{ij}q_{\neg \tilde{g}_{ij}} \propto \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j + \sum_{i=1}^{K}  \log \left(\frac{\theta_{ii}}{1-\theta_{ii}} \right) +  \sum_{i'=1}^{K}\sum_{\substack{j'=1 \\ i', j' \neq i, j}}^{i'-1}  \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j\]
 
-\[\log \tilde{g}_{ij}(s_i, s_j)q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto \xi_{ji} s_i + \xi_{ij} s_j + \eta_{i, \neg s_j} s_i + \eta_{j, \neg s_i} s_j\]
+\[\log \left(\tilde{g}_{ij}(s_i, s_j)q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right) \propto \eta_{ji} s_i + \eta_{ij} s_j + \eta_{i, \neg s_j} s_i + \eta_{j, \neg s_i} s_j\]
 
 Simplifying:
 
-\[\log \tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto \left(\xi_{ji}+ \eta_{i, \neg s_j} \right) s_i + \left(\xi_{ij} + \eta_{j, \neg s_i} \right) s_j \]
+\[\log \left(\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \right)\propto \left(\eta_{ji}+ \eta_{i, \neg s_j} \right) s_i + \left(\eta_{ij} + \eta_{j, \neg s_i} \right) s_j \]
 
 
 Thus, the first moments:
 
-\[\mathbb{E}_{s_i}\left[\sum_{s_j \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{1}{1+\exp{\left(-\left(\xi_{ji} + \eta_{i, \neg s_j} \right)}\right)}\]
+\[\mathbb{E}_{s_i}\left[\sum_{s_j \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{1}{1+\exp{\left(-\left(\eta_{ji} + \eta_{i, \neg s_j} \right)}\right)}\]
 
 and
 
-\[\mathbb{E}_{s_j}\left[\sum_{s_i \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{1}{1+\exp{\left(-\left(\xi_{ij} + \eta_{j, \neg s_i} \right)}\right)}\]
+\[\mathbb{E}_{s_j}\left[\sum_{s_i \in \{0, 1\}}\tilde{g}_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right] = \frac{1}{1+\exp{\left(-\left(\eta_{ij} + \eta_{j, \neg s_i} \right)}\right)}\]
 
 Moreover:
 
-\[\log g_{ij}(s_i, s_j) qq_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \propto W_{ij} s_i s_j
+\[\log \left(g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) \right)\propto W_{ij} s_i s_j
  + \eta_{i, \neg s_j} s_i + \eta_{j, \neg s_i} s_j\]
 
 To derive the first moment for $ g_{ij}(s_i, s_j) q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)$ with respect to $s_i$, we first marginalise out $s_j$:
@@ -1323,41 +1339,51 @@ and
 
 we can solve for the parameters of $\tilde{g}_{ij}(s_i, s_j)$ with moment matching:
 
-\[\frac{1}{1+\exp{\left(-\left(\xi_{ji} + \eta_{i, \neg s_j} \right)}\right)}} = \frac{\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  }{\left[\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  \right]+\left[\exp\left( \eta_{j, \neg s_i}\right) +  1\right]}\]
+\[\frac{1}{1+\exp{\left(-\left(\eta_{ji} + \eta_{i, \neg s_j} \right)}\right)}} = \frac{\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  }{\left[\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)  \right]+\left[\exp\left( \eta_{j, \neg s_i}\right) +  1\right]}\]
 
 Simplifying:
 
-\[\exp\left( \eta_{j, \neg s_i}\right) +  1=\exp{\left(-\left(\xi_{ji} + \eta_{i, \neg s_j} \right)}\right)}\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)\]
+\[\exp\left( \eta_{j, \neg s_i}\right) +  1=\exp{\left(-\left(\eta_{ji} + \eta_{i, \neg s_j} \right)}\right)}\exp\left(\eta_{i, \neg s_j}\right)\left(\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1\right)\]
 
-\[\frac{\exp\left( \eta_{j, \neg s_i}\right) +  1}{ \exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1} =\exp{\left(-\xi_{ji}\right)}\]
+\[\frac{\exp\left( \eta_{j, \neg s_i}\right) +  1}{ \exp\left( W_{ij}  + \eta_{j, \neg s_i}\right) + 1} =\exp{\left(-\eta_{ji}\right)}\]
 
 Our parameter update:
 
-\[\xi_{ji} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right)}{1+\exp\left( \eta_{j, \neg s_i}\right)} \right)\]
+\[\eta_{ji} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{j, \neg s_i}\right)}{1+\exp\left( \eta_{j, \neg s_i}\right)} \right)\]
 
 Similarly:
 
-\[\xi_{ij} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{i, \neg s_j}\right)}{1+\exp\left( \eta_{i, \neg s_j}\right)} \right)\]
+\[\eta_{ij} = \log \left( \frac{1+\exp\left( W_{ij}  + \eta_{i, \neg s_j}\right)}{1+\exp\left( \eta_{i, \neg s_j}\right)} \right)\]
 
 
 \subsection*{(c)}
 
 Using factored approximate messages, we see that:
 
-\[\eta_{i, \neg s_j} =  \log \left(\frac{\lambda_i}{1-\lambda_i}\right) + \sum_{k\in ne(i), k\neq j}^{K} \log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)\]
+\[\eta_{i, \neg s_j} =  \log \left(\frac{\theta_{ii}}{1-\theta_{ii}}\right) + \sum_{k\in ne(i), k\neq j}^{K} \log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)\]
 
-Knowing $b_i=\log \left(\frac{\lambda_i}{1-\lambda_i}\right)$ and $\xi_{ki}=\log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)$:
+Knowing $\eta_{ii}=\log \left(\frac{\theta_{ii}}{1-\theta_{ii}}\right)$ and $\eta_{ki}=\log\left(\frac{\theta_{ki}}{1-\theta_{ki}} \right)$:
 
-\[\eta_{i, \neg s_j} =  b_i + \sum_{k\in ne(i), k\neq j}^{K} \xi_{ki}\]
+\[\eta_{i, \neg s_j} =  \eta_{ii} + \sum_{k\in ne(i), k\neq j}^{K} \eta_{ki}\]
 
 and
 
-\[\eta_{j, \neg s_i} =  b_j + \sum_{k\in ne(j), k\neq i}^{K} \xi_{kj}\]
+\[\eta_{j, \neg s_i} =  \eta_{jj} + \sum_{k\in ne(j), k\neq i}^{K} \eta_{kj}\]
 
 
-The summation of the natural parameters of the singleton factor for node $i$ with the natural parameters of messages from all the neighbouring nodes.
+The summation of the natural parameters of the singleton factor for node $i$ with the natural parameters of messages from all the neighbouring nodes that aren't $j$.
 
 This leads to a loopy BP algorithm because the nodes are fully connected (i.e. every node is the neighbour of all other nodes). Thus, we cannot simply move from one end of the graph to the other like BP for tree structured graphs.
+
+Moreover, our factored approximations:
+
+\[q(s_i) \propto \sum_{j=1}^{K} \eta_{ij} s_i\]
+
+and so:
+
+\[\lambda_i = \frac{1}{1+\exp(-\sum_{j=1}^{K} \eta_{ij})}\]
+
+our parameter for $q(s_i)$.
 
 \subsection*{(d)}
 
@@ -1366,7 +1392,7 @@ Similar to question 3, we can use automatic relevance determination (ARD) as a h
 
 
 \newpage
-\section*{Question 6}
+\section*{Question 6: EP/Loopy BP Implementation}
 
 Implementing the EP/loopy-BP algorithm, we can compare the learned latent factors with those of the variational mean-field algorithm:
 
@@ -1384,7 +1410,7 @@ Implementing the EP/loopy-BP algorithm, we can compare the learned latent factor
 \label{fig:3f-latent-factors}
 \end{figure}
 
-We can see that the mean field algorithm seems to learn better latent features. In particular there's are fewer duplicates, unlike loopy BP that has a few duplicates of the two by two square in the middle. Moreover, the learned features have less noise. For example $\mu_0$ for the mean field algorithm looks almost like a binary image. We can understand the reason for this by comparing the free energies of the two algorithms:
+We can see that the mean field algorithm seems to learn better latent features. In particular there are fewer duplicates, unlike loopy BP that has a few duplicates like $\mu_3$ and $\mu_4$. Moreover, the learned features have less noise. For example $\mu_0$ for the mean field algorithm looks almost like a binary image. We can understand the reason for this by comparing the free energies of the two algorithms:
 
 \begin{figure}[h]
 \centering
@@ -1402,7 +1428,7 @@ We can see that the mean field algorithm seems to learn better latent features. 
 \end{minipage}
 \end{figure}
 
-We can observe that the free energy of the mean field algorithm converges while our loopy belief propagation is unable to converge to a free energy. Because loopy BP does not have convergence guarantees, this is one of the limitations of this approach.
+We can observe that the free energy of the mean field algorithm converges while our loopy belief propagation is unable to converge to a free energy. Because loopy BP does not have convergence guarantees, one of the limitations of this approach, we can see that in this case loopy BP is unable to identify many latent factors.
 
 \newpage
 The Python code for the Boltzmann machine:
