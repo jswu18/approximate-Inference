@@ -1,4 +1,5 @@
 from dataclasses import asdict, fields
+from decimal import Decimal
 
 import dataframe_image as dfi
 import jax
@@ -47,14 +48,14 @@ def a(
     )
     df_mean = pd.DataFrame(
         posterior_linear_regression_parameters.mean, columns=["value"]
-    )
+    ).apply(lambda col: ["%.2E" % Decimal(val) for val in col])
     df_mean.index = ["a", "b"]
     df_mean = pd.concat([df_mean], keys=["parameters"])
     dfi.export(df_mean, save_path + "-mean.png")
 
     df_covariance = pd.DataFrame(
         posterior_linear_regression_parameters.covariance, columns=["a", "b"]
-    )
+    ).apply(lambda col: ["%.2E" % Decimal(val) for val in col])
     df_covariance.index = ["a", "b"]
     df_covariance = pd.concat([df_covariance], keys=["parameters"])
     df_covariance = pd.concat([df_covariance.T], keys=["parameters"])
@@ -253,11 +254,11 @@ def f(
         [
             [
                 x.strip("log_") + " (kernel)",
-                np.exp(gaussian_process_parameters.kernel[x]),
+                "%.2E" % Decimal(np.exp(gaussian_process_parameters.kernel[x])),
             ]
             for x in gaussian_process_parameters.kernel.keys()
         ]
-        + [["sigma", float(gaussian_process_parameters.sigma)]],
+        + [["sigma", "%.2E" % Decimal(float(gaussian_process_parameters.sigma))]],
         columns=["parameter", "value"],
     )
     df_parameters = df_parameters.set_index("parameter").sort_values(by=["parameter"])
@@ -272,11 +273,11 @@ def f(
         [
             [
                 x.strip("log_") + " (kernel)",
-                np.exp(gaussian_process_parameters.kernel[x]),
+                "%.2E" % Decimal(np.exp(gaussian_process_parameters.kernel[x])),
             ]
             for x in gaussian_process_parameters.kernel.keys()
         ]
-        + [["sigma", float(gaussian_process_parameters.sigma)]],
+        + [["sigma", "%.2E" % Decimal(float(gaussian_process_parameters.sigma))]],
         columns=["parameter", "value"],
     )
     df_parameters = df_parameters.set_index("parameter").sort_values(by=["parameter"])
