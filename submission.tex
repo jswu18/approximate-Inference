@@ -1290,7 +1290,6 @@ We can define natural parameters $\eta_{i, \neg s_j}$ and $\eta_{j, \neg s_i}$ f
 Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, so updates to this site approximation involves updating the  parameters $\eta_{ji}$ and $\eta_{ij}$, for $s_i$ and $s_j$ respectively.
 
 We can write:
-%\[\log \tilde{g}_{ij}q_{\neg \tilde{g}_{ij}} \propto \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j + \sum_{i=1}^{K}  \log \left(\frac{\theta_{ii}}{1-\theta_{ii}} \right) +  \sum_{i'=1}^{K}\sum_{\substack{j'=1 \\ i', j' \neq i, j}}^{i'-1}  \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j\]
 
 \[\log \left(\tilde{g}_{ij}(s_i, s_j)q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j)\right) \propto \eta_{ji} s_i + \eta_{ij} s_j + \eta_{i, \neg s_j} s_i + \eta_{j, \neg s_i} s_j\]
 
@@ -1410,9 +1409,7 @@ We can use automatic relevance determination (ARD) as a hyperparameter method to
 
 We can see that ARD has more difficulty finding relevant features when using loop BP.
 However, looking at the features themselves, we can see that the features are not very clear compared those from the mean field approximation or Variational Bayes in Question 4.
-This is probably why we do not consistently have the same number of $\alpha_k$ values that don't diverge as compared with Question 4.
-Moreover we usually have fewer than eight features that don't converge, likely because loopy BP seems to be unable to identify too many clear features that we would want to deem relevant in the first place.
-However, we can see for $K<8$ that more of the features are deemed relevant as we would expect.
+This is probably why we do not consistently have the same number of $\alpha_k$ values that don't diverge as compared with Question 4, loopy BP seems to be unable to identify too many clear features that we would want to clearly deem relevant.
 
 \newpage
 Comparing the free energy plots of models trained on different $K$ values:
@@ -1457,7 +1454,7 @@ Implementing the EP/loopy-BP algorithm, we can compare the learned latent factor
 \label{fig:3f-latent-factors}
 \end{figure}
 
-We can see that the mean field algorithm seems to learn better latent features. In particular there are fewer duplicates, unlike loopy BP that has a few duplicates. Moreover, the learned features of the mean field algorithm have less noise than those from loopy BP. For example $\mu_0$ for the mean field algorithm looks almost like a binary image. We can understand the reason for this by comparing the free energies of the two algorithms:
+We can see that the mean field algorithm seems to learn better latent features. In particular loopy BP that has a few duplicates and some of the learned features are quite noisy. For example $\mu_0$ for the mean field algorithm looks almost like a binary image whereas $\mu_3$ and $\mu_5$ from loopy BP are almost completely noise. We can understand the reason for this by comparing the free energies of the two algorithms:
 
 \begin{figure}[h]
 \centering
