@@ -286,7 +286,7 @@ Using our factor analysis model, we can describe the biochemical pathway as:
 
 \[\delta[\textbf{x}] = \Lambda \textbf{z} + \epsilon\]
 
-where $\delta[\textbf{x}]$ are the concentration perturbations, $\epsilon \sim \mathcal{N} (0, \Psi)$ are the reaction specific Gaussian noise variables, and $z \sim \mathcal{N} (0, I)$ are the latent factor, the parent concentration perturbations.
+where $\delta[\textbf{x}]$ are the concentration perturbations, $\epsilon \sim \mathcal{N} (0, \Psi)$ are the reaction specific Gaussian noise variables, \Lambda is the factor loading matrix, and $z \sim \mathcal{N} (0, I)$ are the latent factors, the parent concentration perturbations.
 
 From the graph structure, we know that:
 
@@ -373,7 +373,7 @@ Thus, we would expect to recover the factors of $A$ and $C$, $\delta[A]$ and $\d
 
 From factor analysis, we would recover $\delta[A]$ and $\delta[C]$.
 In theory, if these concentration perturbations had unknown parent factors, we could use the results to recover the concentration perturbations of those parent features.
-However, in our DAG this is not hte case, so we would not be able to recover any other species in the cascade because  they are all downstream from the known concentration perturbations and those recovered from factor analysis.
+However, in our DAG this is not the case, so we would not be able to recover any other species in the cascade because  they are all downstream from the known concentration perturbations and those recovered from factor analysis.
 Similarly, the downstream weights in the DAG from the known measurements would also be unidentifiable.
 Using factor analysis, we would only be able to identify the upstream weights from the measurements, up to an unknown scale factor.
 These are the weights $\Lambda_{BA}$, $\Lambda_{DC}$, and $\Lambda_{EC}$.
@@ -436,20 +436,20 @@ Expanding:
   \frac{-1}{2} \left( \frac{\textbf{y} \textbf{y}^T}{\sigma^2} - 2\textbf{w}^T \frac{\textbf{X}\textbf{y}^T}{\sigma^2} + \textbf{w}^T \frac{\textbf{X} \textbf{X}^T}{\sigma^2} \textbf{w} +  \textbf{w}^T \Sigma_{\textbf{w}}^{-1}  \textbf{w} - 2\textbf{w}^T \Sigma_{\textbf{w}}^{-1}\mu_{\textbf{w}} + \mu_{\textbf{w}}^T\Sigma_{\textbf{w}}^{-1}\mu_{\textbf{w}} \right)
 \]
 
-collecting $\textbf{w}$ terms:
+collecting $\textbf{w}$:
 \[\log P(\textbf{w} | \mathcal{D}) \propto
   \frac{-1}{2} \left( \textbf{w}^T \left(\frac{\textbf{X} \textbf{X}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \right)  \textbf{w} - 2\textbf{w}^T \left(\frac{\textbf{X}\textbf{y}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \mu_{\textbf{w}}\right)  \right)
 \]
 
-Knowing that the posterior $P(\textbf{w} | \mathcal{D})$ will be Gaussian with mean $\bar{\mu}_w$ and covariance $\bar{\Sigma}_w$, we can see that expanding the exponent component of a Gaussian would have the form:
+Knowing that the posterior $P(\textbf{w} | \mathcal{D})$ will be Gaussian with mean $\bar{\mu}_{\textbf{w}}$ and covariance $\bar{\Sigma}_{\textbf{w}}$, we can see that expanding the exponent component of a Gaussian would have the form:
 
-\[\left( \textbf{w} - \bar{\mu}_w \right)^T \bar{\Sigma}_w^{-1} \left( \textbf{w} - \bar{\mu}_w \right) = \textbf{w}^T \bar{\Sigma}_w^{-1} \textbf{w} -2 \textbf{w}^T \bar{\Sigma}_w^{-1} \bar{\mu}_w + \bar{\mu}_w^T \bar{\Sigma}_w^{-1} \bar{\mu}_w\]
+\[\left( \textbf{w} - \bar{\mu}_{\textbf{w}} \right)^T \bar{\Sigma}_{\textbf{w}}^{-1} \left( \textbf{w} - \bar{\mu}_{\textbf{w}} \right) = \textbf{w}^T \bar{\Sigma}_{\textbf{w}}^{-1} \textbf{w} -2 \textbf{w}^T \bar{\Sigma}_{\textbf{w}}^{-1} \bar{\mu}_{\textbf{w}} + \bar{\mu}_{\textbf{w}}^T \bar{\Sigma}_{\textbf{w}}^{-1} \bar{\mu}_{\textbf{w}}\]
 
 Thus we can identify the posterior covariance:
-\[\bar{\Sigma}_w = \left(\frac{\textbf{X} \textbf{X}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \right)^{-1}\]
+\[\bar{\Sigma}_{\textbf{w}} = \left(\frac{\textbf{X} \textbf{X}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \right)^{-1}\]
 
 and the posterior mean:
-\[\bar{\mu}_w = \bar{\Sigma}_w \left(\frac{\textbf{X}\textbf{y}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \mu_{\textbf{w}}\right) \]
+\[\bar{\mu}_{\textbf{w}} = \bar{\Sigma}_{\textbf{w}} \left(\frac{\textbf{X}\textbf{y}^T}{\sigma^2} + \Sigma_{\textbf{w}}^{-1} \mu_{\textbf{w}}\right) \]
 
 
 \newpage
@@ -493,7 +493,7 @@ Plotting the residuals $g_{obs}(t) = f_{obs}(t) - (a_{MAP}t + b_{MAP})$:
 We can see that the residuals do not perfectly conform to our prior over $e(t) \sim \mathcal{N}(0, 1)$.
 The density estimation shows that a mean of zero is a reasonable prior belief however the data does not seem to exhibit unit variance.
 Also, observing $g_{obs}(t)$ we see that there is periodic structure in the timeseries meaning that the data is not independently and identically distributed as $e(t) \sim \mathcal{N}(0, 1)$ would suggest.
-Otherwise, we would expect $g(t)$ to look like random noise.
+If this were the case, we would expect $g(t)$ to look like random noise.
 
 \newpage
 \subsection*{(c \& d)}
@@ -555,13 +555,14 @@ More specifically, we can see how changing each hyper-parameter will affect the 
     This is expected because it adjusts the lengthscale of the periodic portion of the kernel.
 \item [$\phi$:] As $\phi$ increases, we see the ratio of the amplitude of the periodicity component of the sample function reduces compared to the baseline.
     The covariance matrix shows how increasing $\phi$ will start to increase the non-periodic component masking the periodic stripes.
-    This is expected because it adjusts the weight of the squared exponential portion of the kernel, thus the periodic component remains the same (i.e.same amplitude) but the large baseline shifts from increasing $\phi$ ends up dominating the function visually.
+    This is expected because it adjusts the weight of the squared exponential portion of the kernel.
+    The periodic component remains the same (i.e.same amplitude) but the large baseline shifts from increasing $\phi$ ends up dominating the function visually.
 \item [$\eta$:] As $\eta$ increases we see smoother sample functions.
-This is expected because the $\eta$ increases the lengthscale of the non-periodic component, allowing for smoother functions.
+This is expected because the $\eta$ increases the lengthscale of the squared exponential component, allowing for smoother functions.
 This causes the off-diagonals of the gram matrix to increase, however the periodic component is still maintained because $\eta$ doesn't affect the relative weighting between the two components.
 \item [$\tau$:] As $\tau$ increases, the period of the periodic function increases.
 We can see this reflected in the stripes in the gram matrix getting further apart and the period of the samples.
-This makes sense because we are adjusting the period parameter in the sinusoid function of the periodic term with $\tau$.
+This makes sense because we are adjusting the period parameter in the sinusoid function of the periodic term.
 \item [$\zeta$:] As $\zeta$ increases, the function becomes less smooth.
     This is because the $\zeta$ parameter adjusts the weight of the $\delta_{s=t}$ kernel.
     This places stronger emphasis on the independence of each timestep, which can be seen with the reduction of relative magnitude of off-diagonals in the gram matrix.
@@ -572,7 +573,7 @@ Suitable values for hyper-parameters can be chosen through a combination of visu
 For example, it is a reasonable assumption that the $CO_2$ concentration levels have a strong yearly seasonality behaviour due to the cyclic changes in temperature, humidity, etc.
 This behaviour cannot be modelled by our Bayesian linear regression and is reflected in our residuals $g(t)$.
 Thus we can choose $\tau=1$ to ensure functions with a period of one year to reflect this prior knowledge.
-It can be difficult to quantitatively choose values for the other parameters as they can relate to the uncertainty exhibited in the data (i.e.the smoothness of the function).
+It can be difficult to quantitatively choose values for the other parameters as they can relate to the uncertainty exhibited in the data (i.e. the smoothness of the function).
 One approach is to maximise:
 
 \[\log P(\textbf{y} | \textbf{X}) = -\frac{1}{2} \textbf{y}^T (\textbf{K} + \sigma^2\textbf{I})^{-1} \textbf{y} - \frac{1}{2} \log |\textbf{K}+ \sigma^2\textbf{I}| - \frac{n}{2}\log(2\pi)\]
@@ -598,9 +599,9 @@ Comparing the hyperparameters corresponding to before and after training side by
 \end{minipage}
 \end{figure}
 
-We can analyse some of the changes in these parameters from optimisation, to gain some insights.
+We can analyse some of the changes in these parameters from optimisation to gain some insights.
 We can see that $\tau$ remains the same as we would expect, given the yearly seasonality we knew apriori.
-On the other hand, the value for $\zeta$ is significantly reduced signifying that $\delta_{s=t}$ is not a very good kernel for representing the data as datapoints at different timesteps do exhibit correlations.
+On the other hand, the value for $\zeta$ is significantly reduced signifying that $\delta_{s=t}$ is not a very good kernel for representing the data as datapoints at different timesteps do exhibit correlations and are not independently and identically distributed.
 
 \newpage
 \subsection*{(f)}
@@ -626,7 +627,7 @@ We can see that the extrapolation shows a continued increase in $CO_2$ in the fu
 This follows our expectations given that the levels has been steadily increasing in the past and our Bayesian linear regression model assumption.
 Moreover, the concentration continues to exhibit yearly seasonality (for the trained extrapolation) as we would expect through the choice of our kernel for modelling the residuals $g(t)$.
 We can see that the conclusions can be quite sensitive to kernel hyperparameters when comparing the extrapolations from before and after training.
-Prior to training, the extrapolated prediction is not representative of the given data with very large uncertainty.
+Prior to training, the extrapolated prediction is not representative of the given data, with very large uncertainties.
 After training, we can see that the prediction is much more reasonable, and qualitatively the uncertainty bounds seem to exhibit the historical variability in the data.
 
 
@@ -663,9 +664,6 @@ The free energy is can be expressed as:
 \[\mathcal{F}(q, \theta) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{q(\textbf{s})} + H[Q(\textbf{s})]\]
 
 
-%Thus,
-%\[\mathcal{F}(Q, \theta) = \left\langle \log P(\textbf{x}, \textbf{s} | \theta)\right\rangle_{\prod_{i=1}^{K} q_{i} (s_i)} + H\left[ \prod_{i=1}^{K} q_{i} (s_i)\right] \]
-
 Knowing,
 \[\log P(\textbf{x}, \textbf{s} | \theta) = \log P(\textbf{x} | \textbf{s}, \theta) + \log P(\textbf{s} | \theta)\]
 
@@ -686,26 +684,26 @@ Given that:
 
 we can substitute the appropriate terms:
 
-\[ P(\textbf{x} | \textbf{s}, \theta)  = 2\pi^{-\frac{d}{2}} |\sigma^2 \textbf{I}|^{-\frac{1}{2}} \exp \left( -\frac{1}{2} \left(\textbf{x} - \sum_{k=1}^{K} s_k \mu_k\right)^T \frac{1}{\sigma^2} \textbf{I}  \left(\textbf{x} - \sum_{k=1}^{K} s_k \mu_k\right) \right) \]
+\[ P(\textbf{x} | \textbf{s}, \theta)  = 2\pi^{-\frac{D}{2}} |\sigma^2 \textbf{I}|^{-\frac{1}{2}} \exp \left( -\frac{1}{2} \left(\textbf{x} - \sum_{k=1}^{K} s_k \mu_k\right)^T \frac{1}{\sigma^2} \textbf{I}  \left(\textbf{x} - \sum_{k=1}^{K} s_k \mu_k\right) \right) \]
 
 with $d$ being the number of dimensions.
 
 
 Taking the logarithm:
 
-\[ \log P(\textbf{x} | \textbf{s}, \theta)  = -\frac{d}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K} s_k \mu_k   + \sum_{k=1}^{K} \sum_{k=1}^{K} s_k s_{k'} \mu_k^T\mu_{k'} \right) \]
+\[ \log P(\textbf{x} | \textbf{s}, \theta)  = -\frac{D}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K} s_k \mu_k   + \sum_{k=1}^{K} \sum_{k=1}^{K} s_k s_{k'} \mu_k^T\mu_{k'} \right) \]
 
 The expectation distributed to the relevant terms:
 
 \[
 \left\langle \log P(\textbf{x} | \textbf{s}, \theta)\right\rangle_{q(\textbf{s})} \\
-= -\frac{d}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K} \left\langle s_k \right\rangle_{q_{k} (s_k)} \mu_k   + \sum_{k=1}^{K} \sum_{k'=1}^{K} \left\langle s_k s_{k'} \right\rangle_{q_{k} (s_k) q_{k\} (s_{k'})} \mu_k^T\mu_{k'} \right)\]
+= -\frac{D}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K} \left\langle s_k \right\rangle_{q_{k} (s_k)} \mu_k   + \sum_{k=1}^{K} \sum_{k'=1}^{K} \left\langle s_k s_{k'} \right\rangle_{q_{k} (s_k) q_{k'} (s_k')} \mu_k^T\mu_{k'} \right)\]
 
 Evaluating the expectations:
 
 \[
 \left\langle \log P(\textbf{x} | \textbf{s}, \theta)\right\rangle_{q(\textbf{s})} \\
-= -\frac{d}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K}  \lambda_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  \lambda_k \lambda_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  \lambda_k \mu_k^T\mu_k \right)\]
+= -\frac{D}{2} \log (2 \pi \sigma^2)  -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K}  \lambda_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  \lambda_k \lambda_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  \lambda_k \mu_k^T\mu_k \right)\]
 
 where $\left\langle s_k s_k \right\rangle_{q_{k} (s_k)} = \left\langle s_k \right\rangle_{q_{k} (s_k)}$ because $s_k \in \{0, 1\}$.
 
@@ -743,7 +741,7 @@ Combining, we have our free energy expression:
 \[
 \begin{array}{l}
 \tab \mathcal{F}(q, \theta) = \\
-\tab \tab \frac{-d}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K}  \lambda_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  \lambda_k \lambda_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  \lambda_k \mu_k^T\mu_k \right) \\
+\tab \tab \frac{-D}{2} \log (2 \pi \sigma^2)   -\frac{1}{2 \sigma^2} \left(\textbf{x}^T\textbf{x} - 2 \textbf{x}^T\sum_{k=1}^{K}  \lambda_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  \lambda_k \lambda_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  \lambda_k \mu_k^T\mu_k \right) \\
 \tab \tab + \sum_{k=1}^{K} \lambda_k \log \pi_k + (1-\lambda_k) \log (1-\pi_k)}\\
 \tab \tab - \sum_{k=1}^K \lambda_k \log \lambda_k + (1-\lambda_k) \log (1-\lambda_k)
 \end{array}
@@ -878,7 +876,7 @@ Independent component analysis assumes a model:
 
 \[\textbf{x} = \textbf{W}\textbf{s} + \epsilon\]
 
-where $\epsilon \sim \mathcal{N}(0, \sigma^2\textbf{I})$ and $P(\textbf{s}) = \prod_{k=1}^K P(s_k)$. This is appropriate for our data because $P(s_k)$ is our Bernoulli distribution and we are linearly combining different features with $\textbf{W} \in \mathbb{R}^{D \times K}$and then adding noise $\epsilon$.
+where $\epsilon \sim \mathcal{N}(0, \sigma^2\textbf{I})$ and $P(\textbf{s}) = \prod_{k=1}^K P(s_k)$. This is appropriate for our data because $P(s_k)$ are our independent Bernoulli distributions and we are linearly combining different features with $\textbf{W} \in \mathbb{R}^{D \times K}$and then adding noise $\epsilon$.
 
 Thus, it would be expected that ICA does a good job modelling this data while factor analysis and mixture of Gaussians models would not.
 
@@ -914,11 +912,11 @@ The features learned by the algorithm:
 \label{fig:3f-latent-factors}
 \end{figure}
 
-We can see that it has learned some of the previously identified features, such as the vertical line in the second column, the two by two square in the bottom left corner, the border, the horizontal line in the first row, and the a two by two square in the middle. The other features seem to be some linear combination of two or more features, such as $\mu_4$ which looks like a combination of the cross and two by two square in the middle.
+We can see that this approach has learned some of the previously identified features, such as the vertical line in the second column, the two by two square in the bottom left corner, the border, the horizontal line in the first row, and the a two by two square in the middle. The other features seem to be some linear combination of two or more features, such as $\mu_4$ which looks like a combination of the cross and two by two square in the middle.
 
-A possible way to improve our algorithm is reinitialising our algorithm a few times to find better potential convergence results (i.e. choose model with highest free energy convergence). We can also increase the number of data samples, with the hopes of learning better features. Finally, we can perform Variational Bayes by setting priors on $\pi$, $\sigma^2$, and $\mu$ for better estimation of these parameters.
+A possible way to improve our algorithm is reinitialising our algorithm a few times to find better potential convergence results (i.e. choose the model with the highest free energy convergence). We can also increase the number of data samples, with the hopes of learning better features. Finally, we can perform Variational Bayes by setting priors on $\pi$, $\sigma^2$, and $\mu$ for better estimation of these parameters.
 
-When implementing the algorithm, the mean field parameters were initialised randomly, each independently from a uniform distribution on $\[ 0, 1\]$. $\pi$, $\sigma$, and $\mu$ were initialised by running a maximisation step using the randomly initialised mean field parameters. $K$ was set to eight, after visually identifying eight features in part d. Moreover, for computational stability, when calculating $\log(\lambda_i)$ and $\log(1-\lambda_i)$, we manually shifted $\lambda_i$ by $1e^{-10}$ to prevent $\lambda_i=0$ or $\lambda_i = 1$.
+When implementing the algorithm, the mean field parameters were initialised randomly, each independently from a uniform distribution on $[ 0, 1]$. $\pi$, $\sigma$, and $\mu$ were initialised by running a maximisation step using these randomly initialised mean field parameters. $K$ was set to eight, after visually identifying eight features in part d. Moreover, for computational stability, when calculating $\log(\lambda_i)$ and $\log(1-\lambda_i)$, we manually shifted $\lambda_i$ by $1e^{-10}$ to prevent $\lambda_i=0$ or $\lambda_i = 1$.
 
 
 \newpage
@@ -971,7 +969,7 @@ The rest of the Python code for question 3:
 
 To derive a Variational Bayesian hyperparameter optimisation algorithm to automatically determine $K$, the number of hidden binary variables in this model, we begin by writing the expression for $x_d$:
 
-\[P(x_d | \texbf{s}, \textbf{w}_d, \sigma^2) = \mathcal{N}\left(\textbf{s}^T\textbf{w}_d, \sigma^2\right)\]
+\[P(x_d | \textbf{s}, \textbf{w}_d, \sigma^2) = \mathcal{N}\left(\textbf{s}^T\textbf{w}_d, \sigma^2\right)\]
 
 where we know from the diagonal covariance of $P(\textbf{x} | \textbf{s}, \mu, \sigma^2)$ that each dimension is independent. Moreover, $\textbf{w}_d \in \mathbb{R}^{K\times 1}$, which is the $d^{th}$ row of $\mu \in \mathbb{R}^{D \times K}$
 
@@ -980,7 +978,7 @@ Thus, we can express the posterior as:
 \[\log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) = \log P( \textbf{s}| \pi) + \sum_{d=1}^{D} \log P(x_d | \texbf{s}, \textbf{w}_d, \sigma^2) + \log P( \textbf{w}_d| \alpha)
 \]
 
-where we introduce priors on each $\textbf{w}_k$ with $\alpha \in \mathbb{R}^{K \times 1}$.
+where we introduce priors on each $\textbf{w}_d$ with $\alpha \in \mathbb{R}^{K \times 1}$.
 
 We choose each prior to be:
 
@@ -1008,11 +1006,7 @@ Substituting the relevant terms:
 
 \[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2 \sigma^2} \left( - 2 \textbf{x}^T\sum_{k=1}^{K}  s_k  \mu_k   + \sum_{k=1}^{K} \sum_{k'=1, k'\neq k}^{K}  s_k s_{k'} \mu_k^T\mu_{k'} + \sum_{k=1}^{K}  s_k \mu_k^T\mu_k \right) + \sum_{k=1}^{K} s_k \log \frac{\pi_k}{1-\pi_k}\right\rangle_{q(\mu)}\]
 
-%Simplifying:
-%
-%\[q_{\texbf{s}}(\textbf{s}) \propto \exp \left\langle -\frac{1}{2}\left(\textbf{s}^T\textbf{A}^T\Psi^{-1}\textbf{As} - 2\textbf{s}^T\left(\textbf{A}^T\Psi^{-1} \textbf{x}  + 2\log\frac{\pi}{1-\pi}\right)\right)\right\rangle_{q(\theta)}\]
-
-Given our factored approximation $q(\textbf{s}) = \prod_{k=1}^K q_k(s_k)$, we can see that we can derive a similar partial update for $q_k(q_k)$ as in Question 3, by taking the variation derivative of the Lagrangian to enforce the normalisation of $q_k$:
+Given our factored approximation $q(\textbf{s}) = \prod_{k=1}^K q_k(s_k)$, we can see that we can derive a similar partial update for $q_k(s_k)$ as in Question 3, by taking the variation derivative of the Lagrangian to enforce the normalisation of $q_k$:
 
 \[
 \begin{array}{l}
@@ -1026,7 +1020,7 @@ Setting this to zero we can solve for $\lambda_i$ where $q_k(s_k) = \lambda_k^{s
 
 we have our partial E step update.
 
-For the maximisation step, we perform maximisation steps for the parameters $\sigma$ and $\pi$ in the same way as question 3. However, having defined a prior on $\mu$ (through $\textbf{w}$) so we will have to derive our expression for $\langle \mu_k\rangle_{q_{\mu_k}}$ the expectation of the posterior on $\mu_k$. This involves deriving the posterior distribution of $\textbf{w}_d$
+For the maximisation step, we perform maximisation steps for the parameters $\sigma$ and $\pi$ in the same way as question 3. However, having defined a prior on $\mu$ (through $\textbf{w}$) we will have to derive our expression for $\langle \mu_k\rangle_{q_{\mu_k}}$ the expectation of the posterior on $\mu_k$. This involves deriving the posterior distribution of $\textbf{w}_d$
 
 \[q_{\textbf{w}_d}(\textbf{w}_d})  \propto P(\textbf{w}_d)\exp \left\langle \log P(\textbf{x}, \textbf{s}, \mu| \pi , \sigma^2,  \alpha) \right\rangle_{q_{\textbf{s}}(\textbf{s}) q_{\neg \textbf{w}_d}}\]
 
@@ -1110,7 +1104,7 @@ Comparing the free energy plots of models trained on different $K$ values:
 \label{fig:}
 \end{figure}
 
-We can see that initially for $K=4$ to $K=8$, increasing $K$ significantly increases the convergence value of the free energy. However, beyond $K=8$ there is a no clear trend of $K$ versus the free energy convergence value. We can see that this corresponds to the visualisation of $\alpha^{-1}$ where beyond $K=11$, the effective number of features remains more or less the same. We know that there are only eight latent features, thus models with $K>8$ should be learning duplicate or irrelevant features. As such, we wouldn't expect a model to be able to increase it's free energy significantly when provided with additional degrees of freedom by increasing the value of $k$ beyond eight. We see that for models with $K>>8$, there are typically ten or eleven features that might be deemed relevant (depending on how you threshold) and this is likely from slight overfitting, noise in the data, or duplicate features. Thus, the relationship between the free energy and the effective number of latent features for each model is as we would expect with ARD.
+We can see that initially for $K=4$ to $K=8$, increasing $K$ significantly increases the convergence value of the free energy. However, beyond $K=8$, the trend of $K$ versus the free energy convergence value is not as clear. We can see that this corresponds to the visualisation of $\alpha^{-1}$ where beyond $K=11$, the number of relevant features remains more or less the same. We know that there are only eight latent features, thus models with $K>8$ should be learning duplicate or irrelevant features. As such, we wouldn't expect a model to be able to increase it's free energy significantly when provided with additional degrees of freedom by increasing the value of $K$ beyond eight. We see that for models with $K>>8$, there are typically ten or eleven features that might be deemed relevant (depending on how you threshold) and this is likely from slight overfitting, noise in the data, or duplicate features. Thus, the relationship between the free energy and the effective number of latent features for each model is as we would expect with ARD.
 
 
 \newpage
@@ -1171,7 +1165,7 @@ and
 
 as required.
 
-The Boltzmann Machine can be defined:
+The Boltzmann Machine can be defined as:
 
 \[P(\textbf{s}| \textbf{W}, \textbf{b}) = \frac{1}{Z} \exp\left( \sum_{i=1}^{K}\sum_{j=1}^{i-1}W_{ij}s_i s_j - \sum_{i=1}^{K} b_i s_i\right)}\]
 
@@ -1206,7 +1200,7 @@ we can define $\eta_{ii} = \log \left(\frac{\theta_{ii}}{1-\theta_{ii}} \right)$
 \[\log \tilde{f}_i(s_i) \propto \eta_{ii}s_i\]
 
 
-For $g_{ij}(s_i, s_j)$, we will choose a product of Bernoulli's approximation:
+For $g_{ij}(s_i, s_j)$, we can choose a product of Bernoulli distributions for our approximation:
 
 \[\tilde{g}_{ij}(s_i, s_j) = \tilde{g}_{ij, \neg s_j}(s_i)\tilde{g}_{ij, \neg s_i}(s_j)\]
 
@@ -1250,7 +1244,7 @@ We are left with:
 
 \[\mathcal{M}_{j \rightarrow i}(s_i) = \tilde{g}_{ji, \neg s_j}(s_i)\]
 
-and,
+and
 
 \[\mathcal{M}_{j \rightarrow i}(s_i) \propto \exp\left(\eta_{ji} s_i\right)\]
 
@@ -1265,7 +1259,7 @@ The cavity distributions are:
 and
 
 \[q_{\neg \tilde{g}_{ij}(s_i, s_j)}(s_i, s_j) = \left( \mathcal{M}_{i \rightarrow i}(s_i) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i}(s_i)
-\right)\left( \mathcal{M}_{j}(s_j) \prod_{k\in ne(j), k\neq i}^{K} \mathcal{M}_{k \rightarrow j}(s_j)
+\right)\left( \mathcal{M}_{j \rightarrow j}(s_j) \prod_{k\in ne(j), k\neq i}^{K} \mathcal{M}_{k \rightarrow j}(s_j)
 \right)
 \]
 
@@ -1291,9 +1285,9 @@ We can define natural parameters $\eta_{i, \neg s_j}$ and $\eta_{j, \neg s_i}$ f
 
 \[\mathcal{M}_{i \rightarrow i}(s_i) \prod_{k\in ne(i), k\neq j}^{K} \mathcal{M}_{k \rightarrow i}(s_i) \propto \exp(\eta_{i, \neg s_j} s_i)\]
 
-\[ \mathcal{M}_{j}(s_j) \prod_{k\in ne(j), k\neq j}^{K} \mathcal{M}_{k \rightarrow j}(s_j) \propto \exp(\eta_{j, \neg s_i} s_j)\]
+\[ \mathcal{M}_{j \rightarrow j}(s_j) \prod_{k\in ne(j), k\neq j}^{K} \mathcal{M}_{k \rightarrow j}(s_j) \propto \exp(\eta_{j, \neg s_i} s_j)\]
 
-Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, updates to this site approximation involves updating the  parameters $\eta_{ij}$ and $\eta_{ji}$, for $s_i$ and $s_j$ respectively.
+Note that $\tilde{g}_{ij}(s_i, s_j)$ was chosen as the product of two Bernoulli distributions, so updates to this site approximation involves updating the  parameters $\eta_{ji}$ and $\eta_{ij}$, for $s_i$ and $s_j$ respectively.
 
 We can write:
 %\[\log \tilde{g}_{ij}q_{\neg \tilde{g}_{ij}} \propto \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j + \sum_{i=1}^{K}  \log \left(\frac{\theta_{ii}}{1-\theta_{ii}} \right) +  \sum_{i'=1}^{K}\sum_{\substack{j'=1 \\ i', j' \neq i, j}}^{i'-1}  \log \left(\frac{\theta_i}{1-\theta_i} \right) s_i + \log \left(\frac{\theta_j}{1-\theta_j} \right) s_j\]
@@ -1397,19 +1391,28 @@ our parameter for $q(s_i)$.
 \newpage
 \subsection*{(d)}
 
-We can use automatic relevance determination (ARD) as a hyperparameter method to select relevant features by placing a prior on $\mu_i$ in the same way as Question 4. With a hyper-M step, certain features will have diverging precision, leaving us with the relevant features, from which we get our $K$. We can implement this by running the message passing algorithm (loopy BP) which was implemented for Question 6 for the expectation step and the VB algorithm for the maximisation step (along with its hyper-M Step):
+We can use automatic relevance determination (ARD) as a hyperparameter method to select relevant features by placing a prior on $\mu_k$ in the same way as Question 4. With a hyper-M step, certain features will have diverging precision, leaving us with the relevant features, from which we get our $K$. We can implement this by running the message passing algorithm (loopy BP) which was implemented for Question 6 for the expectation step and the VB algorithm for the maximisation step (along with its hyper-M Step) which was implemented for Question 4:
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.4]{outputs/q5/d-latent-factors-comparison}
+\includegraphics[scale=0.47]{outputs/q5/d-1-latent-factors-comparison}
+\caption{Learned Latent Factors vs Inverse Alpha}
+\label{fig:}
+\end{figure}
+
+\newpage
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.47]{outputs/q5/d-2-latent-factors-comparison}
 \caption{Learned Latent Factors vs Inverse Alpha}
 \label{fig:}
 \end{figure}
 
 We can see that ARD has more difficulty finding relevant features when using loop BP.
-Looking at the features themselves, we can see that they are not very clear compared to the mean field approximation or Variational Bayes in Question 4.
-This is probably why we do not consistently have the same number of $\alpha_k$ values that don't diverge as compared with Question 3.
-However, we can see for $K<8$ that all of the features are deemed relevant as we would expect.
+However, looking at the features themselves, we can see that the features are not very clear compared those from the mean field approximation or Variational Bayes in Question 4.
+This is probably why we do not consistently have the same number of $\alpha_k$ values that don't diverge as compared with Question 4.
+Moreover we usually have fewer than eight features that don't converge, likely because loopy BP seems to be unable to identify too many clear features that we would want to deem relevant in the first place.
+However, we can see for $K<8$ that more of the features are deemed relevant as we would expect.
 
 \newpage
 Comparing the free energy plots of models trained on different $K$ values:
@@ -1423,9 +1426,12 @@ Comparing the free energy plots of models trained on different $K$ values:
 
 We can see the difficulties of this approach due to the inability for loopy BP to converge for this particular problem.
 This likely contributes to the difficulty for ARD to find relevant features when the message passing algorithm is unable to converge on generating meaningful features.
-To improve this, we could also put priors on the other parameters $\sigma$ and $\pi$ in the hopes that this will help stabilise the algorithm.
+To improve this, we could also put priors on the other parameters $\sigma^2$ and $\pi$ in the hopes that this will help stabilise the algorithm.
 Moreover, because loopy BP is unable to converge for this problem, it is quite computationally intensive as EM will always run the maximum number of iterations without improvement in the results.
 Knowing that it won't converge, employing early stopping or fewer iterations can also be helpful.
+Moreover, Boltzmann machines do not scale well with respect to the number of nodes, $K$, introducing computational difficulties.
+This was experienced when generating the above results, where for larger $K$ values, loopy BP E steps took much longer to perform. To tackle this, a restricted Boltzmann Machine could be implemented to reduce the number of connections in the graph, alleviating these computational difficulties.
+
 
 \newpage
 The Python code for question 5:
@@ -1451,7 +1457,7 @@ Implementing the EP/loopy-BP algorithm, we can compare the learned latent factor
 \label{fig:3f-latent-factors}
 \end{figure}
 
-We can see that the mean field algorithm seems to learn better latent features. In particular there are fewer duplicates, unlike loopy BP that has a few duplicates like $\mu_3$ and $\mu_4$. Moreover, the learned features have less noise. For example $\mu_0$ for the mean field algorithm looks almost like a binary image. We can understand the reason for this by comparing the free energies of the two algorithms:
+We can see that the mean field algorithm seems to learn better latent features. In particular there are fewer duplicates, unlike loopy BP that has a few duplicates. Moreover, the learned features of the mean field algorithm have less noise than those from loopy BP. For example $\mu_0$ for the mean field algorithm looks almost like a binary image. We can understand the reason for this by comparing the free energies of the two algorithms:
 
 \begin{figure}[h]
 \centering
@@ -1495,7 +1501,6 @@ The rest of the Python code for question 6:
 \newpage
 \section*{Appendix 4: constants.py}
 \lstinputlisting[language=Python]{src/constants.py}
-\newpage
 \section*{Appendix 5: generate\_images.py}
 \lstinputlisting[language=Python]{src/generate_images.py}
 \newpage

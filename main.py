@@ -181,19 +181,28 @@ if __name__ == "__main__":
     Q5_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q5")
     if not os.path.exists(Q5_OUTPUT_FOLDER):
         os.makedirs(Q5_OUTPUT_FOLDER)
-    max_k = 20
-    free_energies = q5.d(
+    max_k = 21
+    free_energies_1 = q5.d(
         x=x,
         a_parameter=1,
         b_parameter=0,
-        ks=np.arange(4, 22, 2),
+        ks=np.arange(4, 13),
         max_k=max_k,
-        em_iterations=100,
-        save_path=os.path.join(Q5_OUTPUT_FOLDER, "d"),
+        em_iterations=em_iterations,
+        save_path=os.path.join(Q5_OUTPUT_FOLDER, "d-1"),
+    )
+    free_energies_2 = q5.d(
+        x=x,
+        a_parameter=1,
+        b_parameter=0,
+        ks=np.arange(13, 22),
+        max_k=max_k,
+        em_iterations=em_iterations,
+        save_path=os.path.join(Q5_OUTPUT_FOLDER, "d-2"),
     )
     q4.free_energy_plot(
-        ks=np.arange(4, 22, 2),
-        free_energies=free_energies,
+        ks=np.arange(4, 22),
+        free_energies=free_energies_1 + free_energies_2,
         model_name="Loopy BP E Step and Variational Bayes M Step",
         save_path=os.path.join(Q5_OUTPUT_FOLDER, "d"),
     )
