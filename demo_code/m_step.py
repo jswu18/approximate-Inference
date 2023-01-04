@@ -1,9 +1,11 @@
 import numpy as np
 
+from typing import Tuple
 
-def m_step(x, es, ess):
+
+def m_step(x: np.ndarray, es: np.ndarray, ess: np.ndarray) -> Tuple[np.ndarray, float, np.ndarray]:
     """
-    mu, sigma, pie = MStep(x,es,ess)
+    mu, sigma, pie = m_step(x,es,ess)
 
     Inputs:
     -----------------

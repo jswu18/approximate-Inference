@@ -6,9 +6,13 @@ import numpy as np
 from matplotlib.offsetbox import AnnotationBbox, OffsetImage
 
 from src.automatic_relevance_determination import run_automatic_relevance_determination
+from src.models.binary_latent_factor_approximations.mean_field_approximation import (
+    init_mean_field_approximation,
+)
+from src.models.binary_latent_factor_models.variational_bayes import VariationalBayes
 
 
-def _offset_image(coord: int, path: str, ax: plt.axis):
+def offset_image(coord: int, path: str, ax: plt.axis):
     """
     Add image to matplotlib axis.
 
@@ -32,6 +36,60 @@ def _offset_image(coord: int, path: str, ax: plt.axis):
     ax.add_artist(ab)
 
 
+def plot_factors(
+    variational_bayes_binary_latent_factor_models: List[VariationalBayes],
+    ks: List[int],
+    max_k: int,
+    save_path: str,
+):
+    # store each feature as an image for later use
+    for i, k in enumerate(ks):
+        sort_indices = np.argsort(
+            variational_bayes_binary_latent_factor_models[i].gaussian_prior.alpha
+        )
+        for j, idx in enumerate(sort_indices):
+            fig = plt.figure(figsize=(0.3, 0.3))
+            ax = plt.Axes(fig, [0.0, 0.0, 1.0, 1.0])
+            ax.set_axis_off()
+            fig.add_axes(ax)
+            ax.imshow(
+                variational_bayes_binary_latent_factor_models[i]
+                .mu[:, idx]
+                .reshape(4, 4)
+            )
+            fig.savefig(save_path + f"-latent-factor-{i}-{j}", bbox_inches="tight")
+            plt.close()
+
+    # bar plot of alphas
+    fig, ax = plt.subplots(len(ks), 1, figsize=(12, 2 * len(ks)))
+    plt.subplots_adjust(hspace=1)
+    for i, k in enumerate(ks):
+        sort_indices = np.argsort(
+            variational_bayes_binary_latent_factor_models[i].gaussian_prior.alpha
+        )
+        y = list(
+            1
+            / variational_bayes_binary_latent_factor_models[i].gaussian_prior.alpha[
+                sort_indices
+            ]
+        ) + [0] * (max_k - k)
+        ax[i].set_title(f"{k=}")
+        ax[i].bar(range(max_k), y)
+        ax[i].set_xticks([])
+        ax[i].set_ylabel("Inverse Alpha")
+    # add feature image ticks
+    for i, k in enumerate(ks):
+        sort_indices = np.argsort(
+            variational_bayes_binary_latent_factor_models[i].gaussian_prior.alpha
+        )
+        for j in range(len(sort_indices)):
+            path = save_path + f"-latent-factor-{i}-{j}.png"
+            offset_image(j, path, ax[i])
+            os.remove(path)
+    fig.savefig(save_path + f"-latent-factors-comparison", bbox_inches="tight")
+    plt.close()
+
+
 def b(
     x: np.ndarray,
     a_parameter: int,
@@ -42,69 +100,47 @@ def b(
     e_maximum_steps: int,
     e_convergence_criterion: float,
     save_path: str,
-) -> None:
+) -> List[List[float]]:
 
-    binary_latent_factor_models = []
+    variational_bayes_models: List[VariationalBayes] = []
     free_energies = []
-    # automatic relevance determination
     for i, k in enumerate(ks):
-        (
-            binary_latent_factor_model,
-            free_energy,
-        ) = run_automatic_relevance_determination(
-            x,
-            a_parameter,
-            b_parameter,
+        n = x.shape[0]
+        mean_field_approximation = init_mean_field_approximation(
             k,
-            em_iterations,
-            e_maximum_steps,
-            e_convergence_criterion,
+            n,
+            max_steps=e_maximum_steps,
+            convergence_criterion=e_convergence_criterion,
         )
-        binary_latent_factor_models.append(binary_latent_factor_model)
+        (variational_bayes_model, free_energy) = run_automatic_relevance_determination(
+            x=x,
+            binary_latent_factor_approximation=mean_field_approximation,
+            a_parameter=a_parameter,
+            b_parameter=b_parameter,
+            k=k,
+            em_iterations=em_iterations,
+        )
+        variational_bayes_models.append(variational_bayes_model)
         free_energies.append(free_energy)
+    plot_factors(
+        variational_bayes_models,
+        ks,
+        max_k,
+        save_path,
+    )
+    return free_energies
 
-    # store each feature as an image for later use
-    for i, k in enumerate(ks):
-        sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
-        for j, idx in enumerate(sort_indices):
-            fig = plt.figure(figsize=(0.3, 0.3))
-            ax = plt.Axes(fig, [0.0, 0.0, 1.0, 1.0])
-            ax.set_axis_off()
-            fig.add_axes(ax)
-            ax.imshow(binary_latent_factor_models[i].mu[:, idx].reshape(4, 4))
-            fig.savefig(save_path + f"-latent-factor-{i}-{j}", bbox_inches="tight")
-            plt.close()
 
-    # bar plot of alphas
-    fig, ax = plt.subplots(len(ks), 1, figsize=(12, 2 * len(ks)))
-    plt.subplots_adjust(hspace=1)
-    for i, k in enumerate(ks):
-        sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
-        y = list(
-            1 / binary_latent_factor_models[i].gaussian_prior.alpha[sort_indices]
-        ) + [0] * (max_k - k)
-        ax[i].set_title(f"{k=}")
-        ax[i].bar(range(max_k), y)
-        ax[i].set_xticks([])
-        ax[i].set_ylabel("Inverse Alpha")
-    # add feature image ticks
-    for i, k in enumerate(ks):
-        sort_indices = np.argsort(binary_latent_factor_models[i].gaussian_prior.alpha)
-        for j in range(len(sort_indices)):
-            path = save_path + f"-latent-factor-{i}-{j}.png"
-            _offset_image(j, path, ax[i])
-            os.remove(path)
-    fig.savefig(save_path + f"-latent-factors-comparison", bbox_inches="tight")
-    plt.close()
-
-    # free energy plot
+def free_energy_plot(
+    ks: List[int], free_energies: List[List[float]], model_name: str, save_path: str
+):
     fig = plt.figure()
     fig.set_figwidth(10)
     fig.set_figheight(10)
     shades = np.flip(np.linspace(0.3, 0.9, len(ks)))
     for i, k in enumerate(ks):
         plt.plot(free_energies[i], label=f"{k=}", color=np.ones(3) * shades[i])
-    plt.title("Free Energy (Variational Bayes)")
+    plt.title(f"Free Energy ({model_name})")
     plt.xlabel("t (EM steps)")
     plt.ylabel("Free Energy")
     plt.legend()

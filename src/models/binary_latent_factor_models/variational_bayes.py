@@ -4,20 +4,20 @@ from src.models.binary_latent_factor_approximations.abstract_binary_latent_facto
     AbstractBinaryLatentFactorApproximation,
 )
 from src.models.binary_latent_factor_models.binary_latent_factor_model import (
-    AbstractBinaryLatentFactorModel,
     BinaryLatentFactorModel,
 )
+from src.models.binary_latent_factor_models.boltzmann_machine import BoltzmannMachine
 
 
 class GaussianPrior:
-    def __init__(self, a, b, d, k):
+    def __init__(self, a: float, b: float, d: int, k: int):
         """
         Gaussian prior on mu matrix
 
         :param a: alpha parameter of Gamma Prior
         :param b: beta parameter of Gamma Prior
         :param d: number of dimensions
-        :param k: number of latent factors
+        :param k: number of latent variables
         """
         self.a = a
         self.b = b
@@ -25,7 +25,7 @@ class GaussianPrior:
         self.alpha = np.ones((k,))
         self.w_covariance = np.zeros((k, k))
 
-    def mu_k(self, k):
+    def mu_k(self, k: int) -> np.ndarray:
         """
         Column vector of mu matrix, the latent feature vector
 
@@ -34,7 +34,7 @@ class GaussianPrior:
         """
         return self.mu[:, k : k + 1]
 
-    def w_d(self, d):
+    def w_d(self, d: int) -> np.ndarray:
         """
         Row vector of mu matrix, the weight vector for a particular dimension (pixel) of the data
 
@@ -52,15 +52,17 @@ class GaussianPrior:
         return np.diag(self.alpha)
 
 
-class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
+class VariationalBayes(BoltzmannMachine):
     def __init__(self, mu: GaussianPrior, variance: float, pi: np.ndarray):
         """
-        Variational Bayes implementation with prior on mu
+        Variational Bayes implementation with prior on mu.
+        Note that we are inheriting from BoltzmannMachine for Question 5d only.
 
         :param mu: Gaussian prior on latent features
         :param variance: Gaussian noise parameter
         :param pi: vector of priors (1, number_of_latent_variables)
         """
+        super().__init__(mu=mu.mu, sigma=np.sqrt(variance), pi=pi)
         self.gaussian_prior = mu
         self._variance = variance
         self._pi = pi
@@ -105,10 +107,10 @@ class VariationalBayesBinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
         # (number_of_latent_variables,  1)
         self.gaussian_prior.mu[d : d + 1, :] = (
             self.gaussian_prior.w_covariance
-            @ (  # (number_of_latent_variables, number_of_latent_variables)
+            @ (
                 self.precision
-                * binary_latent_factor_approximation.expectation_s.T  # (number_of_latent_variables, number_of_points)
-                @ x[:, d : d + 1]  # (number_of_points, 1)
+                * binary_latent_factor_approximation.expectation_s.T
+                @ x[:, d : d + 1]
             )
         ).T
 

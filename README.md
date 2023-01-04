@@ -1,6 +1,11 @@
-# comp0085-assignment
+# Approximate Inference and Learning in Probabilistic Models
 
 Assignment for Approximate Inference and Learning in Probabilistic Models (COMP0085) at UCL 2022
+
+- Gaussian Process Regression
+- Mean Field Learning
+- Variational Bayes & Automatic Relevance Determination (ARD)
+- Loopy Belief Propagation
 
 To set up your python environment:
 

@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, Tuple
+from typing import Tuple
 
 import numpy as np
 
-from demo_code.MStep import m_step
+from demo_code.m_step import m_step
 from src.models.binary_latent_factor_approximations.abstract_binary_latent_factor_approximation import (
     AbstractBinaryLatentFactorApproximation,
 )
@@ -18,15 +18,9 @@ class BinaryLatentFactorModel(AbstractBinaryLatentFactorModel):
         sigma: float,
         pi: np.ndarray,
     ):
-        """
-
-        :param mu: matrix of means (number_of_dimensions, number_of_latent_variables)
-        :param sigma: Gaussian noise parameter
-        :param pi: vector of priors (1, number_of_latent_variables)
-        """
-        self._mu = mu
+        self._mu = mu  # (number_of_dimensions, number_of_latent_variables)
         self._sigma = sigma
-        self._pi = pi
+        self._pi = pi  # (1, number_of_latent_variables)
 
     @property
     def mu(self):
@@ -85,8 +79,7 @@ def init_binary_latent_factor_model(
     binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
 ) -> BinaryLatentFactorModel:
     """
-    Initialise binary latent factor model by running a maximisation step with the parameters of the
-    binary latent factor approximation
+    Initialise by running a maximisation step with the parameters of the binary latent factor approximation
 
     :param x: data matrix (number_of_points, number_of_dimensions)
     :param binary_latent_factor_approximation: a binary_latent_factor_approximation

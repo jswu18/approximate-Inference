@@ -48,10 +48,16 @@
 }
 \graphicspath{ }
 \usetikzlibrary{arrows}
+\usepackage{titlesec}
+
+\titleformat{\section}
+  {\normalfont\fontsize{14}{15}\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\fontsize{12}{15}\bfseries}{\thesection}{1em}{}
 
 \title{\textbf{COMP0085 Summative Assignment}}
 %\author{Jian Shu (James) Wu \\ }
-\date{Jan 4, 2023}
+\date{Jan 6, 2023}
 
 \begin{document}
 \maketitle
@@ -272,7 +278,6 @@ The junction tree redrawn as a factor graph:
 
 
 The set $\{A, D, E, F, H\}$ is a non-unique smallest set of molecules such that if the concentrations of the species within the set are known, the concentrations of the others $\{B, C, G, I\}$ would all be independent (conditioned on the measured ones).
-\newpage
 
 
 \subsection*{(d)}
@@ -362,7 +367,6 @@ Knowing \textbf{z} are the parent concentration perturbations, we can see that t
 \]
 
 Thus, we would expect to recover the factors of $A$ and $C$, $\delta[A]$ and $\delta[C]$, the two parent nodes of the observations.
-\newpage
 
 
 \subsection*{(e)}
@@ -370,6 +374,10 @@ Thus, we would expect to recover the factors of $A$ and $C$, $\delta[A]$ and $\d
 From factor analysis, we would recover $\delta[A]$ and $\delta[C]$.
 In theory, if these concentration perturbations had unknown parent factors, we could use the results to recover the concentration perturbations of those parent features.
 However, in our DAG this is not hte case, so we would not be able to recover any other species in the cascade because  they are all downstream from the known concentration perturbations and those recovered from factor analysis.
+Similarly, the downstream weights in the DAG from the known measurements would also be unidentifiable.
+Using factor analysis, we would only be able to identify the upstream weights from the measurements, up to an unknown scale factor.
+These are the weights $\Lambda_{BA}$, $\Lambda_{DC}$, and $\Lambda_{EC}$.
+Moreover, knowing $\delta[C]$ from factor analysis, we would also be able to determine $\Lambda_{CA}$, up to an unknown scale factor.
 
 
 \newpage
@@ -492,7 +500,7 @@ Otherwise, we would expect $g(t)$ to look like random noise.
 
 We are considering the kernel:
 
-\[k(s, t) = \theta^2 \left( \exp\left( - \frac{2\sin^2(\pi(s-t)/\tau)}{\sigma^2}\right) + \phi^2 \exp\left( - \frac{(s-t)^2}{2\eta^2}\right)\right) + \zeta^2 \delta_{s=t}\]
+\[k(s, t) = \theta^2 \exp\left( - \frac{2\sin^2(\pi(s-t)/\tau)}{\sigma^2}\right) + \phi^2 \exp\left( - \frac{(s-t)^2}{2\eta^2}\right) + \zeta^2 \delta_{s=t}\]
 
 We can make qualitative observations of this kernel by visualising the covariance (gram) matrix:
 
@@ -823,8 +831,8 @@ The computational complexity of the implemented M step function can be broken do
 \item The dot product $(\textbf{x}^{T} \textbf{x})$ where $\textbf{x} \in \mathbb{R}^{N \times D}$ is  $\mathcal{O}(D^2N)$
 \item The dot product $\mu^{T} \mu$ where $\mu \in \mathbb{R}^{D \times K}$ is  $\mathcal{O}(K^2D)$
 \item The dot product $(\mu^{T} \mu)\text{ESS}$ where $\mu^{T} \mu \in \mathbb{R}^{K \times K}$ and $\text{ESS} \in \mathbb{R}^{K \times K}$ is $\mathcal{O}(K^3)$
-\item The dot product  $\text{ESS}^T\textbf{x}$ where $\text{ES} \in \mathbb{R}^{N \times K}$ and $\textbf{x} \in \mathbb{R}^{N \times D}$ is  $\mathcal{O}(KND)$
-\item The dot product $(\text{ESS}^T\textbf{x}) \mu$ where $\text{ESS}^T\textbf{x} \in \mathbb{R}^{K\times D}$ and $\mu \in \mathbb{R}^{D \times K}$ is $\mathcal{O}(K^2 D)$
+\item The dot product  $\text{ES}^T\textbf{x}$ where $\text{ES} \in \mathbb{R}^{N \times K}$ and $\textbf{x} \in \mathbb{R}^{N \times D}$ is  $\mathcal{O}(KND)$
+\item The dot product $(\text{ES}^T\textbf{x}) \mu$ where $\text{ES}^T\textbf{x} \in \mathbb{R}^{K\times D}$ and $\mu \in \mathbb{R}^{D \times K}$ is $\mathcal{O}(K^2 D)$
 \end{itemize}
 \item [$\pi$:] \begin{itemize}
     \item The mean operation for $\text{ES} \in \mathbb{R}^{N \times K}$ along the first dimension is $\mathcal{O}(NK)$
@@ -862,15 +870,15 @@ where $\epsilon \sim \mathcal{N}(0, \Psi)$ and $\textbf{s} \sim \mathcal{N}(0, \
 
 A mixture of Gaussians assumes as model:
 
-\[\textbf{x} = \sum_{k=1}^K\pi_k s_k + \epsilon \text{ and } \sum_{k=1}^K s_k = 1\]
+\[\textbf{x} = \sum_{k=1}^K s_k \mu_k + \epsilon \text{ and } \sum_{k=1}^K s_k = 1\]
 
-where $\epsilon \sim \mathcal{N}(0, \Sigma_{\epsilon})$. This also wouldn't be appropriate because it assumes a dirichlet distribution on the vector $\textbf{s}$. Our data is constructed by having each $s_k$ independently sampled from a Bernoulli distribution for that feature.
+where $\epsilon \sim \mathcal{N}(0, \Sigma_{\epsilon})$. This also wouldn't be appropriate because it assumes a dirichlet distribution on the vector $\textbf{s}$. Our data is constructed by having each $s_k$ independently sampled from a Bernoulli distribution indicating the presence of feature $\mu_k$.
 
 Independent component analysis assumes a model:
 
 \[\textbf{x} = \textbf{W}\textbf{s} + \epsilon\]
 
-where $\epsilon \sim \mathcal{N}(0, \sigma^2\textbf{I})$ and $P(\textbf{s}) = \prod_{k=1}^K P(s_k)$. This is appropriate for our data because $P(s_k)$ is our Bernoulli distribution and we are linearly combining different features with $\textbf{w} in \mathbb{R}^{D \times K}$and then adding noise $\epsilon$.
+where $\epsilon \sim \mathcal{N}(0, \sigma^2\textbf{I})$ and $P(\textbf{s}) = \prod_{k=1}^K P(s_k)$. This is appropriate for our data because $P(s_k)$ is our Bernoulli distribution and we are linearly combining different features with $\textbf{W} \in \mathbb{R}^{D \times K}$and then adding noise $\epsilon$.
 
 Thus, it would be expected that ICA does a good job modelling this data while factor analysis and mixture of Gaussians models would not.
 
@@ -1385,10 +1393,43 @@ and so:
 
 our parameter for $q(s_i)$.
 
+
+\newpage
 \subsection*{(d)}
 
-Similar to question 3, we can use automatic relevance determination (ARD) as a hyperparameter method to select relevant features by placing a prior on $\mu_i$. With a hyper-M step, certain features will have diverging precision, indicating that they are not relevant to the model output. Thus, the number of remaining features will be our selection for $K$.
+We can use automatic relevance determination (ARD) as a hyperparameter method to select relevant features by placing a prior on $\mu_i$ in the same way as Question 4. With a hyper-M step, certain features will have diverging precision, leaving us with the relevant features, from which we get our $K$. We can implement this by running the message passing algorithm (loopy BP) which was implemented for Question 6 for the expectation step and the VB algorithm for the maximisation step (along with its hyper-M Step):
 
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{outputs/q5/d-latent-factors-comparison}
+\caption{Learned Latent Factors vs Inverse Alpha}
+\label{fig:}
+\end{figure}
+
+We can see that ARD has more difficulty finding relevant features when using loop BP.
+Looking at the features themselves, we can see that they are not very clear compared to the mean field approximation or Variational Bayes in Question 4.
+This is probably why we do not consistently have the same number of $\alpha_k$ values that don't diverge as compared with Question 3.
+However, we can see for $K<8$ that all of the features are deemed relevant as we would expect.
+
+\newpage
+Comparing the free energy plots of models trained on different $K$ values:
+
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.4]{outputs/q5/d-free-energy}
+\caption{Free Energy for different values of k}
+\label{fig:}
+\end{figure}
+
+We can see the difficulties of this approach due to the inability for loopy BP to converge for this particular problem.
+This likely contributes to the difficulty for ARD to find relevant features when the message passing algorithm is unable to converge on generating meaningful features.
+To improve this, we could also put priors on the other parameters $\sigma$ and $\pi$ in the hopes that this will help stabilise the algorithm.
+Moreover, because loopy BP is unable to converge for this problem, it is quite computationally intensive as EM will always run the maximum number of iterations without improvement in the results.
+Knowing that it won't converge, employing early stopping or fewer iterations can also be helpful.
+
+\newpage
+The Python code for question 5:
+\lstinputlisting[language=Python]{src/solutions/q5.py}
 
 
 \newpage
@@ -1445,23 +1486,19 @@ The rest of the Python code for question 6:
 \newpage
 \section*{Appendix 1: abstract\_binary\_latent\_factor\_model.py}
 \lstinputlisting[language=Python]{src/models/binary_latent_factor_models/abstract_binary_latent_factor_model.py}
-
 \newpage
 \section*{Appendix 2: abstract\_binary\_latent\_factor\_approximation.py}
 \lstinputlisting[language=Python]{src/models/binary_latent_factor_approximations/abstract_binary_latent_factor_approximation.py}
-
 \newpage
 \section*{Appendix 3: main.py}
 \lstinputlisting[language=Python]{main.py}
-
 \newpage
 \section*{Appendix 4: constants.py}
 \lstinputlisting[language=Python]{src/constants.py}
-
 \newpage
 \section*{Appendix 5: generate\_images.py}
 \lstinputlisting[language=Python]{src/generate_images.py}
 \newpage
-\section*{Appendix 6: MStep.py}
-\lstinputlisting[language=Python]{demo_code/MStep.py}
+\section*{Appendix 6: m\_step.py}
+\lstinputlisting[language=Python]{demo_code/m_step.py}
 \end{document}

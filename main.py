@@ -11,7 +11,7 @@ from src.generate_images import generate_images
 from src.models.bayesian_linear_regression import LinearRegressionParameters
 from src.models.gaussian_process_regression import GaussianProcessParameters
 from src.models.kernels import CombinedKernel, CombinedKernelParameters
-from src.solutions import q2, q3, q4, q6
+from src.solutions import q2, q3, q4, q5, q6
 
 jax.config.update("jax_enable_x64", True)
 
@@ -148,18 +148,7 @@ if __name__ == "__main__":
     if not os.path.exists(Q4_OUTPUT_FOLDER):
         os.makedirs(Q4_OUTPUT_FOLDER)
     max_k = 21
-    q4.b(
-        x=x,
-        a_parameter=1,
-        b_parameter=0,
-        ks=np.arange(4, 22),
-        max_k=max_k,
-        em_iterations=em_iterations,
-        e_maximum_steps=e_maximum_steps,
-        e_convergence_criterion=e_convergence_criterion,
-        save_path=os.path.join(Q4_OUTPUT_FOLDER, "b"),
-    )
-    q4.b(
+    free_energies_1 = q4.b(
         x=x,
         a_parameter=1,
         b_parameter=0,
@@ -170,7 +159,7 @@ if __name__ == "__main__":
         e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q4_OUTPUT_FOLDER, "b-1"),
     )
-    q4.b(
+    free_energies_2 = q4.b(
         x=x,
         a_parameter=1,
         b_parameter=0,
@@ -180,6 +169,33 @@ if __name__ == "__main__":
         e_maximum_steps=e_maximum_steps,
         e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q4_OUTPUT_FOLDER, "b-2"),
+    )
+    q4.free_energy_plot(
+        ks=np.arange(4, 22),
+        free_energies=free_energies_1 + free_energies_2,
+        model_name="Variational Bayes",
+        save_path=os.path.join(Q4_OUTPUT_FOLDER, "b"),
+    )
+
+    # Question 5
+    Q5_OUTPUT_FOLDER = os.path.join(OUTPUTS_FOLDER, "q5")
+    if not os.path.exists(Q5_OUTPUT_FOLDER):
+        os.makedirs(Q5_OUTPUT_FOLDER)
+    max_k = 20
+    free_energies = q5.d(
+        x=x,
+        a_parameter=1,
+        b_parameter=0,
+        ks=np.arange(4, 22, 2),
+        max_k=max_k,
+        em_iterations=100,
+        save_path=os.path.join(Q5_OUTPUT_FOLDER, "d"),
+    )
+    q4.free_energy_plot(
+        ks=np.arange(4, 22, 2),
+        free_energies=free_energies,
+        model_name="Loopy BP E Step and Variational Bayes M Step",
+        save_path=os.path.join(Q5_OUTPUT_FOLDER, "d"),
     )
 
     # Question 6

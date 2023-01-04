@@ -16,11 +16,7 @@ class BoltzmannMachine(BinaryLatentFactorModel):
         pi: np.ndarray,
     ):
         """
-        Binary latent factor model as a Boltzmann Machine
-
-        :param mu: matrix of means (number_of_dimensions, number_of_latent_variables)
-        :param sigma: gaussian noise parameter
-        :param pi: vector of priors (1, number_of_latent_variables)
+        Binary latent factor model with Boltzmann Machine terms
         """
         super().__init__(mu, sigma, pi)
 
@@ -82,8 +78,7 @@ def init_boltzmann_machine(
     binary_latent_factor_approximation: AbstractBinaryLatentFactorApproximation,
 ) -> BinaryLatentFactorModel:
     """
-    Initialise a boltzmann machine by running a maximisation step with the parameters of the
-    binary latent factor approximation
+    Initialise by running a maximisation step with the parameters of the binary latent factor approximation
 
     :param x: data matrix (number_of_points, number_of_dimensions)
     :param binary_latent_factor_approximation: a binary_latent_factor_approximation
@@ -92,8 +87,4 @@ def init_boltzmann_machine(
     mu, sigma, pi = BinaryLatentFactorModel.calculate_maximisation_parameters(
         x, binary_latent_factor_approximation
     )
-    return BoltzmannMachine(
-        mu=mu,
-        sigma=sigma,
-        pi=pi,
-    )
+    return BoltzmannMachine(mu=mu, sigma=sigma, pi=pi)

@@ -3,7 +3,9 @@ import numpy as np
 from src.constants import DEFAULT_SEED, M1, M2, M3, M4, M5, M6, M7, M8
 
 
-def generate_images(n: int = 400, seed: int = DEFAULT_SEED, sigma: float = 0.1):
+def generate_images(
+    n: int = 400, seed: int = DEFAULT_SEED, sigma: float = 0.1
+) -> np.ndarray:
     """
     Image generation, adapted from provided demo code
 
