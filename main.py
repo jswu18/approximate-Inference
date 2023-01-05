@@ -124,7 +124,7 @@ if __name__ == "__main__":
     e_maximum_steps = 50
     e_convergence_criterion = 0
 
-    binary_latent_factor_model = q3.e_and_f(
+    binary_latent_factor_model, mean_field_approximation = q3.e_and_f(
         x=x,
         k=k,
         em_iterations=em_iterations,
@@ -135,11 +135,9 @@ if __name__ == "__main__":
     q3.g(
         x=x[:1, :],
         binary_latent_factor_model=binary_latent_factor_model,
+        mean_field_approximation=mean_field_approximation,
         sigmas=[1, 2, 3],
-        k=k,
         em_iterations=em_iterations,
-        e_maximum_steps=e_maximum_steps,
-        e_convergence_criterion=e_convergence_criterion,
         save_path=os.path.join(Q3_OUTPUT_FOLDER, "g"),
     )
 

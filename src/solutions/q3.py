@@ -5,6 +5,7 @@ import numpy as np
 
 from src.expectation_maximisation import is_converge, learn_binary_factors
 from src.models.binary_latent_factor_approximations.mean_field_approximation import (
+    MeanFieldApproximation,
     init_mean_field_approximation,
 )
 from src.models.binary_latent_factor_models.binary_latent_factor_model import (
@@ -20,7 +21,7 @@ def e_and_f(
     e_maximum_steps: int,
     e_convergence_criterion: float,
     save_path: str,
-) -> AbstractBinaryLatentFactorModel:
+) -> [AbstractBinaryLatentFactorModel, MeanFieldApproximation]:
     n = x.shape[0]
     mean_field_approximation = init_mean_field_approximation(
         k, n, max_steps=e_maximum_steps, convergence_criterion=e_convergence_criterion
@@ -36,7 +37,11 @@ def e_and_f(
     plt.tight_layout()
     plt.savefig(save_path + "-init-latent-factors", bbox_inches="tight")
     plt.close()
-    _, binary_latent_factor_model, free_energy = learn_binary_factors(
+    (
+        mean_field_approximation,
+        binary_latent_factor_model,
+        free_energy,
+    ) = learn_binary_factors(
         x,
         em_iterations,
         binary_latent_factor_model,
@@ -57,49 +62,51 @@ def e_and_f(
     plt.plot(free_energy)
     plt.savefig(save_path + "-free-energy", bbox_inches="tight")
     plt.close()
-    return binary_latent_factor_model
+    return binary_latent_factor_model, mean_field_approximation
 
 
 def g(
     x: np.ndarray,
     binary_latent_factor_model: AbstractBinaryLatentFactorModel,
+    mean_field_approximation: MeanFieldApproximation,
     sigmas: List[float],
-    k: int,
     em_iterations: int,
-    e_maximum_steps: int,
-    e_convergence_criterion: float,
     save_path: str,
 ) -> None:
-    n = x.shape[0]
     free_energies = []
     for sigma in sigmas:
         binary_latent_factor_model.sigma = sigma
-        mean_field_approximation = init_mean_field_approximation(
-            k,
-            n,
-            max_steps=e_maximum_steps,
-            convergence_criterion=e_convergence_criterion,
+        mean_field_approximation_single_point = MeanFieldApproximation(
+            lambda_matrix=mean_field_approximation.lambda_matrix[:1, :],
+            max_steps=mean_field_approximation.max_steps,
+            convergence_criterion=mean_field_approximation.convergence_criterion,
         )
         free_energy: List[float] = [
-            mean_field_approximation.compute_free_energy(x, binary_latent_factor_model)
+            mean_field_approximation_single_point.compute_free_energy(
+                x, binary_latent_factor_model
+            )
         ]
         for _ in range(em_iterations):
             free_energy.pop(-1)
-            previous_lambda_matrix = np.copy(mean_field_approximation.lambda_matrix)
-            new_free_energy = mean_field_approximation.variational_expectation_step(
-                binary_latent_factor_model=binary_latent_factor_model,
-                x=x,
+            previous_lambda_matrix = np.copy(
+                mean_field_approximation_single_point.lambda_matrix
+            )
+            new_free_energy = (
+                mean_field_approximation_single_point.variational_expectation_step(
+                    binary_latent_factor_model=binary_latent_factor_model,
+                    x=x,
+                )
             )
             free_energy.extend(new_free_energy)
             if (
                 free_energy[-1] - free_energy[-2]
-                <= mean_field_approximation.convergence_criterion
+                <= mean_field_approximation_single_point.convergence_criterion
             ):
                 free_energy.pop(-1)
                 break
             if is_converge(
                 free_energy,
-                mean_field_approximation.lambda_matrix,
+                mean_field_approximation_single_point.lambda_matrix,
                 previous_lambda_matrix,
             ):
                 break
