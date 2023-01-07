@@ -23,7 +23,8 @@ poetry install
 
 ## Variational Bayes Automatic Relevance Determination:
 <p align="center">
-  <img width="50%" src="outputs/q4/b-2-latent-factors-comparison.png" />
+  <img width="49%" src="outputs/q4/b-1-latent-factors-comparison.png" />
+  <img width="48.5%" src="outputs/q4/b-2-latent-factors-comparison.png" />
 </p>
 <p align="center">
   <em>Automatic Relevance Determination (8 Actual Latent Factors)</em>
@@ -65,4 +66,12 @@ poetry install
 </p>
 <p align="center">
   <em>CO2 Extrapolation</em>
+</p>
+
+<p align="center">
+  <img width="48%" src="outputs/q2/c-parameter-grams.png" />
+  <img width="49%" src="outputs/q2/c-parameter-samples.png" />
+</p>
+<p align="center">
+  <em>Kernel Hyper-Parameter Visualisation</em>
 </p>
